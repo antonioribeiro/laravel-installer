@@ -13,6 +13,8 @@ DIRECTORIES=( /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin )
 PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
 PHP_APP=php
+INSTALL_DIR=$1
+SITE_DIR=$2
 
 #################################################################### 
 
@@ -20,7 +22,7 @@ function main() {
     checkSudo
     checkPHP
     checkWebserver
-    checkParameters $INSTALL_DIR
+    checkParameters $INSTALL_DIR $SITE_DIR
     checkApp $GIT_APP
     checkApp $CURL_APP
     checkComposer $INSTALL_DIR
@@ -250,13 +252,16 @@ function checkSudo {
 function showUsage() {
     echo
     echo
-    echo "installFour script - Installs a complete Laravel 4 development environment and app skeleton"
+    echo "installFour script"
+    echo "  Installs a Laravel 4 development environment"
     echo
     echo "     Usage:  bash installFour <directory> <site name>"
     echo
     echo "  Examples:  bash installFour /var/www/blog/ blog"
     echo "             bash installFour /var/www/ blog"
     echo "             bash installFour /var/www/blog/ myBlog"
+    echo
+    echo
 }
 
 clear
