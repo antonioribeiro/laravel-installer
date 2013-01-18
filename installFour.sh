@@ -26,13 +26,37 @@ function main() {
     checkApp $CURL_APP
     checkComposer $INSTALL_DIR
     checkPHPUnit
+    checkMCrypt
     downloadSkeleton $INSTALL_DIR
     downloadL4 $INSTALL_DIR
+    createVirtualHost $INSTALL_DIR
+}
+
+function getIPAddress() {
+    IPADDRESS1=`$SUDO_APP ifconfig | sed -n 's/.*inet addr:\([0-9.]\+\)\s.*/\1/p' | grep -v 127 | head -n 1`
+}
+
+function createVirtualHost() {
+    if [ $WEBSERVER == "apache2" ]; then
+        echo 'Alias /$SITE_NAME "$INSTALL_DIR/public"' >> /etc/apache2/sites-available/$SITE_NAME
+        echo '<Directory $INSTALL_DIR>' >> /etc/apache2/sites-available/$SITE_NAME
+        echo '  Options Indexes Includes FollowSymLinks MultiViews' >> /etc/apache2/sites-available/$SITE_NAME
+        echo '  AllowOverride AuthConfig FileInfo' >> /etc/apache2/sites-available/$SITE_NAME
+        echo '  Order allow,deny' >> /etc/apache2/sites-available/$SITE_NAME
+        echo '  Allow from all' >> /etc/apache2/sites-available/$SITE_NAME
+        echo '</Directory>' >> /etc/apache2/sites-available/$SITE_NAME
+
+        $SUDO_APP a2ensite $SITE_NAME
+        $SUDO_APP service apache2 restart
+        getIPAddress
+        echo "You Laravel 4 installation should be availabel now at http://$IPADDRESS/$SITE_NAME"
+    fi
 }
 
 function downloadL4() {
-    cd $1
+    cd $INSTALL_DIR
     $COMPOSER_APP install
+    $SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/
 }
 
 function checkPHP() {
@@ -140,7 +164,7 @@ function checkComposerInstalled() {
 }
 
 function downloadSkeleton() {
-    git clone https://github.com/niallobrien/laravel4-template.git $1
+    git clone https://github.com/niallobrien/laravel4-template.git $INSTALL_DIR
 }
 
 function installApp() {
@@ -152,6 +176,11 @@ function installApp() {
         apt-get --yes install $1 &> /dev/null
         yum --assumeyes install $1 &> /dev/null
     fi
+}
+
+function checkMCrypt() {
+    $SUDO_APP apt-get --yes install php5-mcrypt &> /dev/null
+    $SUDO_APP yum --assumeyes install php5-mcrypt &> /dev/null
 }
 
 function checkApp() {
@@ -179,7 +208,14 @@ function checkErrors() {
 
 function checkParameters() {
     if [ ! $1 ]; then
-       echo "You need to provide installation directory."
+       echo "You need to provide installation directory (example: /var/www/myapp)."
+       showUsage
+       exit 1
+    fi
+
+    if [ ! $2 ]; then
+       echo "You need to provide an application name (myapp)."
+       showUsage
        exit 1
     fi
 
@@ -211,6 +247,18 @@ function checkSudo {
         CAN_I_RUN_SUDO=YES
         SUDO_APP=
     fi
+}
+
+function showUsage() {
+    echo
+    echo
+    echo "installFour script - Installs a complete Laravel 4 development environment and app skeleton"
+    echo
+    echo "     Usage:  bash installFour <directory> <application name>"
+    echo
+    echo "  Examples:  bash installFour /var/www/blog/ blog"
+    echo "             bash installFour /var/www/ blog"
+    echo "             bash installFour /var/www/blog/ myBlog"
 }
 
 clear
