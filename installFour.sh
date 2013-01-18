@@ -14,7 +14,7 @@ PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
 PHP_APP=php
 INSTALL_DIR=$1
-SITE_DIR=$2
+SITE_NAME=$2
 
 #################################################################### 
 
@@ -203,20 +203,16 @@ function checkErrors() {
 }
 
 function checkParameters() {
-    if [ ! $1 ]; then
+    if [ ! $INSTALL_DIR ]; then
         echo "You need to provide installation directory (example: /var/www/myapp)."
         showUsage
         exit 1
-    else 
-        INSTALL_DIR=$2
     fi
 
-    if [ ! $2 ]; then
+    if [ ! $SITE_NAME ]; then
         echo "You need to provide a site name (myapp)."
         showUsage
         exit 1
-    else
-        SITE_NAME=$2 
     fi
 
     if [ -f $INSTALL_DIR ]; then
