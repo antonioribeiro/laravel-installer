@@ -10,7 +10,6 @@ PHP_APP=php
 SUDO_APP=sudo
 COMPOSER_APP=composer
 DIRECTORIES=( /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin )
-INSTALL_DIR=$1
 PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
 PHP_APP=php
@@ -61,10 +60,7 @@ function downloadL4() {
 
 function checkPHP() {
     php=`$PHP_APP -v` &> /dev/null
-    if [ $? -gt 0 ]; then
-        echo "PHP is not installed. Aborted."
-        exit 1
-    fi
+    checkErrors "PHP is not installed. Aborted."
 
     echo "PHP is installed."
 }
@@ -120,10 +116,8 @@ function installComposer() {
     cd $INSTALL_DIR
     perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" /etc/php5/cli/conf.d/suhosin.ini
     curl -s http://getcomposer.org/installer | $PHP_APP
-    if [ $? -gt 0 ]; then
-        echo "Composer installation failed. Aborted."
-        exit 1
-    fi   
+    checkErrors "Composer installation failed. Aborted."
+
     COMPOSER_APP=$BIN_DIR/composer
     $SUDO_APP mv composer.phar $COMPOSER_APP
     $SUDO_APP chmod +x $COMPOSER_APP
@@ -208,30 +202,34 @@ function checkErrors() {
 
 function checkParameters() {
     if [ ! $1 ]; then
-       echo "You need to provide installation directory (example: /var/www/myapp)."
-       showUsage
-       exit 1
+        echo "You need to provide installation directory (example: /var/www/myapp)."
+        showUsage
+        exit 1
+    else 
+        INSTALL_DIR=$2
     fi
 
     if [ ! $2 ]; then
-       echo "You need to provide an application name (myapp)."
-       showUsage
-       exit 1
+        echo "You need to provide a site name (myapp)."
+        showUsage
+        exit 1
+    else
+        SITE_NAME=$2 
     fi
 
-    if [ -f $1 ]; then
+    if [ -f $INSTALL_DIR ]; then
        echo "You provided a regular file name, not a directory, please specify a directory."
        exit 1
     fi
 
-    if [ -d $1 ]; then
+    if [ -d $INSTALL_DIR ]; then
         if [ "$(ls -A $1)" ]; then
            echo "Directory $1 is not empty."
            exit 1
         fi
     else 
-        mkdir $1
-        checkErrors "Error creating directory $1"
+        mkdir $INSTALL_DIR
+        checkErrors "Error creating directory $INSTALL_DIR"
     fi
 }
 
@@ -254,7 +252,7 @@ function showUsage() {
     echo
     echo "installFour script - Installs a complete Laravel 4 development environment and app skeleton"
     echo
-    echo "     Usage:  bash installFour <directory> <application name>"
+    echo "     Usage:  bash installFour <directory> <site name>"
     echo
     echo "  Examples:  bash installFour /var/www/blog/ blog"
     echo "             bash installFour /var/www/ blog"
