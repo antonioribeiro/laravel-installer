@@ -1,6 +1,8 @@
 #!/bin/bash
 
-GIT_APP=vfu
+## This is your playground
+
+GIT_APP=git
 CURL_APP=curl
 PHP_APP=php
 SUDO_APP=sudo
@@ -9,28 +11,41 @@ DIRECTORIES=( /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin )
 INSTALL_DIR=$1
 BASH_DIR=`which bash`
 BIN_DIR=`dirname $BASH_DIR`
-PHPUNIT_APP=phpunitx
+PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
+PHP_APP=php
 
-# --------------------------------------------------------------- 
+#################################################################### 
 
 function main() {
-    #checkParameters $INSTALL_DIR
+    checkParameters $INSTALL_DIR
     checkSudo
     checkPHP
     checkWebserver
-    #checkApp $GIT_APP
-    #checkApp $CURL_APP
-    #checkApp $PHP_APP
-    #checkComposer $INSTALL_DIR
+    checkApp $GIT_APP
+    checkApp $CURL_APP
+    checkApp $PHP_APP
+    checkComposer $INSTALL_DIR
     checkPHPUnit
-    #downloadSkeleton $INSTALL_DIR
+    downloadSkeleton $INSTALL_DIR
 }
 
 function checkPHPUnit() {
-    phpunit=`which $PHPUNIT_APP`
-    if [ "$phpunit" == "" ]; then
-        installPHPUnit
+    php=`$PHP_APP -v`
+    if [ $? -gt 0 ]; then
+        echo "PHP is not installed. Aborted."
+        exit 1
+    fi
+}
+
+function checkWebserver() {
+    webserver=`ps -eaf |grep apache2 |grep -v grep |wc -l` && [ "$webserver" -gt "0" ] && WEBSERVER=apache2
+    webserver=`ps -eaf |grep nginx |grep -v grep |wc -l` && [ "$webserver" -gt "0" ] && WEBSERVER=nginx
+    webserver=`ps -eaf |grep lighthttpd |grep -v grep |wc -l` && [ "$webserver" -gt "0" ] && WEBSERVER=lighttpd
+
+    if [ "$WEBSERVER" == "" ]; then
+        echo "Looks like there is no webserver software intalled or runnig. Aborted."
+        exit 0
     fi
 }
 
