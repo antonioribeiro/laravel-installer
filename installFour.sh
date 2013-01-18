@@ -27,6 +27,12 @@ function main() {
     checkComposer $INSTALL_DIR
     checkPHPUnit
     downloadSkeleton $INSTALL_DIR
+    downloadLaravel4 $INSTALL_DIR
+}
+
+function downloadL4() {
+    cd $1
+    $COMPOSER_APP install
 }
 
 function checkPHP() {
@@ -37,6 +43,13 @@ function checkPHP() {
     fi
 
     echo "PHP is installed."
+}
+
+function checkPHPUnit() {
+    phpunit=`which $PHPUNIT_APP`
+    if [ "$phpunit" == "" ]; then
+        installPHPUnit
+    fi
 }
 
 function installPHP() {
