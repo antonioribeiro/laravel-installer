@@ -34,7 +34,7 @@ function main() {
 }
 
 function getIPAddress() {
-    IPADDRESS1=`$SUDO_APP ifconfig | sed -n 's/.*inet addr:\([0-9.]\+\)\s.*/\1/p' | grep -v 127 | head -n 1`
+    IPADDRESS=`$SUDO_APP ifconfig | sed -n 's/.*inet addr:\([0-9.]\+\)\s.*/\1/p' | grep -v 127 | head -n 1`
 }
 
 function createVirtualHost() {
