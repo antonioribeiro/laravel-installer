@@ -210,9 +210,9 @@ function checkMCrypt() {
 
 function checkApp() {
     if [ "$2" == "" ]; then
-        $installer=installApp
+        installer=installApp
     else 
-        $installer=$2
+        installer=$2
     fi
 
     if ! type -p $1 > /dev/null; then
