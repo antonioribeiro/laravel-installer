@@ -40,7 +40,7 @@ function getIPAddress() {
 function createVirtualHost() {
     if [ $WEBSERVER == "apache2" ]; then
         $SUDO_APP rm /etc/apache2/sites-available/$SITE_NAME
-        echo "Alias \/$SITE_NAME \"$INSTALL_DIR/public\"" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
+        echo "Alias /$SITE_NAME \"$INSTALL_DIR/public\"" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
         echo "<Directory $INSTALL_DIR>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
         echo "  Options Indexes Includes FollowSymLinks MultiViews" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
         echo "  AllowOverride AuthConfig FileInfo" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
@@ -161,7 +161,8 @@ function checkComposerInstalled() {
 }
 
 function downloadSkeleton() {
-    git clone https://github.com/niallobrien/laravel4-template.git $INSTALL_DIR
+    git clone -b develop https://github.com/laravel/laravel.git $INSTALL_DIR
+    #git clone https://github.com/niallobrien/laravel4-template.git $INSTALL_DIR
     perl -pi -e "s/\`/\'/g" $INSTALL_DIR/app/config/app.php
 }
 
