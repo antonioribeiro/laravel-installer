@@ -83,8 +83,13 @@ function installPHPUnit() {
 function installComposer() {
     echo "Trying to install composer..."
     cd $INSTALL_DIR
+    perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" /etc/php5/cli/conf.d/suhosin.ini
     curl -s http://getcomposer.org/installer | $PHP_APP
     $PHP_APP composer.phar install
+    if [ $? -gt 0 ]; then
+        echo "Composer installation failed."
+        exit 1
+    fi   
 }
 
 function checkComposer() {
