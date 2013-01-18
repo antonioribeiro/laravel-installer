@@ -161,6 +161,7 @@ function checkComposerInstalled() {
 
 function downloadSkeleton() {
     git clone https://github.com/niallobrien/laravel4-template.git $INSTALL_DIR
+    perl -pi -e "s/\`/\'/g" $INSTALL_DIR/app/config/app.php
 }
 
 function installApp() {
