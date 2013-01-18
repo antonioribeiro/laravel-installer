@@ -18,10 +18,10 @@ PHP_APP=php
 #################################################################### 
 
 function main() {
-    checkParameters $INSTALL_DIR
     checkSudo
     checkPHP
     checkWebserver
+    checkParameters $INSTALL_DIR
     checkApp $GIT_APP
     checkApp $CURL_APP
     checkApp $PHP_APP
