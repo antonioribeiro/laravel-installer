@@ -31,22 +31,31 @@ function main() {
 }
 
 function checkPHP() {
-    php=`$PHP_APP -v`
+    php=`$PHP_APP -v` &> /dev/null
     if [ $? -gt 0 ]; then
         echo "PHP is not installed. Aborted."
         exit 1
     fi
+
+    echo "PHP is installed."
+}
+
+function installPHP() {
+    sudo apt-get --yes intall php5 
 }
 
 function checkWebserver() {
+    WEBSERVER=
     webserver=`ps -eaf |grep apache2 |grep -v grep |wc -l` && [ "$webserver" -gt "0" ] && WEBSERVER=apache2
     webserver=`ps -eaf |grep nginx |grep -v grep |wc -l` && [ "$webserver" -gt "0" ] && WEBSERVER=nginx
     webserver=`ps -eaf |grep lighthttpd |grep -v grep |wc -l` && [ "$webserver" -gt "0" ] && WEBSERVER=lighttpd
 
     if [ "$WEBSERVER" == "" ]; then
         echo "Looks like there is no webserver software intalled or runnig. Aborted."
-        exit 0
+        exit 1
     fi
+
+    echo "Webserver ($WEBSERVER) is installed."
 }
 
 function installPHPUnit() {
