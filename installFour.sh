@@ -2,15 +2,15 @@
 
 ## This is your playground
 
+BASH_DIR=`which bash`
+BIN_DIR=`dirname $BASH_DIR`
 GIT_APP=git
 CURL_APP=curl
 PHP_APP=php
 SUDO_APP=sudo
-COMPOSER_APP=composerx
+COMPOSER_APP=composer
 DIRECTORIES=( /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin )
 INSTALL_DIR=$1
-BASH_DIR=`which bash`
-BIN_DIR=`dirname $BASH_DIR`
 PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
 PHP_APP=php
@@ -24,7 +24,6 @@ function main() {
     checkParameters $INSTALL_DIR
     checkApp $GIT_APP
     checkApp $CURL_APP
-    checkApp $PHP_APP
     checkComposer $INSTALL_DIR
     checkPHPUnit
     downloadSkeleton $INSTALL_DIR
@@ -73,7 +72,6 @@ function installPHPUnit() {
         echo '    }' >> $PHPUNIT_DIR/composer.json
         echo '}' >> $PHPUNIT_DIR/composer.json
         cd $PHPUNIT_DIR
-        COMPOSER_APP=composer
         $COMPOSER_APP install
         $SUDO_APP chmod +x $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit
         $SUDO_APP ln -s $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit $BIN_DIR/$PHPUNIT_APP
@@ -85,11 +83,13 @@ function installComposer() {
     cd $INSTALL_DIR
     perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" /etc/php5/cli/conf.d/suhosin.ini
     curl -s http://getcomposer.org/installer | $PHP_APP
-    $PHP_APP composer.phar install
     if [ $? -gt 0 ]; then
-        echo "Composer installation failed."
+        echo "Composer installation failed. Aborted."
         exit 1
     fi   
+    COMPOSER_APP=$BIN_DIR/composer
+    $SUDO_APP mv composer.phar $COMPOSER_APP
+    $SUDO_APP chmod +x $COMPOSER_APP
 }
 
 function checkComposer() {
@@ -113,7 +113,7 @@ function checkComposerInstalled() {
     [[ -z "$COMPOSER_PATH" ]] && COMPOSER_PATH=`which $COMPOSER_APP`
     [[ -z "$COMPOSER_PATH" ]] && COMPOSER_PATH=`which $COMPOSER_APP.phar`
 
-    for element in $INSTALL_DIR /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin
+    for element in $INSTALL_DIR $BIN_DIR /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin
     do
         [[ -z "$COMPOSER_PATH" ]] && [ -f $element/$COMPOSER_APP ] && COMPOSER_PATH="$element/$COMPOSER_APP"
         [[ -z "$COMPOSER_PATH" ]] && [ -f $element/$COMPOSER_APP ] && COMPOSER_PATH="$element/$COMPOSER_APP.phar"
