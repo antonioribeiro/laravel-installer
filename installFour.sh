@@ -39,13 +39,14 @@ function getIPAddress() {
 
 function createVirtualHost() {
     if [ $WEBSERVER == "apache2" ]; then
-        echo 'Alias /$SITE_NAME "$INSTALL_DIR/public"' >> /etc/apache2/sites-available/$SITE_NAME
-        echo '<Directory $INSTALL_DIR>' >> /etc/apache2/sites-available/$SITE_NAME
-        echo '  Options Indexes Includes FollowSymLinks MultiViews' >> /etc/apache2/sites-available/$SITE_NAME
-        echo '  AllowOverride AuthConfig FileInfo' >> /etc/apache2/sites-available/$SITE_NAME
-        echo '  Order allow,deny' >> /etc/apache2/sites-available/$SITE_NAME
-        echo '  Allow from all' >> /etc/apache2/sites-available/$SITE_NAME
-        echo '</Directory>' >> /etc/apache2/sites-available/$SITE_NAME
+        $SUDO_APP rm /etc/apache2/sites-available/$SITE_NAME
+        echo "Alias \/$SITE_NAME \"$INSTALL_DIR/public\"" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
+        echo "<Directory $INSTALL_DIR>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
+        echo "  Options Indexes Includes FollowSymLinks MultiViews" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
+        echo "  AllowOverride AuthConfig FileInfo" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
+        echo "  Order allow,deny" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
+        echo "  Allow from all" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
+        echo "</Directory>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
 
         $SUDO_APP a2ensite $SITE_NAME
         $SUDO_APP service apache2 restart
