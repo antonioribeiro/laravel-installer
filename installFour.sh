@@ -30,7 +30,7 @@ function main() {
     downloadSkeleton $INSTALL_DIR
 }
 
-function checkPHPUnit() {
+function checkPHP() {
     php=`$PHP_APP -v`
     if [ $? -gt 0 ]; then
         echo "PHP is not installed. Aborted."
