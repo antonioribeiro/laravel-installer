@@ -7,6 +7,7 @@ BIN_DIR=`dirname $BASH_DIR`
 GIT_APP=git
 CURL_APP=curl
 PHP_APP=php
+UNZIP_APP=unzip
 SUDO_APP=sudo
 COMPOSER_APP=composer
 DIRECTORIES=( /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin )
@@ -15,6 +16,7 @@ PHPUNIT_DIR=/etc/phpunit
 PHP_APP=php
 INSTALL_DIR=$1
 SITE_NAME=$2
+TWITTERBOOTSTRAP=$3
 
 #################################################################### 
 
@@ -25,12 +27,36 @@ function main() {
     checkParameters $INSTALL_DIR $SITE_DIR
     checkApp $GIT_APP
     checkApp $CURL_APP
+    [ "$TWITTERBOOTSTRAP" == "YES" ] && checkApp $UNZIP_APP installUnzip
     checkComposer $INSTALL_DIR
     checkPHPUnit
     checkMCrypt
     downloadSkeleton $INSTALL_DIR
     downloadL4 $INSTALL_DIR
+    [ "$TWITTERBOOTSTRAP" == "YES" ] && installTwitterBootstrap
     createVirtualHost $INSTALL_DIR
+}
+
+function installTwitterBootstrap() {
+    wget --output-document=/tmp/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip
+    unzip /tmp/twitter.bootstrap.zip -d /tmp/tb
+    cp -a /tmp/tb/bootstrap/css $INSTALL_DIR/public
+    cp -a /tmp/tb/bootstrap/js $INSTALL_DIR/public
+    cp -a /tmp/tb/bootstrap/img $INSTALL_DIR/public
+
+    rm $INSTALL_DIR/app/views/hello.php
+    mkdir $INSTALL_DIR/app/views/layouts
+    mkdir $INSTALL_DIR/app/views/views
+
+    wget --output-document=$INSTALL_DIR/app/views/layouts/main.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/layout.main.blade.php
+    wget --output-document=$INSTALL_DIR/app/views/views/home.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/view.home.blade.php
+
+    perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php
+}
+
+function installUnzip() {
+    $SUDO_APP apt-get --yes unzip $1 &> /dev/null
+    $SUDO_APP yum --assumeyes unzip $1 &> /dev/null
 }
 
 function getIPAddress() {
@@ -183,9 +209,15 @@ function checkMCrypt() {
 }
 
 function checkApp() {
+    if [ "$2" == "" ]; then
+        $installer=installApp
+    else 
+        $installer=$2
+    fi
+
     if ! type -p $1 > /dev/null; then
         echo -n "Trying to install $1..."
-        installApp $1 &> /dev/null
+        $installer $1 &> /dev/null
         if ! type -p $1 > /dev/null; then
             echo ""
             echo ""
@@ -207,14 +239,23 @@ function checkErrors() {
 
 function checkParameters() {
     if [ ! $INSTALL_DIR ]; then
-        echo "You need to provide installation directory (example: /var/www/myapp)."
         showUsage
+        echo "----> You need to provide installation directory (example: /var/www/myapp)."
+        echo
         exit 1
     fi
 
     if [ ! $SITE_NAME ]; then
-        echo "You need to provide a site name (myapp)."
         showUsage
+        echo "----> You need to provide a site name (myapp)."
+        echo
+        exit 1
+    fi
+
+    if [ ! $TWITTERBOOTSTRAP ]; then
+        showUsage
+        echo "----> Twitter Bootstrap install parameter was not provided."
+        echo
         exit 1
     fi
 
@@ -254,11 +295,11 @@ function showUsage() {
     echo "installFour script"
     echo "  Installs a Laravel 4 development environment"
     echo
-    echo "     Usage:  bash installFour <directory> <site name>"
+    echo "     Usage:  bash installFour <directory> <site name> <install twitter bootstrap template?>"
     echo
-    echo "  Examples:  bash installFour /var/www/blog/ blog"
-    echo "             bash installFour /var/www/ blog"
-    echo "             bash installFour /var/www/blog/ myBlog"
+    echo "  Examples:  bash installFour /var/www/blog/ blog YES"
+    echo "             bash installFour /home/taylor/www blog NO"
+    echo "             bash installFour /var/www/blog/ myBlog YES"
     echo
     echo
 }
