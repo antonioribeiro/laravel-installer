@@ -10,7 +10,6 @@ PHP_APP=php
 UNZIP_APP=unzip
 SUDO_APP=sudo
 COMPOSER_APP=composer
-DIRECTORIES=( /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin )
 PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
 PHP_APP=php
@@ -39,6 +38,7 @@ function main() {
 
 function installTwitterBootstrap() {
     wget --output-document=/tmp/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip
+    rm -rf /tmp/tb
     unzip /tmp/twitter.bootstrap.zip -d /tmp/tb
     cp -a /tmp/tb/bootstrap/css $INSTALL_DIR/public
     cp -a /tmp/tb/bootstrap/js $INSTALL_DIR/public
@@ -66,13 +66,13 @@ function getIPAddress() {
 function createVirtualHost() {
     if [ $WEBSERVER == "apache2" ]; then
         $SUDO_APP rm /etc/apache2/sites-available/$SITE_NAME
-        echo "Alias /$SITE_NAME \"$INSTALL_DIR/public\"" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
-        echo "<Directory $INSTALL_DIR>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
-        echo "  Options Indexes Includes FollowSymLinks MultiViews" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
-        echo "  AllowOverride AuthConfig FileInfo" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
-        echo "  Order allow,deny" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
-        echo "  Allow from all" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
-        echo "</Directory>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME
+        echo "Alias /$SITE_NAME \"$INSTALL_DIR/public\"" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
+        echo "<Directory $INSTALL_DIR>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
+        echo "  Options Indexes Includes FollowSymLinks MultiViews" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
+        echo "  AllowOverride AuthConfig FileInfo" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
+        echo "  Order allow,deny" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
+        echo "  Allow from all" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
+        echo "</Directory>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
 
         $SUDO_APP a2ensite $SITE_NAME
         $SUDO_APP service apache2 restart
@@ -83,6 +83,13 @@ function createVirtualHost() {
 
 function downloadL4() {
     cd $INSTALL_DIR
+
+    wget --output-document=/tmp/json.edit.php -N https://raw.github.com/antonioribeiro/l4i/master/json.edit.php
+
+    "raveren/kint" "dev-master"
+    "meido/html" "1.1.*"
+    "meido/form" "1.1.*"
+
     $COMPOSER_APP install
     $SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/
 }
