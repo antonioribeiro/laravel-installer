@@ -27,7 +27,7 @@ function main() {
     checkComposer $INSTALL_DIR
     checkPHPUnit
     downloadSkeleton $INSTALL_DIR
-    downloadLaravel4 $INSTALL_DIR
+    downloadL4 $INSTALL_DIR
 }
 
 function downloadL4() {
