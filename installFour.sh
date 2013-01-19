@@ -43,6 +43,8 @@ function main() {
     downloadL4IRepository
     downloadSkeleton
     configureExtraPackages
+    composerUpdate $INSTALL_DIR
+
     [ "$TWITTERBOOTSTRAP" == "YES" ] && installTwitterBootstrap
     createVirtualHost $INSTALL_DIR
     setGlobalPermissions
@@ -89,7 +91,7 @@ function createVirtualHost() {
     if [ $WEBSERVER == "apache2" ]; then
         echo "Creating apache2 VirtualHost..."
 
-        $SUDO cp $L4I_REPOSITORY_DIR/apache.directory.template /etc/apache2/sites-available/$SITE_NAME  &>> $LOG_FILE
+        $SUDO_APP cp $L4I_REPOSITORY_DIR/apache.directory.template /etc/apache2/sites-available/$SITE_NAME  &>> $LOG_FILE
 
         perl -pi -e "s/\[siteName\]/$SITE_NAME/g" /etc/php5/cli/conf.d/suhosin.ini  &>> $LOG_FILE
         perl -pi -e "s/\[installDir\]/$INSTALL_DIR/g" /etc/php5/cli/conf.d/suhosin.ini  &>> $LOG_FILE
@@ -115,8 +117,6 @@ function configureExtraPackages() {
 
     addAppAlias "Form" "Meido\\\Form\\\Facades\\\Form"
     addAppAlias "HTML" "Meido\\\HTML\\\Facades\\\HTML"
-
-    composerUpdate
 }
 
 function checkPHP() {
@@ -236,8 +236,6 @@ function downloadSkeleton() {
     #git clone https://github.com/niallobrien/laravel4-template.git $INSTALL_DIR
     #fixing typo
     #perl -pi -e "s/\`/\'/g" $INSTALL_DIR/app/config/app.php
-
-    composerUpdate
 }
 
 function installApp() {
