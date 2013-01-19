@@ -17,8 +17,8 @@ INSTALL_DIR=$1
 SITE_NAME=$2
 TWITTERBOOTSTRAP=$3
 LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
-LARAVEL_APP_REPOSITORY=https://github.com/laravel/laravel.git
-L4I_REPOSITORY=https://github.com/antonioribeiro/l4i.git
+LARAVEL_APP_REPOSITORY=" -b develop https://github.com/laravel/laravel.git "
+L4I_REPOSITORY="https://github.com/antonioribeiro/l4i.git"
 
 #################################################################### 
 # kwnown errors 
@@ -48,7 +48,7 @@ function main() {
 
 function installTwitterBootstrap() {
     echo "Installing Twitter Bootstrap..."
-    wget --output-document=/tmp/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip
+    wget --output-document=/tmp/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip &> $LOG_FILE
     rm -rf /tmp/tb &> $LOG_FILE
     unzip /tmp/twitter.bootstrap.zip -d /tmp/tb &> $LOG_FILE
     cp -a /tmp/tb/bootstrap/css $INSTALL_DIR/public
@@ -126,10 +126,10 @@ function checkPHPUnit() {
     fi
 }
 
-function installPHP() {
-    # echo "Installing PHP..."
-    # sudo apt-get --yes intall php5 
-}
+# function installPHP() {
+#     # echo "Installing PHP..."
+#     # sudo apt-get --yes intall php5
+# }
 
 function checkWebserver() {
     WEBSERVER=
@@ -215,12 +215,13 @@ function checkComposerInstalled() {
 
 function downloadSkeleton() {
     echo "Downloading Laravel 4 skeleton..."
-    git clone -b develop $LARAVEL_APP_REPOSITORY $INSTALL_DIR  &> $LOG_FILE
+    git clone $LARAVEL_APP_REPOSITORY $INSTALL_DIR  &> $LOG_FILE
 
     rm -rf /tmp/l4i  &> $LOG_FILE
-    git clone -b $L4I_REPOSITORY /tmp/l4i  &> $LOG_FILE
+    git clone $L4I_REPOSITORY /tmp/l4i  &> $LOG_FILE
 
-    cp /tmp/l4i/htaccess.template $INSTALL_DIR/public  &> $LOG_FILE
+    cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  &> $LOG_FILE
+    cp /tmp/l4i/htaccess.template $INSTALL_DIR/public/.htaccess  &> $LOG_FILE
 
     ### Installing using zip file, git is better but I'll keep this for possible future use
     # 
