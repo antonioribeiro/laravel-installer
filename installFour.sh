@@ -48,21 +48,21 @@ function main() {
 
 function installTwitterBootstrap() {
     echo "Installing Twitter Bootstrap..."
-    wget --output-document=/tmp/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip &> $LOG_FILE
-    rm -rf /tmp/tb &> $LOG_FILE
-    unzip /tmp/twitter.bootstrap.zip -d /tmp/tb &> $LOG_FILE
+    wget --output-document=/tmp/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip &>> $LOG_FILE
+    rm -rf /tmp/tb &>> $LOG_FILE
+    unzip /tmp/twitter.bootstrap.zip -d /tmp/tb &>> $LOG_FILE
     cp -a /tmp/tb/bootstrap/css $INSTALL_DIR/public
     cp -a /tmp/tb/bootstrap/js $INSTALL_DIR/public
     cp -a /tmp/tb/bootstrap/img $INSTALL_DIR/public
 
-    rm $INSTALL_DIR/app/views/hello.php &> $LOG_FILE
-    mkdir $INSTALL_DIR/app/views/layouts &> $LOG_FILE
-    mkdir $INSTALL_DIR/app/views/views &> $LOG_FILE
+    rm $INSTALL_DIR/app/views/hello.php &>> $LOG_FILE
+    mkdir $INSTALL_DIR/app/views/layouts &>> $LOG_FILE
+    mkdir $INSTALL_DIR/app/views/views &>> $LOG_FILE
 
-    wget --output-document=$INSTALL_DIR/app/views/layouts/main.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/layout.main.blade.php &> $LOG_FILE
-    wget --output-document=$INSTALL_DIR/app/views/views/home.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/view.home.blade.php &> $LOG_FILE
+    wget --output-document=$INSTALL_DIR/app/views/layouts/main.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/layout.main.blade.php &>> $LOG_FILE
+    wget --output-document=$INSTALL_DIR/app/views/views/home.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/view.home.blade.php &>> $LOG_FILE
 
-    perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php &> $LOG_FILE
+    perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php &>> $LOG_FILE
 }
 
 function installUnzip() {
@@ -78,17 +78,17 @@ function createVirtualHost() {
     if [ $WEBSERVER == "apache2" ]; then
         echo "Creating apache2 VirtualHost..."
 
-        $SUDO_APP rm /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
-        echo "Alias /$SITE_NAME \"$INSTALL_DIR/public\"" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
-        echo "<Directory $INSTALL_DIR>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
-        echo "  Options Indexes Includes FollowSymLinks MultiViews" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
-        echo "  AllowOverride AuthConfig FileInfo" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
-        echo "  Order allow,deny" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
-        echo "  Allow from all" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
-        echo "</Directory>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
+        $SUDO_APP rm /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
+        echo "Alias /$SITE_NAME \"$INSTALL_DIR/public\"" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
+        echo "<Directory $INSTALL_DIR>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
+        echo "  Options Indexes Includes FollowSymLinks MultiViews" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
+        echo "  AllowOverride AuthConfig FileInfo" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
+        echo "  Order allow,deny" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
+        echo "  Allow from all" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
+        echo "</Directory>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
 
-        $SUDO_APP a2ensite $SITE_NAME &> $LOG_FILE
-        $SUDO_APP service apache2 restart &> $LOG_FILE
+        $SUDO_APP a2ensite $SITE_NAME &>> $LOG_FILE
+        $SUDO_APP service apache2 restart &>> $LOG_FILE
         getIPAddress 
         echo "You Laravel 4 installation should be availabel now at http://$IPADDRESS/$SITE_NAME"
     fi
@@ -97,7 +97,7 @@ function createVirtualHost() {
 function configureExtraPackages() {
     echo "Configuring extra packages..."
 
-    wget --output-document=/tmp/json.edit.php -N https://raw.github.com/antonioribeiro/l4i/master/json.edit.php &> $LOG_FILE
+    wget --output-document=/tmp/json.edit.php -N https://raw.github.com/antonioribeiro/l4i/master/json.edit.php &>> $LOG_FILE
 
     $PHP_APP /tmp/json.edit.php $INSTALL_DIR "raveren/kint" "dev-master"
     $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/html" "1.1.*"
@@ -113,7 +113,7 @@ function configureExtraPackages() {
 }
 
 function checkPHP() {
-    php=`$PHP_APP -v &> $LOG_FILE`
+    php=`$PHP_APP -v &>> $LOG_FILE`
     checkErrors "PHP is not installed. Aborted."
 
     echo "PHP is installed."
@@ -148,8 +148,8 @@ function checkWebserver() {
 function installPHPUnit() {
     if [ "$CAN_I_RUN_SUDO" == "YES" ]; then
         echo "Installing PHPUnit..."
-        $SUDO_APP mkdir -p $PHPUNIT_DIR &> $LOG_FILE
-        $SUDO_APP chmod 777 $PHPUNIT_DIR &> $LOG_FILE 
+        $SUDO_APP mkdir -p $PHPUNIT_DIR &>> $LOG_FILE
+        $SUDO_APP chmod 777 $PHPUNIT_DIR &>> $LOG_FILE 
         echo '{' > $PHPUNIT_DIR/composer.json
         echo '    "name": "phpunit",' >> $PHPUNIT_DIR/composer.json
         echo '    "description": "PHPUnit",' >> $PHPUNIT_DIR/composer.json
@@ -162,21 +162,21 @@ function installPHPUnit() {
         echo '}' >> $PHPUNIT_DIR/composer.json
         cd $PHPUNIT_DIR
         composerUpdate $PHPUNIT_DIR
-        $SUDO_APP chmod +x $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit &> $LOG_FILE
-        $SUDO_APP ln -s $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit $BIN_DIR/$PHPUNIT_APP &> $LOG_FILE
+        $SUDO_APP chmod +x $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit &>> $LOG_FILE
+        $SUDO_APP ln -s $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit $BIN_DIR/$PHPUNIT_APP &>> $LOG_FILE
     fi 
 }
 
 function installComposer() {
     echo "Installing Composer..."
     cd $INSTALL_DIR
-    perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" /etc/php5/cli/conf.d/suhosin.ini  &> $LOG_FILE
+    perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" /etc/php5/cli/conf.d/suhosin.ini  &>> $LOG_FILE
     curl -s http://getcomposer.org/installer | $PHP_APP
     checkErrors "Composer installation failed. Aborted."
 
     COMPOSER_APP=$BIN_DIR/composer
-    $SUDO_APP mv composer.phar $COMPOSER_APP  &> $LOG_FILE
-    $SUDO_APP chmod +x $COMPOSER_APP  &> $LOG_FILE
+    $SUDO_APP mv composer.phar $COMPOSER_APP  &>> $LOG_FILE
+    $SUDO_APP chmod +x $COMPOSER_APP  &>> $LOG_FILE
 }
 
 function checkComposer() {
@@ -215,13 +215,13 @@ function checkComposerInstalled() {
 
 function downloadSkeleton() {
     echo "Downloading Laravel 4 skeleton..."
-    git clone $LARAVEL_APP_REPOSITORY $INSTALL_DIR  &> $LOG_FILE
+    git clone $LARAVEL_APP_REPOSITORY $INSTALL_DIR  &>> $LOG_FILE
 
-    rm -rf /tmp/l4i  &> $LOG_FILE
-    git clone $L4I_REPOSITORY /tmp/l4i  &> $LOG_FILE
+    rm -rf /tmp/l4i  &>> $LOG_FILE
+    git clone $L4I_REPOSITORY /tmp/l4i  &>> $LOG_FILE
 
-    cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  &> $LOG_FILE
-    cp /tmp/l4i/htaccess.template $INSTALL_DIR/public/.htaccess  &> $LOG_FILE
+    cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  &>> $LOG_FILE
+    cp /tmp/l4i/htaccess.template $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
 
     ### Installing using zip file, git is better but I'll keep this for possible future use
     # 
@@ -256,7 +256,7 @@ function checkApp() {
 
     if ! type -p $1 > /tmp/l4i.$SITE_NAME; then
         echo -n "Trying to install $1..."
-        $installer $1 &> $LOG_FILE
+        $installer $1 &>> $LOG_FILE
         if ! type -p $1 > /tmp/l4i.$SITE_NAME; then
             echo ""
             echo ""
@@ -344,31 +344,31 @@ function showUsage() {
 }
 
 function addAppProvider() {
-    perl -pi -e "s/WorkbenchServiceProvider',/WorkbenchServiceProvider',\n\t\t'$1',/g" $INSTALL_DIR/app/config/app.php  &> $LOG_FILE
+    perl -pi -e "s/WorkbenchServiceProvider',/WorkbenchServiceProvider',\n\t\t'$1',/g" $INSTALL_DIR/app/config/app.php  &>> $LOG_FILE
 }
 
 function addAppAlias() {
-    perl -pi -e "s/View',/View',\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php  &> $LOG_FILE
+    perl -pi -e "s/View',/View',\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php  &>> $LOG_FILE
 }
 
 function composerUpdate() {
     [ "$1" == "" ] && directory=$INSTALL_DIR || directory=$1
     cd $directory
-    $COMPOSER_APP update  &> $LOG_FILE
+    $COMPOSER_APP update  &>> $LOG_FILE
 }
 
 function setGlobalPermissions() {
-    $SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/  &> $LOG_FILE
+    $SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/  &>> $LOG_FILE
 }
 
 function installPackage() {
     if [ "DIDUPDATED" == "" ]; then
         echo "$PACKAGER_NAME updating..."
-        $PACKAGE_UPDATE_COMMAND &> $LOG_FILE
+        $PACKAGE_UPDATE_COMMAND &>> $LOG_FILE
         DIDUPDATED=YES
     fi
 
-    $SUDO_APP $PACKAGE_INSTALL_COMMAND $1 $2 &> $LOG_FILE
+    $SUDO_APP $PACKAGE_INSTALL_COMMAND $1 $2 &>> $LOG_FILE
 }
 
 function checkOS() {
