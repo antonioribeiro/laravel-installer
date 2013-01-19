@@ -91,7 +91,7 @@ function downloadL4() {
     $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/form" "1.1.*"
 
     addAppProvider "Meido\\\Form\\\Providers\\\FormServiceProvider"
-    addAppProvider "Meido\\\HTML\Providers\\\HTMLServiceProvider"
+    addAppProvider "Meido\\\HTML\\\Providers\\\HTMLServiceProvider"
 
     addAppAlias "Form" "Meido\\\Form\\\Facades\\\Form"
     addAppAlias "HTML" "Meido\\\HTML\\\Facades\\\HTML"
@@ -317,12 +317,12 @@ function showUsage() {
     echo
 }
 
-function addAppAlias() {
-    perl -pi -e "s/'aliases' \=\> array\(/'aliases' \=\> array\(\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php
+function addAppProvider() {
+    perl -pi -e "s/'providers' \=\> array\(/'providers' \=\> array\(\n\t\t'$1',/g" $INSTALL_DIR/app/config/app.php
 }
 
-function addAppProvider() {
-    perl -pi -e "s/'providers' \=\> array\(/'providers' \=\> array\(\n\t\t'$escaped1',/g" $INSTALL_DIR/app/config/app.php
+function addAppAlias() {
+    perl -pi -e "s/'aliases' \=\> array\(/'aliases' \=\> array\(\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php
 }
 
 clear
