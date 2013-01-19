@@ -3,8 +3,7 @@ l4i
 
 Laravel 4 Install Script for Linux
 
-This script will install a working directory of Larave 4 in any directory with a basic template of Twitter Booststrap installed.
-
+This script will install a working development structure of Laravel 4 with a basic Twitter Booststrap template.
 
 ### Motivation
 
@@ -38,7 +37,7 @@ In the process of intalling Laravel 4, this script will also try to install, if 
 * PHPUnit (composer install)
 * Twitter Bootstrap
 
-### Basic Usage
+### Basic Usage and Examples
 
 There is no need to clone this git repository, you just have to download the script and run it:
 ```
@@ -46,10 +45,24 @@ wget -N --output-document=installFour.sh https://raw.github.com/antonioribeiro/l
 bash installFour.sh <install directory> <site name> <Install twitter bootstrap? YES or NO>
 ```
 
+Example 1
+
+```
+bash installFour /var/www/blog/ blog YES
+
+Example 2
+
+```
+bash installFour /home/taylor/www blog NO
+```
+
+Example 3
+
+```
+bash installFour /var/www/blog/ myBlog YES
+```
+
 ### Tested Operating Systems
 
 * Debian Squeeze 6.x
-* Ubuntu Desktop and Server 12.04
-
-
-
+* Ubuntu Derver 11.10
