@@ -47,24 +47,26 @@ function main() {
 }
 
 function installTwitterBootstrap() {
+    echo "Installing Twitter Bootstrap..."
     wget --output-document=/tmp/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip
-    rm -rf /tmp/tb
-    unzip /tmp/twitter.bootstrap.zip -d /tmp/tb
+    rm -rf /tmp/tb &> $LOG_FILE
+    unzip /tmp/twitter.bootstrap.zip -d /tmp/tb &> $LOG_FILE
     cp -a /tmp/tb/bootstrap/css $INSTALL_DIR/public
     cp -a /tmp/tb/bootstrap/js $INSTALL_DIR/public
     cp -a /tmp/tb/bootstrap/img $INSTALL_DIR/public
 
-    rm $INSTALL_DIR/app/views/hello.php
-    mkdir $INSTALL_DIR/app/views/layouts
-    mkdir $INSTALL_DIR/app/views/views
+    rm $INSTALL_DIR/app/views/hello.php &> $LOG_FILE
+    mkdir $INSTALL_DIR/app/views/layouts &> $LOG_FILE
+    mkdir $INSTALL_DIR/app/views/views &> $LOG_FILE
 
-    wget --output-document=$INSTALL_DIR/app/views/layouts/main.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/layout.main.blade.php
-    wget --output-document=$INSTALL_DIR/app/views/views/home.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/view.home.blade.php
+    wget --output-document=$INSTALL_DIR/app/views/layouts/main.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/layout.main.blade.php &> $LOG_FILE
+    wget --output-document=$INSTALL_DIR/app/views/views/home.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/view.home.blade.php &> $LOG_FILE
 
-    perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php
+    perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php &> $LOG_FILE
 }
 
 function installUnzip() {
+    echo "Installing unzip..."
     installPackage unzip
 }
 
@@ -74,7 +76,9 @@ function getIPAddress() {
 
 function createVirtualHost() {
     if [ $WEBSERVER == "apache2" ]; then
-        $SUDO_APP rm /etc/apache2/sites-available/$SITE_NAME
+        echo "Creating apache2 VirtualHost..."
+
+        $SUDO_APP rm /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
         echo "Alias /$SITE_NAME \"$INSTALL_DIR/public\"" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
         echo "<Directory $INSTALL_DIR>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
         echo "  Options Indexes Includes FollowSymLinks MultiViews" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
@@ -83,28 +87,26 @@ function createVirtualHost() {
         echo "  Allow from all" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
         echo "</Directory>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
 
-        $SUDO_APP a2ensite $SITE_NAME
-        $SUDO_APP service apache2 restart
-        getIPAddress
+        $SUDO_APP a2ensite $SITE_NAME &> $LOG_FILE
+        $SUDO_APP service apache2 restart &> $LOG_FILE
+        getIPAddress 
         echo "You Laravel 4 installation should be availabel now at http://$IPADDRESS/$SITE_NAME"
     fi
 }
 
 function configureExtraPackages() {
-    wget --output-document=/tmp/json.edit.php -N https://raw.github.com/antonioribeiro/l4i/master/json.edit.php
+    echo "Configuring extra packages..."
+
+    wget --output-document=/tmp/json.edit.php -N https://raw.github.com/antonioribeiro/l4i/master/json.edit.php &> $LOG_FILE
 
     $PHP_APP /tmp/json.edit.php $INSTALL_DIR "raveren/kint" "dev-master"
     $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/html" "1.1.*"
     $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/form" "1.1.*"
 
-
-LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
     addAppProvider "Meido\\\Form\\\FormServiceProvider"
     addAppProvider "Meido\\\HTML\\\HTMLServiceProvider"
 
     addAppAlias "Form" "Meido\\\Form\\\Facades\\\Form"
-
-LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
     addAppAlias "HTML" "Meido\\\HTML\\\Facades\\\HTML"
 
     composerUpdate
@@ -125,7 +127,8 @@ function checkPHPUnit() {
 }
 
 function installPHP() {
-    sudo apt-get --yes intall php5 
+    # echo "Installing PHP..."
+    # sudo apt-get --yes intall php5 
 }
 
 function checkWebserver() {
@@ -144,8 +147,9 @@ function checkWebserver() {
 
 function installPHPUnit() {
     if [ "$CAN_I_RUN_SUDO" == "YES" ]; then
-        $SUDO_APP mkdir -p $PHPUNIT_DIR
-        $SUDO_APP chmod 777 $PHPUNIT_DIR
+        echo "Installing PHPUnit..."
+        $SUDO_APP mkdir -p $PHPUNIT_DIR &> $LOG_FILE
+        $SUDO_APP chmod 777 $PHPUNIT_DIR &> $LOG_FILE 
         echo '{' > $PHPUNIT_DIR/composer.json
         echo '    "name": "phpunit",' >> $PHPUNIT_DIR/composer.json
         echo '    "description": "PHPUnit",' >> $PHPUNIT_DIR/composer.json
@@ -158,21 +162,21 @@ function installPHPUnit() {
         echo '}' >> $PHPUNIT_DIR/composer.json
         cd $PHPUNIT_DIR
         composerUpdate $PHPUNIT_DIR
-        $SUDO_APP chmod +x $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit
-        $SUDO_APP ln -s $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit $BIN_DIR/$PHPUNIT_APP
+        $SUDO_APP chmod +x $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit &> $LOG_FILE
+        $SUDO_APP ln -s $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit $BIN_DIR/$PHPUNIT_APP &> $LOG_FILE
     fi 
 }
 
 function installComposer() {
-    echo "Trying to install composer..."
+    echo "Installing Composer..."
     cd $INSTALL_DIR
-    perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" /etc/php5/cli/conf.d/suhosin.ini
+    perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" /etc/php5/cli/conf.d/suhosin.ini  &> $LOG_FILE
     curl -s http://getcomposer.org/installer | $PHP_APP
     checkErrors "Composer installation failed. Aborted."
 
     COMPOSER_APP=$BIN_DIR/composer
-    $SUDO_APP mv composer.phar $COMPOSER_APP
-    $SUDO_APP chmod +x $COMPOSER_APP
+    $SUDO_APP mv composer.phar $COMPOSER_APP  &> $LOG_FILE
+    $SUDO_APP chmod +x $COMPOSER_APP  &> $LOG_FILE
 }
 
 function checkComposer() {
@@ -210,12 +214,13 @@ function checkComposerInstalled() {
 }
 
 function downloadSkeleton() {
-    git clone -b develop $LARAVEL_APP_REPOSITORY $INSTALL_DIR
+    echo "Downloading Laravel 4 skeleton..."
+    git clone -b develop $LARAVEL_APP_REPOSITORY $INSTALL_DIR  &> $LOG_FILE
 
-    rm -rf /tmp/l4i
-    git clone -b $L4I_REPOSITORY /tmp/l4i
+    rm -rf /tmp/l4i  &> $LOG_FILE
+    git clone -b $L4I_REPOSITORY /tmp/l4i  &> $LOG_FILE
 
-    cp /tmp/l4i/htaccess.template $INSTALL_DIR/public
+    cp /tmp/l4i/htaccess.template $INSTALL_DIR/public  &> $LOG_FILE
 
     ### Installing using zip file, git is better but I'll keep this for possible future use
     # 
@@ -248,10 +253,10 @@ function checkApp() {
         installer=$2
     fi
 
-    if ! type -p $1 > /tmp/l4i.$SITE_NAME; then.install.log
+    if ! type -p $1 > /tmp/l4i.$SITE_NAME; then
         echo -n "Trying to install $1..."
         $installer $1 &> $LOG_FILE
-        if ! type -p $1 > /tmp/l4i.$SITE_NAME; then.install.log
+        if ! type -p $1 > /tmp/l4i.$SITE_NAME; then
             echo ""
             echo ""
             echo "Looks like $1 is not installed or not available for this application."
@@ -338,23 +343,21 @@ function showUsage() {
 }
 
 function addAppProvider() {
-    perl -pi -e "s/WorkbenchServiceProvider',/WorkbenchServiceProvider',\n\t\t'$1',/g" $INSTALL_DIR/app/config/app.php
+    perl -pi -e "s/WorkbenchServiceProvider',/WorkbenchServiceProvider',\n\t\t'$1',/g" $INSTALL_DIR/app/config/app.php  &> $LOG_FILE
 }
 
 function addAppAlias() {
-    perl -pi -e "s/View',/View',\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php
+    perl -pi -e "s/View',/View',\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php  &> $LOG_FILE
 }
 
 function composerUpdate() {
     [ "$1" == "" ] && directory=$INSTALL_DIR || directory=$1
     cd $directory
-    # $COMPOSER_APP install
-    $COMPOSER_APP update
-    # $COMPOSER_APP dump-autoload
+    $COMPOSER_APP update  &> $LOG_FILE
 }
 
 function setGlobalPermissions() {
-    $SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/
+    $SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/  &> $LOG_FILE
 }
 
 function installPackage() {
@@ -368,10 +371,10 @@ function installPackage() {
 }
 
 function checkOS() {
-    if type -p lsb_release > /tmp/l4i.$SITE_NAME; then.install.log
+    if type -p lsb_release > /tmp/l4i.$SITE_NAME; then
         OPERATING_SYSTEM=$(lsb_release -si)
     else
-        if type -p lsb_release > /tmp/l4i.$SITE_NAME; then.install.log
+        if type -p lsb_release > /tmp/l4i.$SITE_NAME; then
             OPERATING_SYSTEM=Redhat
         fi        
     fi
