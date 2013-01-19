@@ -93,8 +93,8 @@ function createVirtualHost() {
 
         $SUDO_APP cp $L4I_REPOSITORY_DIR/apache.directory.template /etc/apache2/sites-available/$SITE_NAME  &>> $LOG_FILE
 
-        perl -pi -e "s/\[siteName\]/$SITE_NAME/g" /etc/php5/cli/conf.d/suhosin.ini  &>> $LOG_FILE
-        perl -pi -e "s/\[installDir\]/$INSTALL_DIR/g" /etc/php5/cli/conf.d/suhosin.ini  &>> $LOG_FILE
+        perl -pi -e "s/%siteName%/$SITE_NAME/g" /etc/apache2/sites-available/$SITE_NAME  &>> $LOG_FILE
+        perl -pi -e "s/%installDir%/$INSTALL_DIR/g" /etc/apache2/sites-available/$SITE_NAME  &>> $LOG_FILE
 
         $SUDO_APP a2ensite $SITE_NAME &>> $LOG_FILE
         $SUDO_APP service apache2 restart &>> $LOG_FILE
