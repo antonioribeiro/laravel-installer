@@ -30,8 +30,8 @@ function main() {
     checkComposer $INSTALL_DIR
     checkPHPUnit
     checkMCrypt
-    downloadSkeleton $INSTALL_DIR
-    downloadL4 $INSTALL_DIR
+    downloadSkeleton
+    # configureExtraPackages
     [ "$TWITTERBOOTSTRAP" == "YES" ] && installTwitterBootstrap
     createVirtualHost $INSTALL_DIR
 }
@@ -81,9 +81,7 @@ function createVirtualHost() {
     fi
 }
 
-function downloadL4() {
-    cd $INSTALL_DIR
-
+function configureExtraPackages() {
     wget --output-document=/tmp/json.edit.php -N https://raw.github.com/antonioribeiro/l4i/master/json.edit.php
 
     $PHP_APP /tmp/json.edit.php $INSTALL_DIR "raveren/kint" "dev-master"
@@ -96,9 +94,9 @@ function downloadL4() {
     addAppAlias "Form" "Meido\\\Form\\\Facades\\\Form"
     addAppAlias "HTML" "Meido\\\HTML\\\Facades\\\HTML"
 
-    composerUpdate
-
     $SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/
+
+    composerUpdate
 }
 
 function checkPHP() {
