@@ -100,7 +100,7 @@ function createVirtualHost() {
         getIPAddress 
 
         cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  &>> $LOG_FILE
-        cp /tmp/l4i/htaccess.template $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
+        cp $L4I_REPOSITORY_DIR/htaccess.template $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
 
         $SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
 
@@ -258,10 +258,10 @@ function checkApp() {
         installer=$2
     fi
 
-    if ! type -p $1 > /tmp/l4i.$SITE_NAME; then
+    if ! type -p $1 &>> $LOG_FILE; then
         echo -n "Trying to install $1..."
         $installer $1 &>> $LOG_FILE
-        if ! type -p $1 > /tmp/l4i.$SITE_NAME; then
+        if ! type -p $1 &>> $LOG_FILE; then
             echo ""
             echo ""
             echo "Looks like $1 is not installed or not available for this application."
@@ -377,10 +377,10 @@ function installPackage() {
 }
 
 function checkOS() {
-    if type -p lsb_release > /tmp/l4i.$SITE_NAME; then
+    if type -p lsb_release &>> $LOG_FILE; then
         OPERATING_SYSTEM=$(lsb_release -si)
     else
-        if type -p lsb_release > /tmp/l4i.$SITE_NAME; then
+        if type -p lsb_release &>> $LOG_FILE; then
             OPERATING_SYSTEM=Redhat
         fi        
     fi
