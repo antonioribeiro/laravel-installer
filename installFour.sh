@@ -16,10 +16,17 @@ PHP_APP=php
 INSTALL_DIR=$1
 SITE_NAME=$2
 TWITTERBOOTSTRAP=$3
+LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
+
+#################################################################### 
+# kwnown errors 
+
+#### composer -> The contents of https://packagist.org/p/providers-stale.json do not match its signature,
 
 #################################################################### 
 
 function main() {
+    checkOS
     checkSudo
     checkPHP
     checkWebserver
@@ -56,8 +63,7 @@ function installTwitterBootstrap() {
 }
 
 function installUnzip() {
-    $SUDO_APP apt-get --yes unzip $1 &> /dev/null
-    $SUDO_APP yum --assumeyes unzip $1 &> /dev/null
+    installPackage unzip
 }
 
 function getIPAddress() {
@@ -67,13 +73,13 @@ function getIPAddress() {
 function createVirtualHost() {
     if [ $WEBSERVER == "apache2" ]; then
         $SUDO_APP rm /etc/apache2/sites-available/$SITE_NAME
-        echo "Alias /$SITE_NAME \"$INSTALL_DIR/public\"" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
-        echo "<Directory $INSTALL_DIR>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
-        echo "  Options Indexes Includes FollowSymLinks MultiViews" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
-        echo "  AllowOverride AuthConfig FileInfo" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
-        echo "  Order allow,deny" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
-        echo "  Allow from all" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
-        echo "</Directory>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> /dev/null
+        echo "Alias /$SITE_NAME \"$INSTALL_DIR/public\"" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
+        echo "<Directory $INSTALL_DIR>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
+        echo "  Options Indexes Includes FollowSymLinks MultiViews" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
+        echo "  AllowOverride AuthConfig FileInfo" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
+        echo "  Order allow,deny" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
+        echo "  Allow from all" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
+        echo "</Directory>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &> $LOG_FILE
 
         $SUDO_APP a2ensite $SITE_NAME
         $SUDO_APP service apache2 restart
@@ -89,19 +95,21 @@ function configureExtraPackages() {
     $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/html" "1.1.*"
     $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/form" "1.1.*"
 
-    composerUpdate
 
+LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
     addAppProvider "Meido\\\Form\\\FormServiceProvider"
     addAppProvider "Meido\\\HTML\\\HTMLServiceProvider"
 
     addAppAlias "Form" "Meido\\\Form\\\Facades\\\Form"
+
+LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
     addAppAlias "HTML" "Meido\\\HTML\\\Facades\\\HTML"
 
     composerUpdate
 }
 
 function checkPHP() {
-    php=`$PHP_APP -v` &> /dev/null
+    php=`$PHP_APP -v` &> $LOG_FILE
     checkErrors "PHP is not installed. Aborted."
 
     echo "PHP is installed."
@@ -220,18 +228,18 @@ function downloadSkeleton() {
 
 function installApp() {
     if [ "CAN_I_RUN_SUDO" == "YES"]; then
-        $SUDO_APP apt-get --yes install $1 &> /dev/null
-        $SUDO_APP yum --assumeyes install $1 &> /dev/null
+        $SUDO_APP apt-get --yes install $1 &> $LOG_FILE
+        $SUDO_APP yum --assumeyes install $1 &> $LOG_FILE
     else 
         #try to install anyway
-        apt-get --yes install $1 &> /dev/null
-        yum --assumeyes install $1 &> /dev/null
+        apt-get --yes install $1 &> $LOG_FILE
+        yum --assumeyes install $1 &> $LOG_FILE
     fi
 }
 
 function checkMCrypt() {
-    $SUDO_APP apt-get --yes install php5-mcrypt &> /dev/null
-    $SUDO_APP yum --assumeyes install php5-mcrypt &> /dev/null
+    $SUDO_APP apt-get --yes install php5-mcrypt &> $LOG_FILE
+    $SUDO_APP yum --assumeyes install php5-mcrypt &> $LOG_FILE
 }
 
 function checkApp() {
@@ -241,10 +249,10 @@ function checkApp() {
         installer=$2
     fi
 
-    if ! type -p $1 > /dev/null; then
+    if ! type -p $1 > /tmp/l4i.$SITE_NAME; then.install.log
         echo -n "Trying to install $1..."
-        $installer $1 &> /dev/null
-        if ! type -p $1 > /dev/null; then
+        $installer $1 &> $LOG_FILE
+        if ! type -p $1 > /tmp/l4i.$SITE_NAME; then.install.log
             echo ""
             echo ""
             echo "Looks like $1 is not installed or not available for this application."
@@ -341,13 +349,45 @@ function addAppAlias() {
 function composerUpdate() {
     [ "$1" == "" ] && directory=$INSTALL_DIR || directory=$1
     cd $directory
-    $COMPOSER_APP install
+    # $COMPOSER_APP install
     $COMPOSER_APP update
-    $COMPOSER_APP dump-autoload
+    # $COMPOSER_APP dump-autoload
 }
 
 function setGlobalPermissions() {
     $SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/
+}
+
+function installPackage() {
+    if [ "DIDUPDATED" == "" ]; then
+        echo "$PACKAGER_NAME updating..."
+        $PACKAGE_UPDATE_COMMAND &> $LOG_FILE
+        DIDUPDATED=YES
+    fi
+
+    $SUDO_APP $PACKAGE_INSTALL_COMMAND apt-get --yes $1 $2 &> $LOG_FILE
+}
+
+function checkOS() {
+    if type -p lsb_release > /tmp/l4i.$SITE_NAME; then.install.log
+        OPERATING_SYSTEM=$(lsb_release -si)
+    else
+        if type -p lsb_release > /tmp/l4i.$SITE_NAME; then.install.log
+            OPERATING_SYSTEM=Redhat
+        fi        
+    fi
+
+    if [ "$OPERATING_SYSTEM" == "Debian" ] ||  [ "$OPERATING_SYSTEM" == "Ubuntu" ]; then
+        PACKAGER_NAME="apt-get"
+        PACKAGE_UPDATE_COMMAND="apt-get --yes update "
+        PACKAGE_INSTALL_COMMAND="apt-get --yes install "
+    fi
+
+    if [ "$OPERATING_SYSTEM" == "Redhat" ]; then
+        PACKAGER_NAME="yum"
+        PACKAGE_UPDATE_COMMAND="yum -y update "
+        PACKAGE_INSTALL_COMMAND="yum -y install "
+    fi
 }
 
 clear
