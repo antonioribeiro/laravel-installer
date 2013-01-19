@@ -91,8 +91,8 @@ function configureExtraPackages() {
 
     composerUpdate
 
-    addAppProvider "Meido\\\Form\\\Providers\\\FormServiceProvider"
-    addAppProvider "Meido\\\HTML\\\Providers\\\HTMLServiceProvider"
+    addAppProvider "Meido\\\Form\\\FormServiceProvider"
+    addAppProvider "Meido\\\HTML\\\HTMLServiceProvider"
 
     addAppAlias "Form" "Meido\\\Form\\\Facades\\\Form"
     addAppAlias "HTML" "Meido\\\HTML\\\Facades\\\HTML"
