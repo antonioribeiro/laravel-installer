@@ -1,0 +1,7 @@
+Alias /[siteName] "[installDir]/public"
+<Directory [installDir]>
+  Options Indexes Includes FollowSymLinks MultiViews
+  AllowOverride AuthConfig FileInfo
+  Order allow,deny
+  Allow from all
+</Directory>

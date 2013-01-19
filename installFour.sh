@@ -19,6 +19,7 @@ TWITTERBOOTSTRAP=$3
 LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
 LARAVEL_APP_REPOSITORY=" -b develop https://github.com/laravel/laravel.git "
 L4I_REPOSITORY="https://github.com/antonioribeiro/l4i.git"
+L4I_REPOSITORY_DIR="/tmp/l4i-git-repository"
 
 #################################################################### 
 # kwnown errors 
@@ -39,11 +40,21 @@ function main() {
     checkComposer $INSTALL_DIR
     checkPHPUnit
     checkMCrypt
+    downloadL4IRepository
     downloadSkeleton
     configureExtraPackages
     [ "$TWITTERBOOTSTRAP" == "YES" ] && installTwitterBootstrap
     createVirtualHost $INSTALL_DIR
     setGlobalPermissions
+}
+
+function downloadL4IRepository {
+    echo "Downloading l4i git repository..."
+    rm -rf $L4I_REPOSITORY_DIR  &>> $LOG_FILE
+    git clone $L4I_REPOSITORY $L4I_REPOSITORY_DIR &>> $LOG_FILE
+
+    cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  &>> $LOG_FILE
+    cp /tmp/l4i/htaccess.template $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
 }
 
 function installTwitterBootstrap() {
@@ -216,12 +227,6 @@ function checkComposerInstalled() {
 function downloadSkeleton() {
     echo "Downloading Laravel 4 skeleton..."
     git clone $LARAVEL_APP_REPOSITORY $INSTALL_DIR  &>> $LOG_FILE
-
-    rm -rf /tmp/l4i  &>> $LOG_FILE
-    git clone $L4I_REPOSITORY /tmp/l4i  &>> $LOG_FILE
-
-    cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  &>> $LOG_FILE
-    cp /tmp/l4i/htaccess.template $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
 
     ### Installing using zip file, git is better but I'll keep this for possible future use
     # 
