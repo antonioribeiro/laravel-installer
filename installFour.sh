@@ -26,6 +26,7 @@ L4I_REPOSITORY_DIR="/tmp/l4i-git-repository"
 # kwnown errors 
 
 #### composer -> The contents of https://packagist.org/p/providers-stale.json do not match its signature,
+#### ** Usually this one is harmless and will not compromise your installation
 
 #################################################################### 
 
@@ -100,6 +101,8 @@ function createVirtualHost() {
 
         cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  &>> $LOG_FILE
         cp /tmp/l4i/htaccess.template $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
+
+        $SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
 
         echo "You Laravel 4 installation should be availabel now at http://$IPADDRESS/$SITE_NAME"
     fi

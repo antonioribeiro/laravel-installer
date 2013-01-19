@@ -25,9 +25,26 @@ Your user need to have writing permissions to the installation directory, this s
 * Download, install and configure Twitter Bootstrap from git
 * Configure a main template, a home view using main template and a route to home, so we can see Laravel 4 and Blade running
 
+### Warnings
+
+This script will not create an entry in your hosts file and you will not have acess to your site using a hostname
+
+After installing this script you will have access to your site using the following pattern:
+````
+ http://ip-address/sitename/
+````
+
+There is also a rewrite condition in .htaccess to clean your url, to make it clear and look like `http://ip-address/sitename/user/1`.
+
+If you need something different from this, you'll have to tweak your .htaccess and/or your webserver virtual hosts configuration.
+
 ### Screenshot 
 
 ![image from redmond barry building unimelb](http://puu.sh/1PI8I)
+
+### Screencast
+
+http://www.screenr.com/IlX7
 
 ### Installed software
 
