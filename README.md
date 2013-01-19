@@ -37,29 +37,23 @@ In the process of intalling Laravel 4, this script will also try to install, if 
 * PHPUnit (composer install)
 * Twitter Bootstrap
 
-### Basic Usage and Examples
+### Installation and Examples
 
-There is no need to clone this git repository, you just have to download the script and run it:
+There is no need to clone this git repository, you just have to download the script:
 ```
 wget -N --output-document=installFour.sh https://raw.github.com/antonioribeiro/l4i/master/installFour.sh
+```
+
+And run it:
+```
 bash installFour.sh <install directory> <site name> <Install twitter bootstrap? YES or NO>
 ```
 
-Example 1
-
+Examples of usage:
 ```
-bash installFour /var/www/blog/ blog YES
-
-Example 2
-
-```
+bash installFour /var/www/blog blog YES
 bash installFour /home/taylor/www blog NO
-```
-
-Example 3
-
-```
-bash installFour /var/www/blog/ myBlog YES
+bash installFour /var/www/blog myBlog YES
 ```
 
 ### Tested Operating Systems
