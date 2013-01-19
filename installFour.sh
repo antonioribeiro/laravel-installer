@@ -89,6 +89,8 @@ function configureExtraPackages() {
     $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/html" "1.1.*"
     $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/form" "1.1.*"
 
+    composerUpdate
+
     addAppProvider "Meido\\\Form\\\Providers\\\FormServiceProvider"
     addAppProvider "Meido\\\HTML\\\Providers\\\HTMLServiceProvider"
 
