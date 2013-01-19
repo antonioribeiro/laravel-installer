@@ -27,6 +27,8 @@ Your user need to have writing permissions to the installation directory, this s
 
 ### Warnings
 
+This is a bash Debian (Debian and Ubuntu) based installation, for now, so if you are on MacOS, Fedora, CentOS, etc. it may not work.
+
 This script will not create an entry in your hosts file and you will not have acess to your site using a hostname
 
 After installing this script you will have access to your site using the following pattern:
@@ -40,7 +42,7 @@ If you need something different from this, you'll have to tweak your .htaccess a
 
 ### Screenshot 
 
-![image from redmond barry building unimelb](http://puu.sh/1PI8I)
+![l4i screenshot](http://puu.sh/1PI8I)
 
 ### Screencast
 
