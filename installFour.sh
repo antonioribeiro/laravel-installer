@@ -96,7 +96,8 @@ function downloadL4() {
     addAppAlias "Form" "Meido\\\Form\\\Facades\\\Form"
     addAppAlias "HTML" "Meido\\\HTML\\\Facades\\\HTML"
 
-    $COMPOSER_APP install
+    composerUpdate
+
     $SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/
 }
 
@@ -147,7 +148,7 @@ function installPHPUnit() {
         echo '    }' >> $PHPUNIT_DIR/composer.json
         echo '}' >> $PHPUNIT_DIR/composer.json
         cd $PHPUNIT_DIR
-        $COMPOSER_APP install
+        composerUpdate $PHPUNIT_DIR
         $SUDO_APP chmod +x $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit
         $SUDO_APP ln -s $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit $BIN_DIR/$PHPUNIT_APP
     fi 
@@ -200,8 +201,15 @@ function checkComposerInstalled() {
 }
 
 function downloadSkeleton() {
-    git clone -b develop https://github.com/laravel/laravel.git $INSTALL_DIR
+    #git clone -b develop https://github.com/laravel/laravel.git $INSTALL_DIR
     #git clone https://github.com/niallobrien/laravel4-template.git $INSTALL_DIR
+
+    wget -N --output-document=/tmp/laravel-develop.zip https://github.com/laravel/laravel/archive/develop.zip
+    unzip /tmp/laravel-develop.zip -d $INSTALL_DIR
+    mv $INSTALL_DIR/laravel-develop/* $INSTALL_DIR
+    mv $INSTALL_DIR/laravel-develop/.git* $INSTALL_DIR
+    rm -rf $INSTALL_DIR/laravel-develop/
+    
     perl -pi -e "s/\`/\'/g" $INSTALL_DIR/app/config/app.php
 }
 
@@ -323,6 +331,14 @@ function addAppProvider() {
 
 function addAppAlias() {
     perl -pi -e "s/'aliases' \=\> array\(/'aliases' \=\> array\(\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php
+}
+
+function composerUpdate() {
+    [ "$1" == "" ] && directory=$INSTALL_DIR || directory=$1
+    cd $directory
+    $COMPOSER_APP install
+    $COMPOSER_APP update
+    $COMPOSER_APP dump-autoload
 }
 
 clear
