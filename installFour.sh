@@ -17,6 +17,8 @@ INSTALL_DIR=$1
 SITE_NAME=$2
 TWITTERBOOTSTRAP=$3
 LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
+LARAVEL_APP_REPOSITORY=https://github.com/laravel/laravel.git
+L4I_REPOSITORY=https://github.com/antonioribeiro/l4i.git
 
 #################################################################### 
 # kwnown errors 
@@ -208,7 +210,12 @@ function checkComposerInstalled() {
 }
 
 function downloadSkeleton() {
-    git clone -b develop https://github.com/laravel/laravel.git $INSTALL_DIR
+    git clone -b develop $LARAVEL_APP_REPOSITORY $INSTALL_DIR
+
+    rm -rf /tmp/l4i
+    git clone -b $L4I_REPOSITORY /tmp/l4i
+
+    cp /tmp/l4i/htaccess.template $INSTALL_DIR/public
 
     ### Installing using zip file, git is better but I'll keep this for possible future use
     # 
@@ -227,19 +234,11 @@ function downloadSkeleton() {
 }
 
 function installApp() {
-    if [ "CAN_I_RUN_SUDO" == "YES"]; then
-        $SUDO_APP apt-get --yes install $1 &> $LOG_FILE
-        $SUDO_APP yum --assumeyes install $1 &> $LOG_FILE
-    else 
-        #try to install anyway
-        apt-get --yes install $1 &> $LOG_FILE
-        yum --assumeyes install $1 &> $LOG_FILE
-    fi
+    installPackage $1 $2
 }
 
 function checkMCrypt() {
-    $SUDO_APP apt-get --yes install php5-mcrypt &> $LOG_FILE
-    $SUDO_APP yum --assumeyes install php5-mcrypt &> $LOG_FILE
+    installPackage php5-mcrypt
 }
 
 function checkApp() {
@@ -365,7 +364,7 @@ function installPackage() {
         DIDUPDATED=YES
     fi
 
-    $SUDO_APP $PACKAGE_INSTALL_COMMAND apt-get --yes $1 $2 &> $LOG_FILE
+    $SUDO_APP $PACKAGE_INSTALL_COMMAND $1 $2 &> $LOG_FILE
 }
 
 function checkOS() {
