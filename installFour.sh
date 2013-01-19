@@ -85,17 +85,17 @@ function createVirtualHost() {
 function configureExtraPackages() {
     wget --output-document=/tmp/json.edit.php -N https://raw.github.com/antonioribeiro/l4i/master/json.edit.php
 
-    $PHP_APP /tmp/json.edit.php $INSTALL_DIR "raveren/kint" "dev-master"
-    $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/html" "1.1.*"
-    $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/form" "1.1.*"
+    # $PHP_APP /tmp/json.edit.php $INSTALL_DIR "raveren/kint" "dev-master"
+    # $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/html" "1.1.*"
+    # $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/form" "1.1.*"
 
-    composerUpdate
+    # composerUpdate
 
-    addAppProvider "Meido\\\Form\\\Providers\\\FormServiceProvider"
-    addAppProvider "Meido\\\HTML\\\Providers\\\HTMLServiceProvider"
+    # addAppProvider "Meido\\\Form\\\Providers\\\FormServiceProvider"
+    # addAppProvider "Meido\\\HTML\\\Providers\\\HTMLServiceProvider"
 
-    addAppAlias "Form" "Meido\\\Form\\\Facades\\\Form"
-    addAppAlias "HTML" "Meido\\\HTML\\\Facades\\\HTML"
+    # addAppAlias "Form" "Meido\\\Form\\\Facades\\\Form"
+    # addAppAlias "HTML" "Meido\\\HTML\\\Facades\\\HTML"
 
     composerUpdate
 }
@@ -201,7 +201,6 @@ function checkComposerInstalled() {
 
 function downloadSkeleton() {
     git clone -b develop https://github.com/laravel/laravel.git $INSTALL_DIR
-    #git clone https://github.com/niallobrien/laravel4-template.git $INSTALL_DIR
 
     ### Installing using zip file, git is better but I'll keep this for possible future use
     # 
@@ -211,6 +210,8 @@ function downloadSkeleton() {
     # mv $INSTALL_DIR/laravel-develop/.git* $INSTALL_DIR
     # rm -rf $INSTALL_DIR/laravel-develop/
     
+    ### niallobrien's larave4-template
+    #git clone https://github.com/niallobrien/laravel4-template.git $INSTALL_DIR
     #fixing typo
     #perl -pi -e "s/\`/\'/g" $INSTALL_DIR/app/config/app.php
 

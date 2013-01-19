@@ -3,9 +3,8 @@
 if ($_GET) {
 	$directory = $_GET['directory'];
 	$package = $_GET['package'];
-	$version = $_GET['package'];
-}
-else {
+	$version = $_GET['version'];
+} else {
 	$directory = $argv[1];
 	$package = $argv[2];
 	$version = $argv[3];
