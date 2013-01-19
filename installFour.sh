@@ -89,14 +89,10 @@ function createVirtualHost() {
     if [ $WEBSERVER == "apache2" ]; then
         echo "Creating apache2 VirtualHost..."
 
-        $SUDO_APP rm /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
-        echo "Alias /$SITE_NAME \"$INSTALL_DIR/public\"" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
-        echo "<Directory $INSTALL_DIR>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
-        echo "  Options Indexes Includes FollowSymLinks MultiViews" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
-        echo "  AllowOverride AuthConfig FileInfo" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
-        echo "  Order allow,deny" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
-        echo "  Allow from all" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
-        echo "</Directory>" | $SUDO_APP tee -a /etc/apache2/sites-available/$SITE_NAME &>> $LOG_FILE
+        $SUDO cp $L4I_REPOSITORY_DIR/apache.directory.template /etc/apache2/sites-available/$SITE_NAME  &>> $LOG_FILE
+
+        perl -pi -e "s/\[siteName\]/$SITE_NAME/g" /etc/php5/cli/conf.d/suhosin.ini  &>> $LOG_FILE
+        perl -pi -e "s/\[installDir\]/$INSTALL_DIR/g" /etc/php5/cli/conf.d/suhosin.ini  &>> $LOG_FILE
 
         $SUDO_APP a2ensite $SITE_NAME &>> $LOG_FILE
         $SUDO_APP service apache2 restart &>> $LOG_FILE
