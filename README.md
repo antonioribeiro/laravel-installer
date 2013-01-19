@@ -51,9 +51,9 @@ bash installFour.sh <install directory> <site name> <Install twitter bootstrap? 
 
 Examples of usage:
 ```
-bash installFour /var/www/blog blog YES
-bash installFour /home/taylor/www blog NO
-bash installFour /var/www/blog myBlog YES
+bash installFour.sh /var/www/blog blog YES
+bash installFour.sh /home/taylor/www blog NO
+bash installFour.sh /var/www/blog myBlog YES
 ```
 
 ### Tested Operating Systems

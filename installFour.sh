@@ -113,7 +113,7 @@ function configureExtraPackages() {
 }
 
 function checkPHP() {
-    php=`$PHP_APP -v` &> $LOG_FILE
+    php=`$PHP_APP -v &> $LOG_FILE`
     checkErrors "PHP is not installed. Aborted."
 
     echo "PHP is installed."
