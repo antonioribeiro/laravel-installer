@@ -13,6 +13,8 @@ Some people asked me if Laravel 4 needed a installation script, actually it does
 
 You basically need a Linux box with PHP and a webserver (nginx, apache2 or lighthttpd) installed.
 
+Your user need to have writing permissions to the installation directory, this script will not use sudo to create you directories and download files, but will use it to install needed software.
+
 ### Process of installation
 
 * Git clone the current laravel app repository
