@@ -15,59 +15,34 @@ $jsonData = json_decode(file_get_contents($directory.'/composer.json'), true);
 
 $jsonData['require'][$package] = $version;
 
-file_put_contents($directory.'/composer.json', indent(unescape(json_encode($jsonData))));
+file_put_contents($directory.'/composer.json', jsonPretty(unescape(json_encode($jsonData))));
 
 function unescape($json) {
-	return str_replace('\/','\\',$json);
+	return str_replace('\/','/',$json);
 }
 
-function indent($json) {
-
-    $result      = '';
-    $pos         = 0;
-    $strLen      = strlen($json);
-    $indentStr   = '  ';
-    $newLine     = "\n";
-    $prevChar    = '';
-    $outOfQuotes = true;
-
-    for ($i=0; $i<=$strLen; $i++) {
-
-        // Grab the next character in the string.
-        $char = substr($json, $i, 1);
-
-        // Are we inside a quoted string?
-        if ($char == '"' && $prevChar != '\\') {
-            $outOfQuotes = !$outOfQuotes;
-        
-        // If this character is the end of an element, 
-        // output a new line and indent the next line.
-        } else if(($char == '}' || $char == ']') && $outOfQuotes) {
-            $result .= $newLine;
-            $pos --;
-            for ($j=0; $j<$pos; $j++) {
-                $result .= $indentStr;
-            }
-        }
-        
-        // Add the character to the result string.
-        $result .= $char;
-
-        // If the last character was the beginning of an element, 
-        // output a new line and indent the next line.
-        if (($char == ',' || $char == '{' || $char == '[') && $outOfQuotes) {
-            $result .= $newLine;
-            if ($char == '{' || $char == '[') {
-                $pos ++;
-            }
-            
-            for ($j = 0; $j < $pos; $j++) {
-                $result .= $indentStr;
-            }
-        }
-        
-        $prevChar = $char;
-    }
-
-    return $result;
+function jsonPretty($json, $html = false) {
+    $out = ''; $nl = "\n"; $cnt = 0; $tab = 4; $len = strlen($json); $space = ' ';
+	if($html) {
+		$space = '&nbsp;';
+		$nl = '<br/>';
+	}
+	$k = strlen($space)?strlen($space):1;
+	for ($i=0; $i<=$len; $i++) {
+		$char = substr($json, $i, 1);
+		if($char == '}' || $char == ']') {
+			$cnt --;
+			$out .= $nl . str_pad('', ($tab * $cnt * $k), $space);
+		} else if($char == '{' || $char == '[') {
+			$cnt ++;
+		}
+		$out .= $char;
+		if($char == ',' || $char == '{' || $char == '[') {
+			$out .= $nl . str_pad('', ($tab * $cnt * $k), $space);
+		}
+		if($char == ':') {
+			$out .= ' ';
+		}
+	}
+	return $out;
 }

@@ -198,14 +198,16 @@ function checkComposerInstalled() {
 }
 
 function downloadSkeleton() {
-    #git clone -b develop https://github.com/laravel/laravel.git $INSTALL_DIR
+    git clone -b develop https://github.com/laravel/laravel.git $INSTALL_DIR
     #git clone https://github.com/niallobrien/laravel4-template.git $INSTALL_DIR
 
-    wget -N --output-document=/tmp/laravel-develop.zip https://github.com/laravel/laravel/archive/develop.zip
-    unzip /tmp/laravel-develop.zip -d $INSTALL_DIR
-    mv $INSTALL_DIR/laravel-develop/* $INSTALL_DIR
-    mv $INSTALL_DIR/laravel-develop/.git* $INSTALL_DIR
-    rm -rf $INSTALL_DIR/laravel-develop/
+    ### Installing using zip file, git is better but I'll keep this for possible future use
+    # 
+    # wget -N --output-document=/tmp/laravel-develop.zip https://github.com/laravel/laravel/archive/develop.zip
+    # unzip /tmp/laravel-develop.zip -d $INSTALL_DIR
+    # mv $INSTALL_DIR/laravel-develop/* $INSTALL_DIR
+    # mv $INSTALL_DIR/laravel-develop/.git* $INSTALL_DIR
+    # rm -rf $INSTALL_DIR/laravel-develop/
     
     #fixing typo
     #perl -pi -e "s/\`/\'/g" $INSTALL_DIR/app/config/app.php
