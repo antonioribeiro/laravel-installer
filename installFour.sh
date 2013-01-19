@@ -31,7 +31,7 @@ function main() {
     checkPHPUnit
     checkMCrypt
     downloadSkeleton
-    # configureExtraPackages
+    configureExtraPackages
     [ "$TWITTERBOOTSTRAP" == "YES" ] && installTwitterBootstrap
     createVirtualHost $INSTALL_DIR
     setGlobalPermissions
