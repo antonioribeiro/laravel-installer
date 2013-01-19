@@ -208,7 +208,10 @@ function downloadSkeleton() {
     mv $INSTALL_DIR/laravel-develop/.git* $INSTALL_DIR
     rm -rf $INSTALL_DIR/laravel-develop/
     
-    perl -pi -e "s/\`/\'/g" $INSTALL_DIR/app/config/app.php
+    #fixing typo
+    #perl -pi -e "s/\`/\'/g" $INSTALL_DIR/app/config/app.php
+
+    composerUpdate
 }
 
 function installApp() {
