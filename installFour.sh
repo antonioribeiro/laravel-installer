@@ -34,6 +34,7 @@ function main() {
     # configureExtraPackages
     [ "$TWITTERBOOTSTRAP" == "YES" ] && installTwitterBootstrap
     createVirtualHost $INSTALL_DIR
+    setGlobalPermissions
 }
 
 function installTwitterBootstrap() {
@@ -93,8 +94,6 @@ function configureExtraPackages() {
 
     addAppAlias "Form" "Meido\\\Form\\\Facades\\\Form"
     addAppAlias "HTML" "Meido\\\HTML\\\Facades\\\HTML"
-
-    $SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/
 
     composerUpdate
 }
@@ -340,6 +339,10 @@ function composerUpdate() {
     $COMPOSER_APP install
     $COMPOSER_APP update
     $COMPOSER_APP dump-autoload
+}
+
+function setGlobalPermissions() {
+    $SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/
 }
 
 clear
