@@ -44,7 +44,7 @@ function main() {
     downloadL4IRepository
     downloadSkeleton
     configureExtraPackages
-    composerUpdate $INSTALL_DIR
+    composerUpdate
 
     [ "$TWITTERBOOTSTRAP" == "YES" ] && installTwitterBootstrap
     createVirtualHost $INSTALL_DIR
@@ -55,9 +55,6 @@ function downloadL4IRepository {
     echo "Downloading l4i git repository..."
     rm -rf $L4I_REPOSITORY_DIR  &>> $LOG_FILE
     git clone $L4I_REPOSITORY $L4I_REPOSITORY_DIR &>> $LOG_FILE
-
-    cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  &>> $LOG_FILE
-    cp /tmp/l4i/htaccess.template $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
 }
 
 function installTwitterBootstrap() {
@@ -100,6 +97,10 @@ function createVirtualHost() {
         $SUDO_APP a2ensite $SITE_NAME &>> $LOG_FILE
         $SUDO_APP service apache2 restart &>> $LOG_FILE
         getIPAddress 
+
+        cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  &>> $LOG_FILE
+        cp /tmp/l4i/htaccess.template $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
+
         echo "You Laravel 4 installation should be availabel now at http://$IPADDRESS/$SITE_NAME"
     fi
 }
@@ -354,6 +355,7 @@ function addAppAlias() {
 function composerUpdate() {
     [ "$1" == "" ] && directory=$INSTALL_DIR || directory=$1
     cd $directory
+    echo "Updating Composer packages on $directory..."
     $COMPOSER_APP update  &>> $LOG_FILE
 }
 
