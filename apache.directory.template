@@ -1,4 +1,4 @@
-Alias /%siteName% "%installDir%]/public"
+Alias /%siteName% "%installDir%/public"
 <Directory %installDir%>
   Options Indexes Includes FollowSymLinks MultiViews
   AllowOverride AuthConfig FileInfo

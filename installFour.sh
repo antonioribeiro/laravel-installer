@@ -14,6 +14,7 @@ PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
 PHP_APP=php
 INSTALL_DIR=$1
+INSTALL_DIR_ESCAPED=`echo $INSTALL_DIR | sed s,/,\\\\\\\\\\/,g`
 SITE_NAME=$2
 TWITTERBOOTSTRAP=$3
 LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
@@ -94,7 +95,7 @@ function createVirtualHost() {
         $SUDO_APP cp $L4I_REPOSITORY_DIR/apache.directory.template /etc/apache2/sites-available/$SITE_NAME  &>> $LOG_FILE
 
         $SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" /etc/apache2/sites-available/$SITE_NAME  &>> $LOG_FILE
-        $SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR/g" /etc/apache2/sites-available/$SITE_NAME  &>> $LOG_FILE
+        $SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR_ESCAPED/g" /etc/apache2/sites-available/$SITE_NAME  &>> $LOG_FILE
 
         $SUDO_APP a2ensite $SITE_NAME &>> $LOG_FILE
         $SUDO_APP service apache2 restart &>> $LOG_FILE
