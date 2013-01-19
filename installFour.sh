@@ -326,11 +326,11 @@ function showUsage() {
 }
 
 function addAppProvider() {
-    perl -pi -e "s/'providers' \=\> array\(/'providers' \=\> array\(\n\t\t'$1',/g" $INSTALL_DIR/app/config/app.php
+    perl -pi -e "s/WorkbenchServiceProvider',/WorkbenchServiceProvider',\n\t\t'$1',/g" $INSTALL_DIR/app/config/app.php
 }
 
 function addAppAlias() {
-    perl -pi -e "s/'aliases' \=\> array\(/'aliases' \=\> array\(\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php
+    perl -pi -e "s/View',/View',\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php
 }
 
 function composerUpdate() {
