@@ -85,9 +85,9 @@ function createVirtualHost() {
 function configureExtraPackages() {
     wget --output-document=/tmp/json.edit.php -N https://raw.github.com/antonioribeiro/l4i/master/json.edit.php
 
-    $PHP_APP /tmp/json.edit.php $INSTALL_DIR "raveren/kint" "dev-master"
-    $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/html" "1.1.*"
-    $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/form" "1.1.*"
+    #$PHP_APP /tmp/json.edit.php $INSTALL_DIR "raveren/kint" "dev-master"
+    #$PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/html" "1.1.*"
+    #$PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/form" "1.1.*"
 
     addAppProvider "Meido\\\Form\\\Providers\\\FormServiceProvider"
     addAppProvider "Meido\\\HTML\\\Providers\\\HTMLServiceProvider"
