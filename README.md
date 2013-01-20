@@ -7,7 +7,7 @@ This script will install a working development structure of Laravel 4 with a bas
 
 ### Motivation
 
-Some people asked me if Laravel 4 needed a installation script, actually it doesn't, it's better if you can install it manually, but if you're doing it many times, this script can save you a lot of time. Also, if you are a newbie, it takes some time and work until you get a real working version of Laravel 4, because you have to understand and install Composer, install PHPUnit, install some basic packages, create a VirtualHost on your webserver, point it correctly to your app directory and set the right permissions on storage folder...
+When I first said I was building this script someone asked me "does Laravel 4 need an installation script?", actually it doesn't, it's easy to get into it and it's better if you can install it manually, but if you're doing it many times, creating small projects from scratch with it, this script can save you a lot of time. Also, if you are a newbie, it takes some time and work until you get a real working version of Laravel 4, because you have to understand and install Composer, install PHPUnit, install some basic packages, create a VirtualHost on your webserver, point it correctly to your app directory and set the right permissions on storage folder. I saw myself in this place when I first tried to go to L4, when it wasn't even in beta and it was not pretty since I'm still trying to become a PHP coder.
 
 ### Requirements
 
@@ -55,6 +55,7 @@ In the process of intalling Laravel 4, this script will also try to install, if 
 * Composer (http://getcomposer.org/)
 * git 
 * curl
+* php5-mcrypt
 * PHPUnit (composer install)
 * Twitter Bootstrap
 

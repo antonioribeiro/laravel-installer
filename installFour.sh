@@ -119,9 +119,9 @@ function configureExtraPackages() {
 
     addAppProvider "Meido\\\Form\\\FormServiceProvider"
     addAppProvider "Meido\\\HTML\\\HTMLServiceProvider"
-
-    addAppAlias "Form" "Meido\\\Form\\\Facades\\\Form"
-    addAppAlias "HTML" "Meido\\\HTML\\\Facades\\\HTML"
+    
+    addAppAlias "Form" "Meido\\\Form\\\FormFacade"
+    addAppAlias "HTML" "Meido\\\HTML\\\HTMLFacade"
 }
 
 function checkPHP() {
