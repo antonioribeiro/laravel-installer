@@ -5,7 +5,7 @@ L4I_VERSION=1.1.0
 L4I_BRANCH=v$L4I_VERSION
 L4I_REPOSITORY="-b $L4I_BRANCH https://github.com/antonioribeiro/l4i.git"
 L4I_REPOSITORY_DIR="/tmp/l4i-git-repository"
-
+LARAVEL_APP_REPOSITORY=" -b develop https://github.com/laravel/laravel.git "
 BASH_DIR=`which bash`
 BIN_DIR=`dirname $BASH_DIR`
 GIT_APP=git
@@ -60,7 +60,8 @@ function main() {
 
 function downloadL4IRepository {
     echo "Downloading l4i git repository..."
-    $SUDO_APP rm -rf $L4I_REPOSITORY_DIR  &>> $LOG_FILE
+    rm -rf $L4I_REPOSITORY_DIR  &>> $LOG_FILE
+    echo "git clone $L4I_REPOSITORY $L4I_REPOSITORY_DIR"
     git clone $L4I_REPOSITORY $L4I_REPOSITORY_DIR &>> $LOG_FILE
 }
 
