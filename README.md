@@ -25,17 +25,6 @@ Your user need to have writing permissions to the installation directory, this s
 * Download, install and configure Twitter Bootstrap from git
 * Configure a main template, a home view using main template and a route to home, so we can see Laravel 4 and Blade running
 
-### Composer packages available to install
-
-* raveren/kint (https://github.com/raveren/kint)
-* meido/html (https://github.com/meido/html)
-* meido/form (https://github.com/meido/form)
-* meido/str (https://github.com/meido/str)
-* machuga/authority (https://github.com/machuga/authority)
-* jasonlewis/basset (https://github.com/jasonlewis/basset)
-* bigelephant/string (https://github.com/bigelephant/string)
-* cartalyst/sentry (https://github.com/cartalyst/sentry)
-
 ### Warnings
 
 This is a bash Debian (Debian and Ubuntu) based installation, for now, so if you are on MacOS, Fedora, CentOS, etc. it may not work.
@@ -53,8 +42,8 @@ If you need something different from this, you'll have to tweak your .htaccess a
 
 ### Screenshots
 
-Selecting packages
-![l4i screenshot](http://puu.sh/1QKPM)
+Selecting aditional packages
+![l4i screenshot](http://puu.sh/1QLxq)
 
 Page after installing Laravel 4 with this script
 ![l4i screenshot](http://puu.sh/1PI8I)
@@ -73,6 +62,24 @@ In the process of intalling Laravel 4, this script will also try to install, if 
 * php5-mcrypt
 * PHPUnit (composer install)
 * Twitter Bootstrap
+
+### Composer packages available to install
+
+* raveren/kint (https://github.com/raveren/kint)
+* meido/html (https://github.com/meido/html)
+* meido/form (https://github.com/meido/form)
+* meido/str (https://github.com/meido/str)
+* machuga/authority (https://github.com/machuga/authority)
+* jasonlewis/basset (https://github.com/jasonlewis/basset)
+* bigelephant/string (https://github.com/bigelephant/string)
+* cartalyst/sentry (https://github.com/cartalyst/sentry)
+
+### Commands
+
+This script will create the following commands in your system:
+
+'''composer'''
+'''artisan'''
 
 ### Installation and Examples
 
@@ -96,4 +103,4 @@ bash installFour.sh /var/www/blog myBlog YES
 ### Tested Operating Systems
 
 * Debian Squeeze 6.x
-* Ubuntu Derver 11.10
+* Ubuntu Server 11.10

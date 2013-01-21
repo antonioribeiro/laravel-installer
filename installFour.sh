@@ -52,7 +52,7 @@ function main() {
     checkMCrypt
     downloadL4IRepository
     downloadSkeleton
-    installExtraPackages
+    installAdditionalPackages
     checkArtisan
     composerUpdate
     installTwitterBootstrap
@@ -121,8 +121,8 @@ function createVirtualHost() {
     fi
 }
 
-function installExtraPackages() {
-    echo "Configuring extra packages..."
+function installAdditionalPackages() {
+    echo "Configuring additional packages..."
 
     total=${#EP_NAME[*]}
 
