@@ -22,26 +22,12 @@ INSTALL_DIR=$1
 INSTALL_DIR_ESCAPED=`echo $INSTALL_DIR | sed s,/,\\\\\\\\\\/,g`
 SITE_NAME=$2
 LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
-LARAVEL_APP_REPOSITORY=" -b develop https://github.com/laravel/laravel.git "
 
-EP_NAME[0] = "raveren/kint" 
-EP_VERSION[0] = "dev-master"
-EP_ALIAS_NAME[0] = ""
-EP_ALIAS_FACADE[0] = ""
-EP_PROVIDER[0] = ""
-
-EP_NAME[0] = "meido/html"
-EP_VERSION[0] = "1.1.*"
-EP_ALIAS_NAME[0] = "HTML"
-EP_ALIAS_FACADE[0] = "Meido\\\HTML\\\HTMLFacade"
-EP_PROVIDER[0] = "Meido\\\HTML\\\HTMLServiceProvider"
-
-EP_NAME[0] = "meido/form"
-EP_VERSION[0] = "1.1.*"
-EP_ALIAS_NAME[0] = "Form" 
-EP_ALIAS_FACADE[0] = "Meido\\\Form\\\FormFacade"
-EP_PROVIDER[0] = "Meido\\\Form\\\FormServiceProvider"
-
+        EP_NAME=("raveren/kint" "meido/html"                          "meido/form")
+     EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*")
+  EP_ALIAS_NAME=(""             "HTML"                                "Form")
+EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\Form\\\FormFacade")
+    EP_PROVIDER=(""             "Meido\\\HTML\\\HTMLServiceProvider"  "Meido\\\Form\\\FormServiceProvider")
 
 #################################################################### 
 # kwnown errors 
@@ -52,6 +38,7 @@ EP_PROVIDER[0] = "Meido\\\Form\\\FormServiceProvider"
 #################################################################### 
 
 function main() {
+    showLogFile
     checkOS
     checkSudo
     checkPHP
@@ -67,7 +54,6 @@ function main() {
     downloadSkeleton
     configureExtraPackages
     composerUpdate
-
     installTwitterBootstrap
     createVirtualHost $INSTALL_DIR
     setGlobalPermissions
@@ -83,7 +69,7 @@ function installTwitterBootstrap() {
     inquire "Install Twitter Bootstrap? " "y" "n"
     if [ "$answer" == "y" ]; then 
         echo "Installing Twitter Bootstrap..."
-        wget --output-document=/tmp/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip &>> $LOG_FILE
+        wget --no-check-certificate -O /tmp/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip &>> $LOG_FILE
         rm -rf /tmp/tb &>> $LOG_FILE
         unzip /tmp/twitter.bootstrap.zip -d /tmp/tb &>> $LOG_FILE
         cp -a /tmp/tb/bootstrap/css $INSTALL_DIR/public
@@ -94,8 +80,8 @@ function installTwitterBootstrap() {
         mkdir $INSTALL_DIR/app/views/layouts &>> $LOG_FILE
         mkdir $INSTALL_DIR/app/views/views &>> $LOG_FILE
 
-        wget --output-document=$INSTALL_DIR/app/views/layouts/main.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/layout.main.blade.php &>> $LOG_FILE
-        wget --output-document=$INSTALL_DIR/app/views/views/home.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/view.home.blade.php &>> $LOG_FILE
+        cp $L4I_REPOSITORY_DIR/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  &>> $LOG_FILE
+        cp $L4I_REPOSITORY_DIR/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
 
         perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php &>> $LOG_FILE
         perl -pi -e "s/%l4i_branch%/%L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
@@ -137,8 +123,6 @@ function createVirtualHost() {
 function configureExtraPackages() {
     echo "Configuring extra packages..."
 
-    wget --output-document=/tmp/json.edit.php -N https://raw.github.com/antonioribeiro/l4i/master/json.edit.php &>> $LOG_FILE
-
     total=${#EP_NAME[*]}
 
     for (( i=0; i<=$(( $total -1 )); i++ ))
@@ -151,12 +135,14 @@ function configureExtraPackages() {
 
         inquire "Do you wish to install package $name? " "y" "n"
 
-        [ "$answer" == "y" ] installPackage $name $version $alias_name $alias_facade $provider;
+        if [ "$answer" == "y" ]; then
+             installPackage $name $version $alias_name $alias_facade $provider
+        fi        
     done    
 }
 
 function installPackage() {
-    $PHP_APP /tmp/json.edit.php $INSTALL_DIR $1 $2
+    $PHP_APP $L4I_REPOSITORY_DIR/json.edit.php $INSTALL_DIR $1 $2
 
     if [ "$3$4" != "" ]; then
         addAppAlias $3 $4
@@ -338,13 +324,6 @@ function checkParameters() {
         exit 1
     fi
 
-    if [ ! $TWITTERBOOTSTRAP ]; then
-        showUsage
-        echo "----> Twitter Bootstrap install parameter was not provided."
-        echo
-        exit 1
-    fi
-
     if [ -f $INSTALL_DIR ]; then
        echo "You provided a regular file name, not a directory, please specify a directory."
        exit 1
@@ -381,11 +360,10 @@ function showUsage() {
     echo "installFour script"
     echo "  Installs a Laravel 4 development environment"
     echo
-    echo "     Usage:  bash installFour <directory> <site name> <install twitter bootstrap template?>"
+    echo "     Usage:  bash installFour <directory> <site name>"
     echo
-    echo "  Examples:  bash installFour /var/www/blog/ blog YES"
-    echo "             bash installFour /home/taylor/www blog NO"
-    echo "             bash installFour /var/www/blog/ myBlog YES"
+    echo "  Examples:  bash installFour /var/www/blog blog"
+    echo "             bash installFour /home/taylor/www blog"
     echo
     echo
 }
@@ -463,5 +441,9 @@ inquire ()  {
   done
 }
 
+function showLogFile() {
+    echo "A log of this installation is available at $LOG_FILE."
+}
+
 clear
-main $1
+main

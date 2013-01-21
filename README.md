@@ -63,7 +63,7 @@ In the process of intalling Laravel 4, this script will also try to install, if 
 
 There is no need to clone this git repository, you just have to download the script:
 ```
-wget -N --output-document=installFour.sh https://raw.github.com/antonioribeiro/l4i/master/installFour.sh
+wget -N --no-check-certificate -O installFour.sh https://raw.github.com/antonioribeiro/l4i/master/installFour.sh
 ```
 
 And run it:
