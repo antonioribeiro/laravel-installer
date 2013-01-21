@@ -14,6 +14,7 @@ PHP_APP=php
 UNZIP_APP=unzip
 SUDO_APP=sudo
 COMPOSER_APP=composer
+ARTISAN_APP=artisan
 PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
 PHP_APP=php
@@ -22,11 +23,11 @@ INSTALL_DIR_ESCAPED=`echo $INSTALL_DIR | sed s,/,\\\\\\\\\\/,g`
 SITE_NAME=$2
 LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
 
-        EP_NAME=("raveren/kint" "meido/html"                          "meido/form")
-     EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*")
-  EP_ALIAS_NAME=(""             "HTML"                                "Form")
-EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\Form\\\FormFacade")
-    EP_PROVIDER=(""             "Meido\\\HTML\\\HTMLServiceProvider"  "Meido\\\Form\\\FormServiceProvider")
+        EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry")
+     EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "4.*"                            "dev-master"                                    "2.0.*")
+  EP_ALIAS_NAME=(""             "HTML"                                "Form"                                "Str"                              ""                   "Basset"                         "String"                                        "Sentry")
+EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\Form\\\FormFacade"           "Meido\\\Str\\\StrFacade"          ""                   "Basset\\\Facades\\\Basset"      "BigElephant\\\String\\\StringFacade"           "Cartalyst\\\Sentry\\\Facades\\\Laravel\\\Sentry")
+    EP_PROVIDER=(""             "Meido\\\HTML\\\HTMLServiceProvider"  "Meido\\\Form\\\FormServiceProvider"  "Meido\\\Str\\\StrServiceProvider" ""                   "Basset\\\BassetServiceProvider" "BigElephant\\\String\\\StringServiceProvider"  "Cartalyst\\\Sentry\\\SentryServiceProvider")
 
 #################################################################### 
 # kwnown errors 
@@ -51,7 +52,8 @@ function main() {
     checkMCrypt
     downloadL4IRepository
     downloadSkeleton
-    configureExtraPackages
+    installExtraPackages
+    checkArtisan
     composerUpdate
     installTwitterBootstrap
     createVirtualHost $INSTALL_DIR
@@ -61,7 +63,6 @@ function main() {
 function downloadL4IRepository {
     echo "Downloading l4i git repository..."
     rm -rf $L4I_REPOSITORY_DIR  &>> $LOG_FILE
-    echo "git clone $L4I_REPOSITORY $L4I_REPOSITORY_DIR"
     git clone $L4I_REPOSITORY $L4I_REPOSITORY_DIR &>> $LOG_FILE
 }
 
@@ -84,8 +85,8 @@ function installTwitterBootstrap() {
         cp $L4I_REPOSITORY_DIR/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
 
         perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php &>> $LOG_FILE
-        perl -pi -e "s/%l4i_branch%/%L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
-        perl -pi -e "s/%l4i_version%/%L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
+        perl -pi -e "s/%l4i_branch%/%$L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
+        perl -pi -e "s/%l4i_version%/%$L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
     fi
 }
 
@@ -120,7 +121,7 @@ function createVirtualHost() {
     fi
 }
 
-function configureExtraPackages() {
+function installExtraPackages() {
     echo "Configuring extra packages..."
 
     total=${#EP_NAME[*]}
@@ -136,13 +137,14 @@ function configureExtraPackages() {
         inquire "Do you wish to install package $name? " "y" "n"
 
         if [ "$answer" == "y" ]; then
-             installPackage $name $version $alias_name $alias_facade $provider
+             installComposerPackage $name $version $alias_name $alias_facade $provider
         fi        
     done    
 }
 
-function installPackage() {
+function installComposerPackage() {
     $PHP_APP $L4I_REPOSITORY_DIR/json.edit.php $INSTALL_DIR $1 $2
+    echo "$PHP_APP $L4I_REPOSITORY_DIR/json.edit.php $INSTALL_DIR $1 $2" &>> $LOG_FILE
 
     if [ "$3$4" != "" ]; then
         addAppAlias $3 $4
@@ -369,10 +371,14 @@ function showUsage() {
 }
 
 function addAppProvider() {
+    echo "addAppProvider $1" &>> $LOG_FILE
+
     perl -pi -e "s/WorkbenchServiceProvider',/WorkbenchServiceProvider',\n\t\t'$1',/g" $INSTALL_DIR/app/config/app.php  &>> $LOG_FILE
 }
 
 function addAppAlias() {
+    echo "addAppAlias $1" &>> $LOG_FILE
+
     perl -pi -e "s/View',/View',\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php  &>> $LOG_FILE
 }
 
@@ -443,6 +449,17 @@ inquire ()  {
 
 function showLogFile() {
     echo "A log of this installation is available at $LOG_FILE."
+}
+
+function checkArtisan() {
+    if ! type -p $ARTISAN_APP &>> $LOG_FILE; then
+        installArtisan
+    fi
+}
+
+function installArtisan() {
+    $SUDO_APP cp $L4I_REPOSITORY_DIR/artisan $BIN_DIR/artisan  &>> $LOG_FILE
+    $SUDO_APP chmod +x $BIN_DIR/artisan &>> $LOG_FILE
 }
 
 clear

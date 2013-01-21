@@ -1,0 +1,8 @@
+#!/bin/bash
+ 
+if [ -f "./artisan" ]; then
+	php artisan "$@"
+else
+	echo 'This is not a valid laravel installation so artisan is a bit lost.'
+	echo '        http://laravel.com/docs/install#installation'
+fi
