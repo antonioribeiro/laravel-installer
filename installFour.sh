@@ -2,7 +2,8 @@
 
 ## This is your playground
 
-L4I_VERSION=v1.1.0
+L4I_VERSION=1.1.0
+L4I_BRANCH=v1.1.0
 L4I_REPOSITORY="-b $L4I_VERSION https://github.com/antonioribeiro/l4i.git"
 L4I_REPOSITORY_DIR="/tmp/l4i-git-repository"
 
@@ -77,6 +78,8 @@ function installTwitterBootstrap() {
     wget --output-document=$INSTALL_DIR/app/views/views/home.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/view.home.blade.php &>> $LOG_FILE
 
     perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php &>> $LOG_FILE
+    perl -pi -e "s/%l4i_branch%/%L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
+    perl -pi -e "s/%l4i_version%/%L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
 }
 
 function installUnzip() {
