@@ -24,7 +24,7 @@ SITE_NAME=$2
 LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
 
         EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry")
-     EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "4.*"                            "dev-master"                                    "2.0.*")
+     EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "dev-master"                     "dev-master"                                    "2.0.*")
   EP_ALIAS_NAME=(""             "HTML"                                "Form"                                "Str"                              ""                   "Basset"                         "String"                                        "Sentry")
 EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\Form\\\FormFacade"           "Meido\\\Str\\\StrFacade"          ""                   "Basset\\\Facades\\\Basset"      "BigElephant\\\String\\\StringFacade"           "Cartalyst\\\Sentry\\\Facades\\\Laravel\\\Sentry")
     EP_PROVIDER=(""             "Meido\\\HTML\\\HTMLServiceProvider"  "Meido\\\Form\\\FormServiceProvider"  "Meido\\\Str\\\StrServiceProvider" ""                   "Basset\\\BassetServiceProvider" "BigElephant\\\String\\\StringServiceProvider"  "Cartalyst\\\Sentry\\\SentryServiceProvider")
@@ -85,8 +85,8 @@ function installTwitterBootstrap() {
         cp $L4I_REPOSITORY_DIR/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
 
         perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php &>> $LOG_FILE
-        perl -pi -e "s/%l4i_branch%/%$L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
-        perl -pi -e "s/%l4i_version%/%$L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
+        perl -pi -e "s/%l4i_branch%/$L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
+        perl -pi -e "s/%l4i_version%/$L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
     fi
 }
 

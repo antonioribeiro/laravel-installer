@@ -40,8 +40,12 @@ There is also a rewrite condition in .htaccess to clean your url, to make it cle
 
 If you need something different from this, you'll have to tweak your .htaccess and/or your webserver virtual hosts configuration.
 
-### Screenshot 
+### Screenshots
 
+Selecting packages
+![l4i screenshot](http://puu.sh/1QKPM)
+
+Page after installing Laravel 4 with this script
 ![l4i screenshot](http://puu.sh/1PI8I)
 
 ### Screencast
