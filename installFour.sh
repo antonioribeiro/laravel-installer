@@ -60,7 +60,7 @@ function main() {
 
 function downloadL4IRepository {
     echo "Downloading l4i git repository..."
-    rm -rf $L4I_REPOSITORY_DIR  &>> $LOG_FILE
+    $SUDO_APP rm -rf $L4I_REPOSITORY_DIR  &>> $LOG_FILE
     git clone $L4I_REPOSITORY $L4I_REPOSITORY_DIR &>> $LOG_FILE
 }
 
