@@ -20,10 +20,21 @@ Your user need to have writing permissions to the installation directory, this s
 * Git clone the current laravel app repository
 * Install Composer
 * Install PHPUnit (using Composer)
-* Install packages: meido/Form, meido/HTML, raveren/kint
+* Install Composer packages
 * Create VirtualHost (currently apache2 only) and restart webserver
 * Download, install and configure Twitter Bootstrap from git
 * Configure a main template, a home view using main template and a route to home, so we can see Laravel 4 and Blade running
+
+### Composer packages available to install
+
+* raveren/kint (https://github.com/raveren/kint)
+* meido/html (https://github.com/meido/html)
+* meido/form (https://github.com/meido/form)
+* meido/str (https://github.com/meido/str)
+* machuga/authority (https://github.com/machuga/authority)
+* jasonlewis/basset (https://github.com/jasonlewis/basset)
+* bigelephant/string (https://github.com/bigelephant/string)
+* cartalyst/sentry (https://github.com/cartalyst/sentry)
 
 ### Warnings
 
