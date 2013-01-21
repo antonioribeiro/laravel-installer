@@ -21,7 +21,6 @@ PHP_APP=php
 INSTALL_DIR=$1
 INSTALL_DIR_ESCAPED=`echo $INSTALL_DIR | sed s,/,\\\\\\\\\\/,g`
 SITE_NAME=$2
-TWITTERBOOTSTRAP=$3
 LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
 LARAVEL_APP_REPOSITORY=" -b develop https://github.com/laravel/laravel.git "
 
@@ -60,7 +59,7 @@ function main() {
     checkParameters $INSTALL_DIR $SITE_DIR
     checkApp $GIT_APP
     checkApp $CURL_APP
-    [ "$TWITTERBOOTSTRAP" == "YES" ] && checkApp $UNZIP_APP installUnzip
+    checkApp $UNZIP_APP installUnzip
     checkComposer $INSTALL_DIR
     checkPHPUnit
     checkMCrypt
@@ -69,7 +68,7 @@ function main() {
     configureExtraPackages
     composerUpdate
 
-    [ "$TWITTERBOOTSTRAP" == "YES" ] && installTwitterBootstrap
+    installTwitterBootstrap
     createVirtualHost $INSTALL_DIR
     setGlobalPermissions
 }
@@ -81,24 +80,27 @@ function downloadL4IRepository {
 }
 
 function installTwitterBootstrap() {
-    echo "Installing Twitter Bootstrap..."
-    wget --output-document=/tmp/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip &>> $LOG_FILE
-    rm -rf /tmp/tb &>> $LOG_FILE
-    unzip /tmp/twitter.bootstrap.zip -d /tmp/tb &>> $LOG_FILE
-    cp -a /tmp/tb/bootstrap/css $INSTALL_DIR/public
-    cp -a /tmp/tb/bootstrap/js $INSTALL_DIR/public
-    cp -a /tmp/tb/bootstrap/img $INSTALL_DIR/public
+    inquire "Install Twitter Bootstrap? " "y" "n"
+    if [ "$answer" == "y" ]; then 
+        echo "Installing Twitter Bootstrap..."
+        wget --output-document=/tmp/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip &>> $LOG_FILE
+        rm -rf /tmp/tb &>> $LOG_FILE
+        unzip /tmp/twitter.bootstrap.zip -d /tmp/tb &>> $LOG_FILE
+        cp -a /tmp/tb/bootstrap/css $INSTALL_DIR/public
+        cp -a /tmp/tb/bootstrap/js $INSTALL_DIR/public
+        cp -a /tmp/tb/bootstrap/img $INSTALL_DIR/public
 
-    rm $INSTALL_DIR/app/views/hello.php &>> $LOG_FILE
-    mkdir $INSTALL_DIR/app/views/layouts &>> $LOG_FILE
-    mkdir $INSTALL_DIR/app/views/views &>> $LOG_FILE
+        rm $INSTALL_DIR/app/views/hello.php &>> $LOG_FILE
+        mkdir $INSTALL_DIR/app/views/layouts &>> $LOG_FILE
+        mkdir $INSTALL_DIR/app/views/views &>> $LOG_FILE
 
-    wget --output-document=$INSTALL_DIR/app/views/layouts/main.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/layout.main.blade.php &>> $LOG_FILE
-    wget --output-document=$INSTALL_DIR/app/views/views/home.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/view.home.blade.php &>> $LOG_FILE
+        wget --output-document=$INSTALL_DIR/app/views/layouts/main.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/layout.main.blade.php &>> $LOG_FILE
+        wget --output-document=$INSTALL_DIR/app/views/views/home.blade.php -N https://raw.github.com/antonioribeiro/l4i/master/view.home.blade.php &>> $LOG_FILE
 
-    perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php &>> $LOG_FILE
-    perl -pi -e "s/%l4i_branch%/%L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
-    perl -pi -e "s/%l4i_version%/%L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
+        perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php &>> $LOG_FILE
+        perl -pi -e "s/%l4i_branch%/%L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
+        perl -pi -e "s/%l4i_version%/%L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
+    fi
 }
 
 function installUnzip() {
