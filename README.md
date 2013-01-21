@@ -104,3 +104,21 @@ bash installFour.sh /var/www/blog myBlog YES
 
 * Debian Squeeze 6.x
 * Ubuntu Server 11.10
+
+# Changelog
+
+2013/01/21 19:27 (GMT-3) - Version 1.1.0
+
+* Implemented selection of packages during installation
+* Twitter Bootstrap now is selectable during installation
+* Added command "artisan"
+* Added package meido/str 
+* Added package machuga/authority 
+* Added package jasonlewis/basset 
+* Added package bigelephant/string 
+* Added package cartalyst/sentry
+* Home view modified to show i4l info and version
+
+2013-01-19 19:27:49 - Version 1.0.0
+
+* Version 1 released to public
