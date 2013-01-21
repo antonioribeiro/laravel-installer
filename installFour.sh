@@ -2,6 +2,10 @@
 
 ## This is your playground
 
+L4I_VERSION=v1.1.0
+L4I_REPOSITORY="-b $L4I_VERSION https://github.com/antonioribeiro/l4i.git"
+L4I_REPOSITORY_DIR="/tmp/l4i-git-repository"
+
 BASH_DIR=`which bash`
 BIN_DIR=`dirname $BASH_DIR`
 GIT_APP=git
@@ -19,8 +23,6 @@ SITE_NAME=$2
 TWITTERBOOTSTRAP=$3
 LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
 LARAVEL_APP_REPOSITORY=" -b develop https://github.com/laravel/laravel.git "
-L4I_REPOSITORY="https://github.com/antonioribeiro/l4i.git"
-L4I_REPOSITORY_DIR="/tmp/l4i-git-repository"
 
 #################################################################### 
 # kwnown errors 
