@@ -78,8 +78,8 @@ In the process of intalling Laravel 4, this script will also try to install, if 
 
 This script will create the following commands in your system:
 
-'''composer'''
-'''artisan'''
+* composer - this is just composer.phar moved o /bin
+* artisan - you can call artisan from any Laravel directory, no more typing "php artisan" every time
 
 ### Installation and Examples
 
