@@ -5,7 +5,8 @@ L4I_VERSION=1.1.0
 L4I_BRANCH=v$L4I_VERSION
 L4I_REPOSITORY="-b $L4I_BRANCH https://github.com/antonioribeiro/l4i.git"
 L4I_REPOSITORY_DIR="/tmp/l4i-git-repository"
-LARAVEL_APP_REPOSITORY=" -b develop https://github.com/laravel/laravel.git "
+LARAVEL_APP_BRANCH=" -b develop "
+LARAVEL_APP_REPOSITORY="https://github.com/laravel/laravel.git"
 BASH_DIR=`which bash`
 BIN_DIR=`dirname $BASH_DIR`
 GIT_APP=git
@@ -257,8 +258,9 @@ function checkComposerInstalled() {
 }
 
 function downloadSkeleton() {
-    echo "Downloading Laravel 4 skeleton..."
-    git clone $LARAVEL_APP_REPOSITORY $INSTALL_DIR  &>> $LOG_FILE
+    echo "Downloading Laravel 4 skeleton from $LARAVEL_APP_REPOSITORY..."
+
+    git clone $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR  &>> $LOG_FILE
 
     ### Installing using zip file, git is better but I'll keep this for possible future use
     # 
