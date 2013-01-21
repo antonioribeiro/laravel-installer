@@ -3,8 +3,8 @@
 ## This is your playground
 
 L4I_VERSION=1.1.0
-L4I_BRANCH=v1.1.0
-L4I_REPOSITORY="-b $L4I_VERSION https://github.com/antonioribeiro/l4i.git"
+L4I_BRANCH=v$L4I_VERSION
+L4I_REPOSITORY="-b $L4I_BRANCH https://github.com/antonioribeiro/l4i.git"
 L4I_REPOSITORY_DIR="/tmp/l4i-git-repository"
 
 BASH_DIR=`which bash`
