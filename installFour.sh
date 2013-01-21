@@ -25,6 +25,25 @@ TWITTERBOOTSTRAP=$3
 LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
 LARAVEL_APP_REPOSITORY=" -b develop https://github.com/laravel/laravel.git "
 
+EP_NAME[0] = "raveren/kint" 
+EP_VERSION[0] = "dev-master"
+EP_ALIAS_NAME[0] = ""
+EP_ALIAS_FACADE[0] = ""
+EP_PROVIDER[0] = ""
+
+EP_NAME[0] = "meido/html"
+EP_VERSION[0] = "1.1.*"
+EP_ALIAS_NAME[0] = "HTML"
+EP_ALIAS_FACADE[0] = "Meido\\\HTML\\\HTMLFacade"
+EP_PROVIDER[0] = "Meido\\\HTML\\\HTMLServiceProvider"
+
+EP_NAME[0] = "meido/form"
+EP_VERSION[0] = "1.1.*"
+EP_ALIAS_NAME[0] = "Form" 
+EP_ALIAS_FACADE[0] = "Meido\\\Form\\\FormFacade"
+EP_PROVIDER[0] = "Meido\\\Form\\\FormServiceProvider"
+
+
 #################################################################### 
 # kwnown errors 
 
@@ -118,15 +137,32 @@ function configureExtraPackages() {
 
     wget --output-document=/tmp/json.edit.php -N https://raw.github.com/antonioribeiro/l4i/master/json.edit.php &>> $LOG_FILE
 
-    $PHP_APP /tmp/json.edit.php $INSTALL_DIR "raveren/kint" "dev-master"
-    $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/html" "1.1.*"
-    $PHP_APP /tmp/json.edit.php $INSTALL_DIR "meido/form" "1.1.*"
+    total=${#EP_NAME[*]}
 
-    addAppProvider "Meido\\\Form\\\FormServiceProvider"
-    addAppProvider "Meido\\\HTML\\\HTMLServiceProvider"
-    
-    addAppAlias "Form" "Meido\\\Form\\\FormFacade"
-    addAppAlias "HTML" "Meido\\\HTML\\\HTMLFacade"
+    for (( i=0; i<=$(( $total -1 )); i++ ))
+    do
+        name="${EP_NAME[$i]}"
+        version="${EP_VERSION[$i]}"
+        alias_name="${EP_ALIAS_NAME[$i]}"
+        alias_facade="${EP_ALIAS_FACADE[$i]}"
+        provider="${EP_PROVIDER[$i]}"
+
+        inquire "Do you wish to install package $name? " "y" "n"
+
+        [ "$answer" == "y" ] installPackage $name $version $alias_name $alias_facade $provider;
+    done    
+}
+
+function installPackage() {
+    $PHP_APP /tmp/json.edit.php $INSTALL_DIR $1 $2
+
+    if [ "$3$4" != "" ]; then
+        addAppAlias $3 $4
+    fi
+
+    if [ "$5" != "" ]; then
+        addAppProvider $5
+    fi
 }
 
 function checkPHP() {
@@ -401,6 +437,28 @@ function checkOS() {
         PACKAGE_UPDATE_COMMAND="yum -y update "
         PACKAGE_INSTALL_COMMAND="yum -y install "
     fi
+}
+
+inquire ()  {
+  echo  -n "$1 [$2/$3]? "
+  read answer
+  finish="-1"
+  while [ "$finish" = '-1' ]
+  do
+    finish="1"
+    if [ "$answer" = '' ];
+    then
+      answer=""
+    else
+      case $answer in
+        y | Y | yes | YES ) answer="y";;
+        n | N | no | NO ) answer="n";;
+        *) finish="-1";
+           echo -n 'Invalid response -- please reenter:';
+           read answer;;
+       esac
+    fi
+  done
 }
 
 clear
