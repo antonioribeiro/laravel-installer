@@ -43,7 +43,7 @@ If you need something different from this, you'll have to tweak your .htaccess a
 ### Screenshots
 
 Selecting aditional packages
-![l4i screenshot](http://puu.sh/1QLxq)
+![l4i screenshot](http://puu.sh/1QM19)
 
 Page after installing Laravel 4 with this script
 ![l4i screenshot](http://puu.sh/1PI8I)
