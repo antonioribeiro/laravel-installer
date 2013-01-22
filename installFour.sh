@@ -222,8 +222,9 @@ function checkWebserver() {
     VHOST_ENABLE_COMMAND=
     VHOST_CONF_DIR=/etc/apache2/sites-available
     VHOST_CONF_FILE=$SITE_NAME
-    WS_RESTART_COMMAND="service $WEBSERVER restart"
     VHOST_ENABLE_COMMAND="a2ensite"
+
+    buildRestartWebserverCommand
 
     if [[ "$WEBSERVER" == "" ]]; then
         message "Looks like there is no webserver software installed."
@@ -625,11 +626,25 @@ function installWebserver() {
     if [[ "$answer" == "y" ]]; then
         if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
             installApp apache2
+            $WEBSERVER=apache2
         fi
         if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
             installApp httpd
+            $WEBSERVER=httpd
         fi
     fi
+
+    restartWebserver
 }
+
+function restartWebserver() {
+    buildRestartWebserverCommand
+    $WS_RESTART_COMMAND
+}
+
+function buildRestartWebserverCommand() {
+    WS_RESTART_COMMAND="service $WEBSERVER restart"
+}
+    
 
 main
