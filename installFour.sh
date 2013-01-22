@@ -628,11 +628,11 @@ function installWebserver() {
     if [[ "$answer" == "y" ]]; then
         if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
             installApp apache2
-            $WEBSERVER=apache2
+            WEBSERVER=apache2
         fi
         if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
             installApp httpd
-            $WEBSERVER=httpd
+            WEBSERVER=httpd
         fi
     fi
 
@@ -641,7 +641,8 @@ function installWebserver() {
 
 function restartWebserver() {
     buildRestartWebserverCommand
-    `$WS_RESTART_COMMAND`
+    message "Restarting $WEBSERVER..."
+    ${WS_RESTART_COMMAND} 2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function buildRestartWebserverCommand() {
