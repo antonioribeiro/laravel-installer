@@ -20,6 +20,7 @@ ARTISAN_APP=artisan
 PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
 PHP_APP=php
+PHP_SUHOSIN_CONF=/etc/php5/cli/conf.d/suhosin.ini
 INSTALL_DIR=$1
 SITE_NAME=$2
 INSTALL_DIR_ESCAPED="***will be set on checkParameters***"
@@ -73,7 +74,7 @@ function main() {
 function downloadL4IRepository {
     message "Downloading l4i git repository..."
     git clone $L4I_REPOSITORY $L4I_REPOSITORY_GIT 2>&1 | tee -a $LOG_FILE &> /dev/null
-    checkErrors "An error ocurred while trying to clone L4I git repository, please check log file: $LOG_FILE."
+    checkErrors "An error ocurred while trying to clone L4I git repository."
 }
 
 function installTwitterBootstrap() {
@@ -172,7 +173,7 @@ function installComposerPackage() {
 
 function checkPHP() {
     php=`$PHP_APP -v 2>&1 | tee -a $LOG_FILE &> /dev/null `
-    checkErrors "PHP is not installed. Aborted."
+    checkErrors "PHP is not installed."
 
     message "PHP is installed."
 }
@@ -246,9 +247,11 @@ function installPHPUnit() {
 function installComposer() {
     message "Installing Composer..."
     cd $INSTALL_DIR
-    perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" /etc/php5/cli/conf.d/suhosin.ini  2>&1 | tee -a $LOG_FILE &> /dev/null
+    if [ -f $PHP_SUHOSIN_CONF ]; then
+        perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" $PHP_SUHOSIN_CONF  2>&1 | tee -a $LOG_FILE &> /dev/null
+    fi
     curl -s http://getcomposer.org/installer | $PHP_APP
-    checkErrors "Composer installation failed. Aborted."
+    checkErrors "Composer installation failed."
 
     COMPOSER_APP=$BIN_DIR/composer
     $SUDO_APP mv composer.phar $COMPOSER_APP  2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -294,7 +297,7 @@ function downloadSkeleton() {
 
     git clone $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-    checkErrors "An error ocurred while trying to clone Laravel 4 git repository, please check log file: $LOG_FILE."
+    checkErrors "An error ocurred while trying to clone Laravel 4 git repository."
 
     ### Installing using zip file, git is better but I'll keep this for possible future use
     # 
@@ -319,7 +322,7 @@ function checkMCrypt() {
 }
 
 function checkApp() {
-    message "Locating app $1 ($2)..." 2>&1 | tee -a $LOG_FILE &> /dev/null
+    message "Locating app $1..." 2>&1 | tee -a $LOG_FILE &> /dev/null
 
     if [ "$2" == "" ]; then
         installer=installApp
@@ -328,7 +331,7 @@ function checkApp() {
     fi
 
     if ! type -p $1 2>&1 | tee -a $LOG_FILE &> /dev/null; then
-        message -n "Trying to install $1..."
+        message -n "Trying to install $1 (with command $installer)..."
         $installer $1 2>&1 | tee -a $LOG_FILE &> /dev/null
         if ! type -p $1 2>&1 | tee -a $LOG_FILE &> /dev/null; then
             message ""
@@ -346,6 +349,7 @@ function checkApp() {
 function checkErrors() {
     if [ $? -gt 0 ]; then
         message $1
+        message "Please check log file at $LOG_FILE."
         abortIt
     fi
 }
