@@ -70,7 +70,7 @@ function main() {
 
 function downloadL4IRepository {
     echo "Downloading l4i git repository..."
-    git clone $L4I_REPOSITORY $L4I_REPOSITORY_GIT &>> $LOG_FILE
+    git clone $L4I_REPOSITORY $L4I_REPOSITORY_GIT 2>&1 | tee -a $LOG_FILE &> /dev/null
     checkErrors "An error ocurred while trying to clone L4I git repository, please check log file: $LOG_FILE."
 }
 
@@ -78,24 +78,24 @@ function installTwitterBootstrap() {
     inquireYN "Install Twitter Bootstrap? " "y" "n"
     if [ "$answer" == "y" ]; then 
         echo "Installing Twitter Bootstrap..."
-        wget --no-check-certificate -O $L4I_REPOSITORY_DIR/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip &>> $LOG_FILE
-        rm -rf $L4I_REPOSITORY_DIR/twitter.bootstrap &>> $LOG_FILE
-        unzip $L4I_REPOSITORY_DIR/twitter.bootstrap.zip -d $L4I_REPOSITORY_DIR/twitter.bootstrap &>> $LOG_FILE
+        wget --no-check-certificate -O $L4I_REPOSITORY_DIR/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip 2>&1 | tee -a $LOG_FILE &> /dev/null
+        rm -rf $L4I_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
+        unzip $L4I_REPOSITORY_DIR/twitter.bootstrap.zip -d $L4I_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
         rm $L4I_REPOSITORY_DIR/twitter.bootstrap.zip
         cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/css $INSTALL_DIR/public
         cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/js $INSTALL_DIR/public
         cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/img $INSTALL_DIR/public
 
-        rm $INSTALL_DIR/app/views/hello.php &>> $LOG_FILE
-        mkdir $INSTALL_DIR/app/views/layouts &>> $LOG_FILE
-        mkdir $INSTALL_DIR/app/views/views &>> $LOG_FILE
+        rm $INSTALL_DIR/app/views/hello.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+        mkdir $INSTALL_DIR/app/views/layouts 2>&1 | tee -a $LOG_FILE &> /dev/null
+        mkdir $INSTALL_DIR/app/views/views 2>&1 | tee -a $LOG_FILE &> /dev/null
 
-        cp $L4I_REPOSITORY_GIT/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  &>> $LOG_FILE
-        cp $L4I_REPOSITORY_GIT/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
+        cp $L4I_REPOSITORY_GIT/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  2>&1 | tee -a $LOG_FILE &> /dev/null
+        cp $L4I_REPOSITORY_GIT/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
 
-        perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php &>> $LOG_FILE
-        perl -pi -e "s/%l4i_branch%/$L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
-        perl -pi -e "s/%l4i_version%/$L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
+        perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+        perl -pi -e "s/%l4i_branch%/$L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+        perl -pi -e "s/%l4i_version%/$L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
     fi
 }
 
@@ -114,21 +114,21 @@ function createVirtualHost() {
 
         $conf = $VHOST_CONF_DIR/$VHOST_CONF_FILE
 
-        $SUDO_APP cp $L4I_REPOSITORY_GIT/apache.directory.template $conf  &>> $LOG_FILE
+        $SUDO_APP cp $L4I_REPOSITORY_GIT/apache.directory.template $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-        $SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $conf  &>> $LOG_FILE
-        $SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR_ESCAPED/g" $conf  &>> $LOG_FILE
+        $SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
+        $SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR_ESCAPED/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 
         if [ "$VHOST_ENABLE_COMMAND" != "" ]; then
-            $SUDO_APP $VHOST_ENABLE_COMMAND $SITE_NAME &>> $LOG_FILE
+            $SUDO_APP $VHOST_ENABLE_COMMAND $SITE_NAME 2>&1 | tee -a $LOG_FILE &> /dev/null
         fi
 
-        $SUDO_APP $WS_RESTART_COMMAND &>> $LOG_FILE
+        $SUDO_APP $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
 
-        cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  &>> $LOG_FILE
-        cp $L4I_REPOSITORY_GIT/htaccess.template $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
+        cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  2>&1 | tee -a $LOG_FILE &> /dev/null
+        cp $L4I_REPOSITORY_GIT/htaccess.template $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-        $SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
+        $SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
 
         echo "Your Laravel 4 installation should be available now at http://$IPADDRESS/$SITE_NAME"
     fi
@@ -157,7 +157,7 @@ function installAdditionalPackages() {
 
 function installComposerPackage() {
     $PHP_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2
-    echo "$PHP_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2" &>> $LOG_FILE
+    echo "$PHP_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2" 2>&1 | tee -a $LOG_FILE &> /dev/null
 
     if [ "$3$4" != "" ]; then
         addAppAlias $3 $4
@@ -169,7 +169,7 @@ function installComposerPackage() {
 }
 
 function checkPHP() {
-    php=`$PHP_APP -v &>> $LOG_FILE`
+    php=`$PHP_APP -v 2>&1 | tee -a $LOG_FILE &> /dev/null `
     checkErrors "PHP is not installed. Aborted."
 
     echo "PHP is installed."
@@ -222,8 +222,8 @@ function checkWebserver() {
 function installPHPUnit() {
     if [ "$CAN_I_RUN_SUDO" == "YES" ]; then
         echo "Installing PHPUnit..."
-        $SUDO_APP mkdir -p $PHPUNIT_DIR &>> $LOG_FILE
-        $SUDO_APP chmod 777 $PHPUNIT_DIR &>> $LOG_FILE 
+        $SUDO_APP mkdir -p $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
+        $SUDO_APP chmod 777 $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
         echo '{' > $PHPUNIT_DIR/composer.json
         echo '    "name": "phpunit",' >> $PHPUNIT_DIR/composer.json
         echo '    "description": "PHPUnit",' >> $PHPUNIT_DIR/composer.json
@@ -236,21 +236,21 @@ function installPHPUnit() {
         echo '}' >> $PHPUNIT_DIR/composer.json
         cd $PHPUNIT_DIR
         composerUpdate $PHPUNIT_DIR
-        $SUDO_APP chmod +x $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit &>> $LOG_FILE
-        $SUDO_APP ln -s $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit $BIN_DIR/$PHPUNIT_APP &>> $LOG_FILE
+        $SUDO_APP chmod +x $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit 2>&1 | tee -a $LOG_FILE &> /dev/null
+        $SUDO_APP ln -s $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit $BIN_DIR/$PHPUNIT_APP 2>&1 | tee -a $LOG_FILE &> /dev/null
     fi 
 }
 
 function installComposer() {
     echo "Installing Composer..."
     cd $INSTALL_DIR
-    perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" /etc/php5/cli/conf.d/suhosin.ini  &>> $LOG_FILE
+    perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" /etc/php5/cli/conf.d/suhosin.ini  2>&1 | tee -a $LOG_FILE &> /dev/null
     curl -s http://getcomposer.org/installer | $PHP_APP
     checkErrors "Composer installation failed. Aborted."
 
     COMPOSER_APP=$BIN_DIR/composer
-    $SUDO_APP mv composer.phar $COMPOSER_APP  &>> $LOG_FILE
-    $SUDO_APP chmod +x $COMPOSER_APP  &>> $LOG_FILE
+    $SUDO_APP mv composer.phar $COMPOSER_APP  2>&1 | tee -a $LOG_FILE &> /dev/null
+    $SUDO_APP chmod +x $COMPOSER_APP  2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function checkComposer() {
@@ -290,7 +290,7 @@ function checkComposerInstalled() {
 function downloadSkeleton() {
     echo "Downloading Laravel 4 skeleton from $LARAVEL_APP_REPOSITORY..."
 
-    git clone $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR  &>> $LOG_FILE
+    git clone $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR  2>&1 | tee -a $LOG_FILE &> /dev/null
 
     checkErrors "An error ocurred while trying to clone Laravel 4 git repository, please check log file: $LOG_FILE."
 
@@ -323,10 +323,10 @@ function checkApp() {
         installer=$2
     fi
 
-    if ! type -p $1 &>> $LOG_FILE; then
+    if ! type -p $1 2>&1 | tee -a $LOG_FILE &> /dev/null; then
         echo -n "Trying to install $1..."
-        $installer $1 &>> $LOG_FILE
-        if ! type -p $1 &>> $LOG_FILE; then
+        $installer $1 2>&1 | tee -a $LOG_FILE &> /dev/null
+        if ! type -p $1 2>&1 | tee -a $LOG_FILE &> /dev/null; then
             echo ""
             echo ""
             echo "Looks like $1 is not installed or not available for this application."
@@ -423,45 +423,45 @@ function showUsage() {
 }
 
 function addAppProvider() {
-    echo "addAppProvider $1" &>> $LOG_FILE
+    echo "addAppProvider $1" 2>&1 | tee -a $LOG_FILE &> /dev/null
 
-    perl -pi -e "s/WorkbenchServiceProvider',/WorkbenchServiceProvider',\n\t\t'$1',/g" $INSTALL_DIR/app/config/app.php  &>> $LOG_FILE
+    perl -pi -e "s/WorkbenchServiceProvider',/WorkbenchServiceProvider',\n\t\t'$1',/g" $INSTALL_DIR/app/config/app.php  2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function addAppAlias() {
-    echo "addAppAlias $1" &>> $LOG_FILE
+    echo "addAppAlias $1" 2>&1 | tee -a $LOG_FILE &> /dev/null
 
-    perl -pi -e "s/View',/View',\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php  &>> $LOG_FILE
+    perl -pi -e "s/View',/View',\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php  2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function composerUpdate() {
     [ "$1" == "" ] && directory=$INSTALL_DIR || directory=$1
     cd $directory
     echo "Updating Composer packages on $directory..."
-    $COMPOSER_APP update  &>> $LOG_FILE
+    $COMPOSER_APP update  2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function setGlobalPermissions() {
-    $SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/  &>> $LOG_FILE
+    $SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/  2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function installPackage() {
     if [ "DIDUPDATED" == "" ]; then
         echo "$PACKAGER_NAME updating..."
-        $PACKAGE_UPDATE_COMMAND &>> $LOG_FILE
+        $PACKAGE_UPDATE_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
         DIDUPDATED=YES
     fi
 
-    $SUDO_APP $PACKAGE_INSTALL_COMMAND $1 $2 &>> $LOG_FILE
+    $SUDO_APP $PACKAGE_INSTALL_COMMAND $1 $2 2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function checkOS() {
     OPERATING_SYSTEM=Unknown
 
-    if type -p lsb_release &>> $LOG_FILE; then
+    if type -p lsb_release 2>&1 | tee -a $LOG_FILE &> /dev/null; then
         OPERATING_SYSTEM=$(lsb_release -si)
     else
-        if type -p /etc/redhat-release &>> $LOG_FILE; then
+        if type -p /etc/redhat-release 2>&1 | tee -a $LOG_FILE &> /dev/null; then
             OPERATING_SYSTEM=Redhat
         fi
     fi
@@ -531,8 +531,8 @@ function showLogFile() {
 }
 
 function installOurArtisan() {
-    $SUDO_APP cp $L4I_REPOSITORY_GIT/artisan $BIN_DIR/artisan  &>> $LOG_FILE
-    $SUDO_APP chmod +x $BIN_DIR/artisan &>> $LOG_FILE
+    $SUDO_APP cp $L4I_REPOSITORY_GIT/artisan $BIN_DIR/artisan  2>&1 | tee -a $LOG_FILE &> /dev/null
+    $SUDO_APP chmod +x $BIN_DIR/artisan 2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function abortIt() {
