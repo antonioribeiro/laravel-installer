@@ -20,9 +20,9 @@ PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
 PHP_APP=php
 INSTALL_DIR=$1
-INSTALL_DIR_ESCAPED=`echo $INSTALL_DIR | sed s,/,\\\\\\\\\\/,g`
 SITE_NAME=$2
-LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
+INSTALL_DIR_ESCAPED="***will be set on checkParameters***"
+LOG_FILE="***will be set on checkParameters***"
 
         EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry")
      EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "dev-master"                     "dev-master"                                    "2.0.*")
@@ -39,12 +39,13 @@ EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\F
 #################################################################### 
 
 function main() {
+    showHeader
+    checkParameters
     showLogFile
     checkOS
     checkSudo
     checkPHP
     checkWebserver
-    checkParameters $INSTALL_DIR $SITE_DIR
     checkApp $GIT_APP
     checkApp $CURL_APP
     checkApp $UNZIP_APP installUnzip
@@ -68,7 +69,7 @@ function downloadL4IRepository {
 }
 
 function installTwitterBootstrap() {
-    inquire "Install Twitter Bootstrap? " "y" "n"
+    inquireYN "Install Twitter Bootstrap? " "y" "n"
     if [ "$answer" == "y" ]; then 
         echo "Installing Twitter Bootstrap..."
         wget --no-check-certificate -O /tmp/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip &>> $LOG_FILE
@@ -118,7 +119,7 @@ function createVirtualHost() {
 
         $SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
 
-        echo "You Laravel 4 installation should be availabel now at http://$IPADDRESS/$SITE_NAME"
+        echo "Your Laravel 4 installation should be available now at http://$IPADDRESS/$SITE_NAME"
     fi
 }
 
@@ -135,7 +136,7 @@ function installAdditionalPackages() {
         alias_facade="${EP_ALIAS_FACADE[$i]}"
         provider="${EP_PROVIDER[$i]}"
 
-        inquire "Do you wish to install package $name? " "y" "n"
+        inquireYN "Do you wish to install package $name? " "y" "n"
 
         if [ "$answer" == "y" ]; then
              installComposerPackage $name $version $alias_name $alias_facade $provider
@@ -183,7 +184,7 @@ function checkWebserver() {
 
     if [ "$WEBSERVER" == "" ]; then
         echo "Looks like there is no webserver software intalled or runnig. Aborted."
-        exit 1
+        abortIt
     fi
 
     echo "Webserver ($WEBSERVER) is installed."
@@ -309,39 +310,59 @@ function checkApp() {
 function checkErrors() {
     if [ $? -gt 0 ]; then
         echo $1
-        exit 1
+        abortIt
     fi
 }
 
 function checkParameters() {
     if [ ! $INSTALL_DIR ]; then
-        showUsage
-        echo "----> You need to provide installation directory (example: /var/www/myapp)."
-        echo
-        exit 1
+        inquireText "Please type the installation directory:" $PWD
+
+        if [ "$answer" == "" ]; then
+            echo "----> You need to provide installation directory (example: /var/www/myapp)."
+            echo
+            abortIt
+        fi
+
+        INSTALL_DIR=$answer
     fi
 
-    if [ ! $SITE_NAME ]; then
-        showUsage
-        echo "----> You need to provide a site name (myapp)."
-        echo
-        exit 1
-    fi
+    INSTALL_DIR_ESCAPED=`echo $INSTALL_DIR | sed s,/,\\\\\\\\\\/,g`
 
     if [ -f $INSTALL_DIR ]; then
-       echo "You provided a regular file name, not a directory, please specify a directory."
-       exit 1
+       echo "You provided a regular file name, not a directory, next time, please, specify a directory."
+       abortIt
     fi
 
     if [ -d $INSTALL_DIR ]; then
-        if [ "$(ls -A $1)" ]; then
+        if [ "$(ls -A $INSTALL_DIR)" ]; then
            echo "Directory $1 is not empty."
-           exit 1
+           abortIt
         fi
     else 
-        mkdir $INSTALL_DIR
-        checkErrors "Error creating directory $INSTALL_DIR"
+        makeInstallDirectory
     fi
+
+    if [ ! $SITE_NAME ]; then
+        SITE_NAME=$(basename $INSTALL_DIR)
+        inquireText "Please type the site name (e.g.: blog):" $SITE_NAME
+
+        if [ "$answer" == "" ]; then
+            echo "----> You need to provide a site name (myapp)."
+            echo
+            abortIt
+        fi
+
+        SITE_NAME=$answer
+    fi
+
+    LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
+}
+
+function makeInstallDirectory {
+
+    mkdir $INSTALL_DIR
+    checkErrors "Error creating directory $INSTALL_DIR"
 }
 
 function checkSudo {
@@ -427,7 +448,7 @@ function checkOS() {
     fi
 }
 
-inquire ()  {
+function inquireYN()  {
   echo  -n "$1 [$2/$3]? "
   read answer
   finish="-1"
@@ -449,6 +470,14 @@ inquire ()  {
   done
 }
 
+function inquireText()  {
+  answer=""
+  while [ "$answer" = "" ]
+  do
+    read -e -p "$1 " -i "$2" answer
+  done
+}
+
 function showLogFile() {
     echo "A log of this installation is available at $LOG_FILE."
 }
@@ -464,5 +493,15 @@ function installArtisan() {
     $SUDO_APP chmod +x $BIN_DIR/artisan &>> $LOG_FILE
 }
 
-clear
+function abortIt() {
+    echo "Aborting..."
+    exit 1
+}
+
+function showHeader() {
+    clear
+    echo "l4i - The Laravel 4 Installer Script"
+    echo ""
+}
+
 main

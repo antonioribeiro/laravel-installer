@@ -1,8 +1,44 @@
 #!/bin/bash
- 
-if [ -f "./artisan" ]; then
-	php artisan "$@"
-else
-	echo 'This is not a valid laravel installation so artisan is a bit lost.'
-	echo '        http://laravel.com/docs/install#installation'
-fi
+
+function main()  {
+	if [ "$1" != "new" ] && [ "$1" != "NEW" ] && [ -f "./artisan" ]; then
+		php artisan "$@"
+	else
+		makeTemp
+
+		wget -N --no-check-certificate -O $SCRIPT https://raw.github.com/antonioribeiro/l4i/master/installFour.sh &> $LOG
+		checkErrors "An error while downloading i4l script, please check the log file at $LOG"
+		bash $SCRIPT
+
+		removeTemp
+	fi
+}
+
+function makeTemp() {
+	SCRIPT=`mktemp`
+
+	if [ "$SCRIPT" == "" ]; then
+		SCRIPT=/tmp/$(basename $0).$$.tmp
+	fi
+
+	if [ "$SCRIPT" == "" ]; then
+		rm -f /tmp/installFour.sh &> /dev/null
+		sudo rm -f /tmp/installFour.sh &> /dev/null
+		SCRIPT=/tmp/installFour.sh
+	fi
+
+	LOG=$SCRIPT.log
+}
+
+function checkErrors() {
+	if [ $? -gt 0 ]; then
+		echo $1
+		abortIt
+	fi
+}
+
+function removeTemp() {
+	rm $SCRIPT
+}
+
+main
