@@ -8,7 +8,7 @@ L4I_REPOSITORY_DIR=/tmp/l4i
 L4I_REPOSITORY_GIT="$L4I_REPOSITORY_DIR/git"
 LARAVEL_APP_BRANCH=" -b develop "
 LARAVEL_APP_REPOSITORY="https://github.com/laravel/laravel.git"
-BASH_DIR=`which bash`
+BASH_DIR=`which bash 2>&1 | tee -a $LOG_FILE &> /dev/null`
 BIN_DIR=`dirname $BASH_DIR`
 GIT_APP=git
 CURL_APP=curl
@@ -71,7 +71,7 @@ function main() {
 }
 
 function downloadL4IRepository {
-    echo "Downloading l4i git repository..."
+    message "Downloading l4i git repository..."
     git clone $L4I_REPOSITORY $L4I_REPOSITORY_GIT 2>&1 | tee -a $LOG_FILE &> /dev/null
     checkErrors "An error ocurred while trying to clone L4I git repository, please check log file: $LOG_FILE."
 }
@@ -79,7 +79,7 @@ function downloadL4IRepository {
 function installTwitterBootstrap() {
     inquireYN "Install Twitter Bootstrap? " "y" "n"
     if [ "$answer" == "y" ]; then 
-        echo "Installing Twitter Bootstrap..."
+        message "Installing Twitter Bootstrap..."
         wget --no-check-certificate -O $L4I_REPOSITORY_DIR/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip 2>&1 | tee -a $LOG_FILE &> /dev/null
         rm -rf $L4I_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
         unzip $L4I_REPOSITORY_DIR/twitter.bootstrap.zip -d $L4I_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -102,7 +102,7 @@ function installTwitterBootstrap() {
 }
 
 function installUnzip() {
-    echo "Installing unzip..."
+    message "Installing unzip..."
     installPackage unzip
 }
 
@@ -112,7 +112,7 @@ function getIPAddress() {
 
 function createVirtualHost() {
     if [ $WEBSERVER == "apache2" ]; then
-        echo "Creating apache2 VirtualHost..."
+        message "Creating apache2 VirtualHost..."
 
         $conf = $VHOST_CONF_DIR/$VHOST_CONF_FILE
 
@@ -132,12 +132,12 @@ function createVirtualHost() {
 
         $SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-        echo "Your Laravel 4 installation should be available now at http://$IPADDRESS/$SITE_NAME"
+        message "Your Laravel 4 installation should be available now at http://$IPADDRESS/$SITE_NAME"
     fi
 }
 
 function installAdditionalPackages() {
-    echo "Configuring additional packages..."
+    message "Configuring additional packages..."
 
     total=${#EP_NAME[*]}
 
@@ -159,7 +159,7 @@ function installAdditionalPackages() {
 
 function installComposerPackage() {
     $PHP_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2
-    echo "$PHP_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2" 2>&1 | tee -a $LOG_FILE &> /dev/null
+    log "$PHP_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2"
 
     if [ "$3$4" != "" ]; then
         addAppAlias $3 $4
@@ -174,18 +174,18 @@ function checkPHP() {
     php=`$PHP_APP -v 2>&1 | tee -a $LOG_FILE &> /dev/null `
     checkErrors "PHP is not installed. Aborted."
 
-    echo "PHP is installed."
+    message "PHP is installed."
 }
 
 function checkPHPUnit() {
-    phpunit=`which $PHPUNIT_APP`
+    phpunit=`which $PHPUNIT_APP  2>&1 | tee -a $LOG_FILE &> /dev/null`
     if [ "$phpunit" == "" ]; then
         installPHPUnit
     fi
 }
 
 # function installPHP() {
-#     # echo "Installing PHP..."
+#     # message "Installing PHP..."
 #     # sudo apt-get --yes intall php5
 # }
 
@@ -207,7 +207,7 @@ function checkWebserver() {
     VHOST_ENABLE_COMMAND=a2ensite
 
     if [ "$WEBSERVER" == "" ]; then
-        echo "Looks like there is no webserver software intalled or runnig. Aborted."
+        message "Looks like there is no webserver software intalled or runnig. Aborted."
         abortIt
     fi
 
@@ -218,24 +218,24 @@ function checkWebserver() {
         WEBSERVER=apache2 # httpd usually is also apache2, with some differences covered here
     fi
 
-    echo "Webserver ($WEBSERVER) is installed."
+    message "Webserver ($WEBSERVER) is installed."
 }
 
 function installPHPUnit() {
     if [ "$CAN_I_RUN_SUDO" == "YES" ]; then
-        echo "Installing PHPUnit..."
+        message "Installing PHPUnit..."
         $SUDO_APP mkdir -p $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
         $SUDO_APP chmod 777 $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
-        echo '{' > $PHPUNIT_DIR/composer.json
-        echo '    "name": "phpunit",' >> $PHPUNIT_DIR/composer.json
-        echo '    "description": "PHPUnit",' >> $PHPUNIT_DIR/composer.json
-        echo '    "require": {' >> $PHPUNIT_DIR/composer.json
-        echo '        "phpunit/phpunit": "3.7.*"' >> $PHPUNIT_DIR/composer.json
-        echo '    },' >> $PHPUNIT_DIR/composer.json
-        echo '    "config": {' >> $PHPUNIT_DIR/composer.json
-        echo '        "bin-dir": "$PHPUNIT_DIR"' >> $PHPUNIT_DIR/composer.json
-        echo '    }' >> $PHPUNIT_DIR/composer.json
-        echo '}' >> $PHPUNIT_DIR/composer.json
+        message '{' > $PHPUNIT_DIR/composer.json
+        message '    "name": "phpunit",' >> $PHPUNIT_DIR/composer.json
+        message '    "description": "PHPUnit",' >> $PHPUNIT_DIR/composer.json
+        message '    "require": {' >> $PHPUNIT_DIR/composer.json
+        message '        "phpunit/phpunit": "3.7.*"' >> $PHPUNIT_DIR/composer.json
+        message '    },' >> $PHPUNIT_DIR/composer.json
+        message '    "config": {' >> $PHPUNIT_DIR/composer.json
+        message '        "bin-dir": "$PHPUNIT_DIR"' >> $PHPUNIT_DIR/composer.json
+        message '    }' >> $PHPUNIT_DIR/composer.json
+        message '}' >> $PHPUNIT_DIR/composer.json
         cd $PHPUNIT_DIR
         composerUpdate $PHPUNIT_DIR
         $SUDO_APP chmod +x $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit 2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -244,7 +244,7 @@ function installPHPUnit() {
 }
 
 function installComposer() {
-    echo "Installing Composer..."
+    message "Installing Composer..."
     cd $INSTALL_DIR
     perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" /etc/php5/cli/conf.d/suhosin.ini  2>&1 | tee -a $LOG_FILE &> /dev/null
     curl -s http://getcomposer.org/installer | $PHP_APP
@@ -261,20 +261,20 @@ function checkComposer() {
         installComposer
         checkComposerInstalled
         if [ "$RETURN_VALUE" != "TRUE" ]; then
-            echo "composer is not installed and I was not able to install it"
+            message "composer is not installed and I was not able to install it"
         fi
     fi
 
     if [ "$RETURN_VALUE" == "TRUE" ]; then
-        echo "Found composer at $COMPOSER_PATH."
+        message "Found composer at $COMPOSER_PATH."
     fi
 }
 
 function checkComposerInstalled() {
     [[ -f $COMPOSER_APP ]] && COMPOSER_PATH=$COMPOSER_APP
 
-    [[ -z "$COMPOSER_PATH" ]] && COMPOSER_PATH=`which $COMPOSER_APP`
-    [[ -z "$COMPOSER_PATH" ]] && COMPOSER_PATH=`which $COMPOSER_APP.phar`
+    [[ -z "$COMPOSER_PATH" ]] && COMPOSER_PATH=`which $COMPOSER_APP  2>&1 | tee -a $LOG_FILE &> /dev/null`
+    [[ -z "$COMPOSER_PATH" ]] && COMPOSER_PATH=`which $COMPOSER_APP.phar  2>&1 | tee -a $LOG_FILE &> /dev/null`
 
     for element in $INSTALL_DIR $BIN_DIR /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin
     do
@@ -290,7 +290,7 @@ function checkComposerInstalled() {
 }
 
 function downloadSkeleton() {
-    echo "Downloading Laravel 4 skeleton from $LARAVEL_APP_REPOSITORY..."
+    message "Downloading Laravel 4 skeleton from $LARAVEL_APP_REPOSITORY..."
 
     git clone $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR  2>&1 | tee -a $LOG_FILE &> /dev/null
 
@@ -319,6 +319,8 @@ function checkMCrypt() {
 }
 
 function checkApp() {
+    message "Locating app $1 ($2)..." 2>&1 | tee -a $LOG_FILE &> /dev/null
+
     if [ "$2" == "" ]; then
         installer=installApp
     else 
@@ -326,23 +328,24 @@ function checkApp() {
     fi
 
     if ! type -p $1 2>&1 | tee -a $LOG_FILE &> /dev/null; then
-        echo -n "Trying to install $1..."
+        message -n "Trying to install $1..."
         $installer $1 2>&1 | tee -a $LOG_FILE &> /dev/null
         if ! type -p $1 2>&1 | tee -a $LOG_FILE &> /dev/null; then
-            echo ""
-            echo ""
-            echo "Looks like $1 is not installed or not available for this application."
+            message ""
+            message ""
+            message "Looks like $1 is not installed or not available for this application."
             exit 0
         fi
-        echo " done."
+        message " done."
     else 
-        echo "$1 is installed and available."
+        message "$1 is installed and available."
+        message "$1 is installed and available." 2>&1 | tee -a $LOG_FILE &> /dev/null
     fi
 }
 
 function checkErrors() {
     if [ $? -gt 0 ]; then
-        echo $1
+        message $1
         abortIt
     fi
 }
@@ -352,24 +355,24 @@ function checkParameters() {
         inquireText "Please type the installation directory:" $PWD
 
         if [ "$answer" == "" ]; then
-            echo "----> You need to provide installation directory (example: /var/www/myapp)."
-            echo
+            message "----> You need to provide installation directory (example: /var/www/myapp)."
+            message
             abortIt
         fi
 
         INSTALL_DIR=$answer
     fi
 
-    INSTALL_DIR_ESCAPED=`echo $INSTALL_DIR | sed s,/,\\\\\\\\\\/,g`
+    INSTALL_DIR_ESCAPED=`message $INSTALL_DIR | sed s,/,\\\\\\\\\\/,g`
 
     if [ -f $INSTALL_DIR ]; then
-       echo "You provided a regular file name, not a directory, next time, please, specify a directory."
+       message "You provided a regular file name, not a directory, next time, please, specify a directory."
        abortIt
     fi
 
     if [ -d $INSTALL_DIR ]; then
         if [ "$(ls -A $INSTALL_DIR)" ]; then
-           echo "Directory $1 is not empty."
+           message "Directory $1 is not empty."
            abortIt
         fi
     else 
@@ -381,8 +384,8 @@ function checkParameters() {
         inquireText "Please type the site name (e.g.: blog):" $SITE_NAME
 
         if [ "$answer" == "" ]; then
-            echo "----> You need to provide a site name (myapp)."
-            echo
+            message "----> You need to provide a site name (myapp)."
+            message
             abortIt
         fi
 
@@ -401,9 +404,9 @@ function makeInstallDirectory {
 
 function checkSudo {
     if [[ $EUID -ne 0 ]]; then
-        echo "Your sudo password is required for some commands."
+        message "Your sudo password is required for some commands."
         sudo -k
-        sudo echo -n 
+        sudo message -n 
         CAN_I_RUN_SUDO=$(sudo -n uptime 2>&1|grep "load"|wc -l)
         [ ${CAN_I_RUN_SUDO} -gt 0 ] && CAN_I_RUN_SUDO="YES" || CAN_I_RUN_SUDO="NO"
     else 
@@ -414,27 +417,27 @@ function checkSudo {
 }
 
 function showUsage() {
-    echo
-    echo
-    echo "installFour script"
-    echo "  Installs a Laravel 4 development environment"
-    echo
-    echo "     Usage:  bash installFour <directory> <site name>"
-    echo
-    echo "  Examples:  bash installFour /var/www/blog blog"
-    echo "             bash installFour /home/taylor/www blog"
-    echo
-    echo
+    message
+    message
+    message "installFour script"
+    message "  Installs a Laravel 4 development environment"
+    message
+    message "     Usage:  bash installFour <directory> <site name>"
+    message
+    message "  Examples:  bash installFour /var/www/blog blog"
+    message "             bash installFour /home/taylor/www blog"
+    message
+    message
 }
 
 function addAppProvider() {
-    echo "addAppProvider $1" 2>&1 | tee -a $LOG_FILE &> /dev/null
+    message "addAppProvider $1" 2>&1 | tee -a $LOG_FILE &> /dev/null
 
     perl -pi -e "s/WorkbenchServiceProvider',/WorkbenchServiceProvider',\n\t\t'$1',/g" $INSTALL_DIR/app/config/app.php  2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function addAppAlias() {
-    echo "addAppAlias $1" 2>&1 | tee -a $LOG_FILE &> /dev/null
+    message "addAppAlias $1" 2>&1 | tee -a $LOG_FILE &> /dev/null
 
     perl -pi -e "s/View',/View',\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php  2>&1 | tee -a $LOG_FILE &> /dev/null
 }
@@ -442,7 +445,7 @@ function addAppAlias() {
 function composerUpdate() {
     [ "$1" == "" ] && directory=$INSTALL_DIR || directory=$1
     cd $directory
-    echo "Updating Composer packages on $directory..."
+    message "Updating Composer packages on $directory..."
     $COMPOSER_APP update  2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
@@ -452,7 +455,7 @@ function setGlobalPermissions() {
 
 function installPackage() {
     if [ "DIDUPDATED" == "" ]; then
-        echo "$PACKAGER_NAME updating..."
+        message "$PACKAGER_NAME updating..."
         $PACKAGE_UPDATE_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
         DIDUPDATED=YES
     fi
@@ -483,21 +486,21 @@ function checkOS() {
     fi
 
     if grep -q "$OPERATING_SYSTEM" <<< "$SUPPORTED_OPERATING_SYSTEMS"; then
-        echo "Your operating system ($OPERATING_SYSTEM) is fully supported."
+        message "Your operating system ($OPERATING_SYSTEM) is fully supported."
     else
-        echo
-        echo "Supported operating systems: $SUPPORTED_OPERATING_SYSTEMS"
+        message
+        message "Supported operating systems: $SUPPORTED_OPERATING_SYSTEMS"
         inquireYN "Looks like your operating system ($OPERATING_SYSTEM) is not supported by this scrit, but it still can work, do you wish to continue anyway? " "y" "n"
 
         if [ "$answer" != "y" ]; then
-            echo "Aborting."
+            message "Aborting."
             exit 1
         fi        
     fi
 }
 
 function inquireYN()  {
-  echo  -n "$1 [$2/$3]? "
+  message -n "$1 [$2/$3]? "
   read answer
   finish="-1"
   while [ "$finish" = '-1' ]
@@ -511,7 +514,7 @@ function inquireYN()  {
         y | Y | yes | YES ) answer="y";;
         n | N | no | NO ) answer="n";;
         *) finish="-1";
-           echo -n 'Invalid response -- please reenter:';
+           message -n 'Invalid response -- please reenter:';
            read answer;;
        esac
     fi
@@ -540,7 +543,7 @@ function createLogDirectory() {
 function showLogFile() {
     LOG_FILE=$L4I_REPOSITORY_DIR/log/l4i.$SITE_NAME.install.log
 
-    echo "A log of this installation is available at $LOG_FILE."
+    message "A log of this installation is available at $LOG_FILE."
 }
 
 function installOurArtisan() {
@@ -549,14 +552,14 @@ function installOurArtisan() {
 }
 
 function abortIt() {
-    echo "Aborting..."
+    message "Aborting..."
     exit 1
 }
 
 function showHeader() {
     clear
-    echo "l4i - The Laravel 4 Installer Script"
-    echo ""
+    message "l4i - The Laravel 4 Installer Script"
+    message ""
 }
 
 function cleanL4IRepository() {
@@ -567,6 +570,25 @@ function cleanL4IRepository() {
 function findProgram() {
     program=`which $1 2>&1 | tee -a $LOG_FILE &> /dev/null`
     eval $2=\$program
+}
+
+function message() {
+    if [ $1 ]; then
+        command="echo $1 $2 $3 $4 $5 $6 $7 $8 $9"
+        ${command}
+    else
+        echo
+    fi
+
+    if [ $LOG_FILE ]; then
+        log "--- $1 $2 $3 $4 $5 $6 $7 $8 $9"
+    fi
+}
+
+function log() {
+    if [ $LOG_FILE ]; then
+        echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" 2>&1 | tee -a $LOG_FILE &> /dev/null
+    fi
 }
 
 main
