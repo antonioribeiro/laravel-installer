@@ -4,7 +4,7 @@
 L4I_VERSION=1.3.0
 L4I_BRANCH=v1.3.0
 L4I_REPOSITORY="-b $L4I_BRANCH https://github.com/antonioribeiro/l4i.git"
-L4I_REPOSITORY_DIR="/tmp/l4i/"
+L4I_REPOSITORY_DIR=/tmp/l4i
 L4I_REPOSITORY_GIT="$L4I_REPOSITORY_DIR/git"
 LARAVEL_APP_BRANCH=" -b develop "
 LARAVEL_APP_REPOSITORY="https://github.com/laravel/laravel.git"
@@ -24,7 +24,7 @@ INSTALL_DIR=$1
 SITE_NAME=$2
 INSTALL_DIR_ESCAPED="***will be set on checkParameters***"
 LOG_FILE="***will be set on showLogFile***"
-SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint"
+SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint|Redhat"
 
         EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry")
      EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "dev-master"                     "dev-master"                                    "2.0.*")
@@ -43,10 +43,12 @@ EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\F
 function main() {
     showHeader
     cleanL4IRepository
-    showLogFile
+    createLogDirectory
 
     checkOS
     checkParameters
+    showLogFile 
+
     checkSudo
     getIPAddress
 
@@ -386,6 +388,9 @@ function checkParameters() {
 
         SITE_NAME=$answer
     fi
+
+    #log file is set again, now for site
+    LOG_FILE=$L4I_REPOSITORY_DIR/log/l4i.$SITE_NAME.install.log
 }
 
 function makeInstallDirectory {
@@ -525,10 +530,15 @@ function inquireText()  {
   done
 }
 
+function createLogDirectory() {
+    #this is a temporary name for our log file
+    LOG_FILE=/tmp/l4i.log
+    mkdir -p $L4I_REPOSITORY_DIR/log/ 2>&1 | tee -a $LOG_FILE &> /dev/null
+    checkErrors "You might not have permissions to create files in $L4I_REPOSITORY_DIR/log/, please check log: $LOG_FILE."
+}
+
 function showLogFile() {
     LOG_FILE=$L4I_REPOSITORY_DIR/log/l4i.$SITE_NAME.install.log
-
-    mkdir -p $L4I_REPOSITORY_DIR/log/
 
     echo "A log of this installation is available at $LOG_FILE."
 }
