@@ -325,7 +325,7 @@ function checkMCrypt() {
 }
 
 function checkApp() {
-    message "Locating app $1..." 2>&1 | tee -a $LOG_FILE &> /dev/null
+    message "Locating app $1... " 2>&1 | tee -a $LOG_FILE &> /dev/null
 
     if [ "$2" == "" ]; then
         installer=installApp
@@ -333,7 +333,9 @@ function checkApp() {
         installer=$2
     fi
 
-    if ! type -p $1 2>&1 | tee -a $LOG_FILE &> /dev/null; then
+    program=`type -p $1`
+
+    if [[ "$program" == "" ]]; then
         message -n "Trying to install $1 (with command $installer)..."
         $installer $1 2>&1 | tee -a $LOG_FILE &> /dev/null
         if ! type -p $1 2>&1 | tee -a $LOG_FILE &> /dev/null; then
@@ -345,7 +347,6 @@ function checkApp() {
         message " done."
     else 
         message "$1 is installed and available."
-        message "$1 is installed and available." 2>&1 | tee -a $LOG_FILE &> /dev/null
     fi
 }
 
