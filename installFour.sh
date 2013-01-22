@@ -55,7 +55,7 @@ function main() {
     downloadL4IRepository
     downloadSkeleton
     installAdditionalPackages
-    checkArtisan
+    installOurArtisan
     composerUpdate
     installTwitterBootstrap
     createVirtualHost $INSTALL_DIR
@@ -482,13 +482,7 @@ function showLogFile() {
     echo "A log of this installation is available at $LOG_FILE."
 }
 
-function checkArtisan() {
-    if ! type -p $ARTISAN_APP &>> $LOG_FILE; then
-        installArtisan
-    fi
-}
-
-function installArtisan() {
+function installOurArtisan() {
     $SUDO_APP cp $L4I_REPOSITORY_DIR/artisan $BIN_DIR/artisan  &>> $LOG_FILE
     $SUDO_APP chmod +x $BIN_DIR/artisan &>> $LOG_FILE
 }
