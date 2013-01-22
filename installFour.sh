@@ -57,13 +57,15 @@ function main() {
 
     checkPHP
     checkWebserver
-    checkApp $GIT_APP
     checkApp $CURL_APP
     checkApp $UNZIP_APP installUnzip
+    checkApp $GIT_APP
+
+    downloadL4IRepository
+
     checkComposer $INSTALL_DIR
     checkPHPUnit
     checkMCrypt
-    downloadL4IRepository
     downloadSkeleton
     installAdditionalPackages
     installOurArtisan
@@ -215,8 +217,8 @@ function checkWebserver() {
     VHOST_ENABLE_COMMAND=
     VHOST_CONF_DIR=/etc/apache2/sites-available
     VHOST_CONF_FILE=$SITE_NAME
-    WS_RESTART_COMMAND=service $WEBSERVER restart
-    VHOST_ENABLE_COMMAND=a2ensite
+    WS_RESTART_COMMAND="service $WEBSERVER restart"
+    VHOST_ENABLE_COMMAND="a2ensite"
 
     if [[ "$WEBSERVER" == "" ]]; then
         abortIt "Looks like there is no webserver software intalled or runnig."
@@ -321,11 +323,15 @@ function installApp() {
 }
 
 function checkMCrypt() {
-    installPackage php5-mcrypt
+    if [[ "$OPERATING_SYSTEM" == "Debian" ]] || [[ "$OPERATING_SYSTEM" == "Ubuntu" ]]; then
+        installPackage php5-mcrypt
+    else
+        installPackage php-mcrypt
+    fi
 }
 
 function checkApp() {
-    message "Locating app $1... " 2>&1 | tee -a $LOG_FILE &> /dev/null
+    log "Locating app $1... "
 
     if [ "$2" == "" ]; then
         installer=installApp
