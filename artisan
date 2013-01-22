@@ -43,4 +43,4 @@ function removeTemp() {
 	rm $SCRIPT
 }
 
-main
+main $1
