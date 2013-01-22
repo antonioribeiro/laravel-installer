@@ -21,6 +21,7 @@ PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
 PHP_APP=php
 PHP_SUHOSIN_CONF=/etc/php5/cli/conf.d/suhosin.ini
+PHP_MINIMUN_VERSION=5.2.0
 INSTALL_DIR=$1
 SITE_NAME=$2
 INSTALL_DIR_ESCAPED="***will be set on checkParameters***"
@@ -175,6 +176,15 @@ function checkPHP() {
     php=`$PHP_APP -v 2>&1 | tee -a $LOG_FILE &> /dev/null `
     checkErrors "PHP is not installed."
 
+    echo "<?php echo PHP_VERSION;" > /tmp/phpver.php
+    phpver=`php /tmp/phpver.php`
+
+    if [[ "$phpver" < "$PHP_MINIMUN_VERSION" ]]; then
+      abortIt "Your PHP version is $phpver, minumum required is $PHP_MINIMUN_VERSION."
+    else
+       echo "fine"
+    fi
+
     message "PHP is installed."
 }
 
@@ -207,12 +217,11 @@ function checkWebserver() {
     WS_RESTART_COMMAND=service $WEBSERVER restart
     VHOST_ENABLE_COMMAND=a2ensite
 
-    if [ "$WEBSERVER" == "" ]; then
-        message "Looks like there is no webserver software intalled or runnig. Aborted."
-        abortIt
+    if [[ "$WEBSERVER" == "" ]]; then
+        abortIt "Looks like there is no webserver software intalled or runnig."
     fi
 
-    if [ "$WEBSERVER" == "httpd" ]; then
+    if [[ "$WEBSERVER" == "httpd" ]]; then
         VHOST_CONF_DIR=/etc/httpd/conf.d
         VHOST_CONF_FILE=$SITE_NAME.conf
         VHOST_ENABLE_COMMAND=
@@ -250,7 +259,8 @@ function installComposer() {
     if [ -f $PHP_SUHOSIN_CONF ]; then
         perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" $PHP_SUHOSIN_CONF  2>&1 | tee -a $LOG_FILE &> /dev/null
     fi
-    curl -s http://getcomposer.org/installer | $PHP_APP
+
+    $CURL_APP -s http://getcomposer.org/installer | $PHP_APP
     checkErrors "Composer installation failed."
 
     COMPOSER_APP=$BIN_DIR/composer
@@ -349,8 +359,7 @@ function checkApp() {
 function checkErrors() {
     if [ $? -gt 0 ]; then
         message $1
-        message "Please check log file at $LOG_FILE."
-        abortIt
+        abortIt "Please check log file at $LOG_FILE."
     fi
 }
 
@@ -359,9 +368,8 @@ function checkParameters() {
         inquireText "Please type the installation directory:" $PWD
 
         if [ "$answer" == "" ]; then
-            message "----> You need to provide installation directory (example: /var/www/myapp)."
-            message
-            abortIt
+            message 
+            abortIt "----> You need to provide installation directory (example: /var/www/myapp)."
         fi
 
         INSTALL_DIR=$answer
@@ -370,14 +378,12 @@ function checkParameters() {
     INSTALL_DIR_ESCAPED=`message $INSTALL_DIR | sed s,/,\\\\\\\\\\/,g`
 
     if [ -f $INSTALL_DIR ]; then
-       message "You provided a regular file name, not a directory, next time, please, specify a directory."
-       abortIt
+       abortIt "You provided a regular file name, not a directory, next time, please, specify a directory."
     fi
 
     if [ -d $INSTALL_DIR ]; then
         if [ "$(ls -A $INSTALL_DIR)" ]; then
-           message "Directory $1 is not empty."
-           abortIt
+           abortIt "Directory $1 is not empty."
         fi
     else 
         makeInstallDirectory
@@ -388,9 +394,8 @@ function checkParameters() {
         inquireText "Please type the site name (e.g.: blog):" $SITE_NAME
 
         if [ "$answer" == "" ]; then
-            message "----> You need to provide a site name (myapp)."
-            message
-            abortIt
+            message 
+            abortIt "----> You need to provide a site name (myapp)."
         fi
 
         SITE_NAME=$answer
@@ -556,7 +561,10 @@ function installOurArtisan() {
 }
 
 function abortIt() {
-    message "Aborting..."
+    if [ "$1" != "" ]; then
+        message $1
+    fi
+    message "Aborted."
     exit 1
 }
 
