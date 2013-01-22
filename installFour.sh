@@ -457,13 +457,12 @@ function installPackage() {
 
 function checkOS() {
     OPERATING_SYSTEM=Unknown
+    findProgram lsb_release lsb_program
 
-    if type -p lsb_release 2>&1 | tee -a $LOG_FILE &> /dev/null; then
-        OPERATING_SYSTEM=$(lsb_release -si)
+    if [ $lsb_program ] ; then
+        OPERATING_SYSTEM=$($lsb_program -si)
     else
-        if type -p /etc/redhat-release 2>&1 | tee -a $LOG_FILE &> /dev/null; then
-            OPERATING_SYSTEM=Redhat
-        fi
+        [[ -f /etc/redhat-release ]] && OPERATING_SYSTEM=Redhat
     fi
 
     if [ "$OPERATING_SYSTEM" == "Debian" ] ||  [ "$OPERATING_SYSTEM" == "Ubuntu" ]; then
@@ -518,7 +517,11 @@ function inquireText()  {
   answer=""
   while [ "$answer" = "" ]
   do
-    read -e -p "$1 " -i "$2" answer
+    # read -e -p "$1 " -i "$2" answer ######### -i is present on bash version 4 only
+    read -e -p "$1 [hit enter for $2] " answer
+    if [ "$answer" == "" ]; then
+        answer=$2
+    fi
   done
 }
 
@@ -549,6 +552,11 @@ function showHeader() {
 function cleanL4IRepository() {
     rm -rf $L4I_REPOSITORY_DIR  2>&1 | tee -a $LOG_FILE &> /dev/null
     checkErrors "You're not allowed to write in $L4I_REPOSITORY_DIR."
+}
+
+function findProgram() {
+    program=`which $1 2>&1 | tee -a $LOG_FILE &> /dev/null`
+    eval $2=\$program
 }
 
 main
