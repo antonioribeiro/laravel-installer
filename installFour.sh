@@ -641,7 +641,7 @@ function installWebserver() {
 
 function restartWebserver() {
     buildRestartWebserverCommand
-    ${WS_RESTART_COMMAND}
+    `$WS_RESTART_COMMAND`
 }
 
 function buildRestartWebserverCommand() {
