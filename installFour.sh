@@ -487,7 +487,9 @@ function installPackage() {
         DIDUPDATED=YES
     fi
 
+    message "Installing $1..."
     $SUDO_APP $PACKAGE_INSTALL_COMMAND $1 $2 2>&1 | tee -a $LOG_FILE &> /dev/null
+    checkErrors "An error ocurred while installing $1."
 }
 
 function checkOS() {
@@ -639,12 +641,11 @@ function installWebserver() {
 
 function restartWebserver() {
     buildRestartWebserverCommand
-    $WS_RESTART_COMMAND
+    ${WS_RESTART_COMMAND}
 }
 
 function buildRestartWebserverCommand() {
     WS_RESTART_COMMAND="service $WEBSERVER restart"
 }
-    
 
 main
