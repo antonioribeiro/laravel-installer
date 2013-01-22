@@ -210,10 +210,10 @@ function checkPHPUnit() {
 
 function locateWebserverProcess() {
     ws_process=
-    ws_process=`$SUDO_APP ps -eaf |grep apache2 |grep -v grep |wc -l` && [ "$ws_process" -gt "0" ] && ws_process=apache2
-    ws_process=`$SUDO_APP ps -eaf |grep nginx |grep -v grep |wc -l` && [ "$ws_process" -gt "0" ] && ws_process=nginx
-    ws_process=`$SUDO_APP ps -eaf |grep lighthttpd |grep -v grep |wc -l` && [ "$ws_process" -gt "0" ] && ws_process=lighttpd
-    ws_process=`$SUDO_APP ps -eaf |grep httpd |grep -v grep |wc -l` && [ "$ws_process" -gt "0" ] && ws_process=httpd
+    processes=`$SUDO_APP ps -eaf |grep apache2 |grep -v grep |wc -l` && [ "$processes" -gt "0" ] && ws_process=apache2
+    processes=`$SUDO_APP ps -eaf |grep nginx |grep -v grep |wc -l` && [ "$processes" -gt "0" ] && ws_process=nginx
+    processes=`$SUDO_APP ps -eaf |grep lighthttpd |grep -v grep |wc -l` && [ "$processes" -gt "0" ] && ws_process=lighttpd
+    processes=`$SUDO_APP ps -eaf |grep httpd |grep -v grep |wc -l` && [ "$processes" -gt "0" ] && ws_process=httpd
 }
 
 function checkWebserver() {
