@@ -8,7 +8,7 @@ L4I_REPOSITORY_DIR=/tmp/l4i
 L4I_REPOSITORY_GIT="$L4I_REPOSITORY_DIR/git"
 LARAVEL_APP_BRANCH=" -b develop "
 LARAVEL_APP_REPOSITORY="https://github.com/laravel/laravel.git"
-BASH_DIR=`which bash 2>&1 | tee -a $LOG_FILE &> /dev/null`
+BASH_DIR=`type -p bash`
 BIN_DIR=`dirname $BASH_DIR`
 GIT_APP=git
 CURL_APP=curl
@@ -19,6 +19,7 @@ COMPOSER_APP=composer
 ARTISAN_APP=artisan
 PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
+PHPUNIT_DIR_ESCAPED=`message $PHPUNIT_DIR | sed s,/,\\\\\\\\\\/,g`
 PHP_APP=php
 PHP_SUHOSIN_CONF=/etc/php5/cli/conf.d/suhosin.ini
 PHP_MINIMUN_VERSION=5.2.0
@@ -113,17 +114,17 @@ function getIPAddress() {
 }
 
 function createVirtualHost() {
-    if [ "$WEBSERVER" == "apache2" ]; then
+    if [[ "$WEBSERVER" == "apache2" ]]; then
         message "Creating apache2 VirtualHost..."
 
-        $conf = $VHOST_CONF_DIR/$VHOST_CONF_FILE
+        conf=$VHOST_CONF_DIR/$VHOST_CONF_FILE
 
         $SUDO_APP cp $L4I_REPOSITORY_GIT/apache.directory.template $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 
         $SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
         $SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR_ESCAPED/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-        if [ "$VHOST_ENABLE_COMMAND" != "" ]; then
+        if [[ "$VHOST_ENABLE_COMMAND" != "" ]]; then
             $SUDO_APP $VHOST_ENABLE_COMMAND $SITE_NAME 2>&1 | tee -a $LOG_FILE &> /dev/null
         fi
 
@@ -189,7 +190,7 @@ function checkPHP() {
 }
 
 function checkPHPUnit() {
-    phpunit=`which $PHPUNIT_APP  2>&1 | tee -a $LOG_FILE &> /dev/null`
+    phpunit=`type -p $PHPUNIT_APP`
     if [ "$phpunit" == "" ]; then
         installPHPUnit
     fi
@@ -236,16 +237,8 @@ function installPHPUnit() {
         message "Installing PHPUnit..."
         $SUDO_APP mkdir -p $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
         $SUDO_APP chmod 777 $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
-        message '{' > $PHPUNIT_DIR/composer.json
-        message '    "name": "phpunit",' >> $PHPUNIT_DIR/composer.json
-        message '    "description": "PHPUnit",' >> $PHPUNIT_DIR/composer.json
-        message '    "require": {' >> $PHPUNIT_DIR/composer.json
-        message '        "phpunit/phpunit": "3.7.*"' >> $PHPUNIT_DIR/composer.json
-        message '    },' >> $PHPUNIT_DIR/composer.json
-        message '    "config": {' >> $PHPUNIT_DIR/composer.json
-        message '        "bin-dir": "$PHPUNIT_DIR"' >> $PHPUNIT_DIR/composer.json
-        message '    }' >> $PHPUNIT_DIR/composer.json
-        message '}' >> $PHPUNIT_DIR/composer.json
+        $SUDO_APP cp $L4I_REPOSITORY_GIT/phpunit.composer.json $PHPUNIT_DIR/composer.json
+        $SUDO_APP perl -pi -e "s/%phpunit_dir%/$PHPUNIT_DIR_ESCAPED/g" $PHPUNIT_DIR/composer.json  2>&1 | tee -a $LOG_FILE &> /dev/null
         cd $PHPUNIT_DIR
         composerUpdate $PHPUNIT_DIR
         $SUDO_APP chmod +x $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit 2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -286,8 +279,8 @@ function checkComposer() {
 function checkComposerInstalled() {
     [[ -f $COMPOSER_APP ]] && COMPOSER_PATH=$COMPOSER_APP
 
-    [[ -z "$COMPOSER_PATH" ]] && COMPOSER_PATH=`which $COMPOSER_APP  2>&1 | tee -a $LOG_FILE &> /dev/null`
-    [[ -z "$COMPOSER_PATH" ]] && COMPOSER_PATH=`which $COMPOSER_APP.phar  2>&1 | tee -a $LOG_FILE &> /dev/null`
+    [[ -z "$COMPOSER_PATH" ]] && COMPOSER_PATH=`type -p $COMPOSER_APP`
+    [[ -z "$COMPOSER_PATH" ]] && COMPOSER_PATH=`type -p $COMPOSER_APP.phar`
 
     for element in $INSTALL_DIR $BIN_DIR /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin
     do
@@ -580,7 +573,7 @@ function cleanL4IRepository() {
 }
 
 function findProgram() {
-    program=`which $1 2>&1 | tee -a $LOG_FILE &> /dev/null`
+    program=`type -p $1`
     eval $2=\$program
 }
 
