@@ -547,7 +547,7 @@ function showHeader() {
 }
 
 function cleanL4IRepository() {
-    rm -rf $L4I_REPOSITORY_DIR  &>> /dev/null
+    rm -rf $L4I_REPOSITORY_DIR  2>&1 | tee -a $LOG_FILE &> /dev/null
     checkErrors "You're not allowed to write in $L4I_REPOSITORY_DIR."
 }
 
