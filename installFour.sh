@@ -111,7 +111,7 @@ function getIPAddress() {
 }
 
 function createVirtualHost() {
-    if [ $WEBSERVER == "apache2" ]; then
+    if [ "$WEBSERVER" == "apache2" ]; then
         message "Creating apache2 VirtualHost..."
 
         $conf = $VHOST_CONF_DIR/$VHOST_CONF_FILE
@@ -467,7 +467,7 @@ function checkOS() {
     OPERATING_SYSTEM=Unknown
     findProgram lsb_release lsb_program
 
-    if [ $lsb_program ] ; then
+    if [ "$lsb_program" != "" ] ; then
         OPERATING_SYSTEM=$($lsb_program -si)
     else
         [[ -f /etc/redhat-release ]] && OPERATING_SYSTEM=Redhat
@@ -573,20 +573,18 @@ function findProgram() {
 }
 
 function message() {
-    if [ $1 ]; then
+    if [ "$1" != "" ]; then
         command="echo $1 $2 $3 $4 $5 $6 $7 $8 $9"
         ${command}
     else
         echo
     fi
 
-    if [ $LOG_FILE ]; then
-        log "--- $1 $2 $3 $4 $5 $6 $7 $8 $9"
-    fi
+    log "--- $1 $2 $3 $4 $5 $6 $7 $8 $9"
 }
 
 function log() {
-    if [ $LOG_FILE ]; then
+    if [ "$LOG_FILE" != "" ]; then
         echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" 2>&1 | tee -a $LOG_FILE &> /dev/null
     fi
 }
