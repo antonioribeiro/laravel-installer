@@ -19,7 +19,7 @@ COMPOSER_APP=composer
 ARTISAN_APP=artisan
 PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
-PHPUNIT_DIR_ESCAPED=`message $PHPUNIT_DIR | sed s,/,\\\\\\\\\\/,g`
+PHPUNIT_DIR_ESCAPED=`echo $PHPUNIT_DIR | sed s,/,\\\\\\\\\\/,g`
 PHP_APP=php
 PHP_SUHOSIN_CONF=/etc/php5/cli/conf.d/suhosin.ini
 PHP_MINIMUN_VERSION=5.2.0
@@ -227,7 +227,7 @@ function checkWebserver() {
 
     if [[ "$WEBSERVER" == "" ]]; then
         message "Looks like there is no webserver software installed."
-        if [[ "$webserver_install_attempt" == "" ]]
+        if [[ "$webserver_install_attempt" == "" ]]; then
             inquireYN "Do you want to install a webserver? " "y" "n"
             if [[ "$answer" == "y" ]]; then
                 webserver_install_attempt=YES
