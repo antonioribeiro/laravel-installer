@@ -83,7 +83,7 @@ function downloadL4IRepository {
 
 function installTwitterBootstrap() {
     inquireYN "Install Twitter Bootstrap? " "y" "n"
-    if [ "$answer" == "y" ]; then 
+    if [[ "$answer" == "y" ]]; then 
         message "Installing Twitter Bootstrap..."
         wget --no-check-certificate -O $L4I_REPOSITORY_DIR/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip 2>&1 | tee -a $LOG_FILE &> /dev/null
         rm -rf $L4I_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -163,7 +163,7 @@ function installAdditionalPackages() {
 
         inquireYN "Do you wish to install package $name? " "y" "n"
 
-        if [ "$answer" == "y" ]; then
+        if [[ "$answer" == "y" ]]; then
              installComposerPackage $name $version $alias_name $alias_facade $provider
         fi        
     done    
@@ -173,11 +173,11 @@ function installComposerPackage() {
     $PHP_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2
     log "$PHP_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2"
 
-    if [ "$3$4" != "" ]; then
+    if [[ "$3$4" != "" ]]; then
         addAppAlias $3 $4
     fi
 
-    if [ "$5" != "" ]; then
+    if [[ "$5" != "" ]]; then
         addAppProvider $5
     fi
 }
@@ -198,7 +198,7 @@ function checkPHP() {
 
 function checkPHPUnit() {
     phpunit=`type -p $PHPUNIT_APP`
-    if [ "$phpunit" == "" ]; then
+    if [[ "$phpunit" == "" ]]; then
         installPHPUnit
     fi
 }
@@ -226,7 +226,19 @@ function checkWebserver() {
     VHOST_ENABLE_COMMAND="a2ensite"
 
     if [[ "$WEBSERVER" == "" ]]; then
-        abortIt "Looks like there is no webserver software intalled or runnig."
+        message "Looks like there is no webserver software installed."
+        if [[ "$webserver_install_attempt" == "" ]]
+            inquireYN "Do you want to install a webserver? " "y" "n"
+            if [[ "$answer" == "y" ]]; then
+                webserver_install_attempt=YES
+                installWebserver
+                checkWebserver
+            fi
+        fi
+    fi
+
+    if [[ "$WEBSERVER" == "" ]]; then
+        abortIt "You need a webserver to run Laravel 4, please install one and restart."
     fi
 
     if [[ "$WEBSERVER" == "httpd" ]]; then
@@ -240,7 +252,7 @@ function checkWebserver() {
 }
 
 function installPHPUnit() {
-    if [ "$CAN_I_RUN_SUDO" == "YES" ]; then
+    if [[ "$CAN_I_RUN_SUDO" == "YES" ]]; then
         message "Installing PHPUnit..."
         $SUDO_APP mkdir -p $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
         $SUDO_APP chmod 777 $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
@@ -270,15 +282,15 @@ function installComposer() {
 
 function checkComposer() {
     checkComposerInstalled
-    if [ "$RETURN_VALUE" != "TRUE" ]; then
+    if [[ "$RETURN_VALUE" != "TRUE" ]]; then
         installComposer
         checkComposerInstalled
-        if [ "$RETURN_VALUE" != "TRUE" ]; then
+        if [[ "$RETURN_VALUE" != "TRUE" ]]; then
             message "composer is not installed and I was not able to install it"
         fi
     fi
 
-    if [ "$RETURN_VALUE" == "TRUE" ]; then
+    if [[ "$RETURN_VALUE" == "TRUE" ]]; then
         message "Found composer at $COMPOSER_PATH."
     fi
 }
@@ -328,7 +340,7 @@ function installApp() {
 }
 
 function checkMCrypt() {
-    if [[ "$OPERATING_SYSTEM" == "Debian" ]] || [[ "$OPERATING_SYSTEM" == "Ubuntu" ]]; then
+    if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
         installPackage php5-mcrypt
     else
         installPackage php-mcrypt
@@ -338,7 +350,7 @@ function checkMCrypt() {
 function checkApp() {
     log "Locating app $1... "
 
-    if [ "$2" == "" ]; then
+    if [[ "$2" == "" ]]; then
         installer=installApp
     else 
         installer=$2
@@ -372,7 +384,7 @@ function checkParameters() {
     if [ ! $INSTALL_DIR ]; then
         inquireText "Please type the installation directory:" $PWD
 
-        if [ "$answer" == "" ]; then
+        if [[ "$answer" == "" ]]; then
             message 
             abortIt "----> You need to provide installation directory (example: /var/www/myapp)."
         fi
@@ -387,7 +399,7 @@ function checkParameters() {
     fi
 
     if [ -d $INSTALL_DIR ]; then
-        if [ "$(ls -A $INSTALL_DIR)" ]; then
+        if [[ "$(ls -A $INSTALL_DIR)" ]]; then
            abortIt "Directory $1 is not empty."
         fi
     else 
@@ -398,7 +410,7 @@ function checkParameters() {
         SITE_NAME=$(basename $INSTALL_DIR)
         inquireText "Please type the site name (e.g.: blog):" $SITE_NAME
 
-        if [ "$answer" == "" ]; then
+        if [[ "$answer" == "" ]]; then
             message 
             abortIt "----> You need to provide a site name (myapp)."
         fi
@@ -481,19 +493,21 @@ function checkOS() {
     OPERATING_SYSTEM=Unknown
     findProgram lsb_release lsb_program
 
-    if [ "$lsb_program" != "" ] ; then
+    if [[ "$lsb_program" != "" ]] ; then
         OPERATING_SYSTEM=$($lsb_program -si)
     else
         [[ -f /etc/redhat-release ]] && OPERATING_SYSTEM=Redhat
     fi
 
-    if [ "$OPERATING_SYSTEM" == "Debian" ] ||  [ "$OPERATING_SYSTEM" == "Ubuntu" ]; then
+    if [[ "$OPERATING_SYSTEM" == "Debian" ]] ||  [[ "$OPERATING_SYSTEM" == "Ubuntu" ]]; then
+        OPERATING_SYSTEM_SUBTYPE=$OPERATING_SYSTEM
+        OPERATING_SYSTEM=Debian
         PACKAGER_NAME="apt-get"
         PACKAGE_UPDATE_COMMAND="apt-get --yes update "
         PACKAGE_INSTALL_COMMAND="apt-get --yes install "
     fi
 
-    if [ "$OPERATING_SYSTEM" == "Redhat" ]; then
+    if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
         PACKAGER_NAME="yum"
         PACKAGE_UPDATE_COMMAND="yum -y update "
         PACKAGE_INSTALL_COMMAND="yum -y install "
@@ -506,7 +520,7 @@ function checkOS() {
         message "Supported operating systems: $SUPPORTED_OPERATING_SYSTEMS"
         inquireYN "Looks like your operating system ($OPERATING_SYSTEM) is not supported by this scrit, but it still can work, do you wish to continue anyway? " "y" "n"
 
-        if [ "$answer" != "y" ]; then
+        if [[ "$answer" != "y" ]]; then
             message "Aborting."
             exit 1
         fi        
@@ -603,6 +617,18 @@ function message() {
 function log() {
     if [ "$LOG_FILE" != "" ]; then
         echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" 2>&1 | tee -a $LOG_FILE &> /dev/null
+    fi
+}
+
+function installWebserver() {
+    inquireYN "Do you want to install apache? " "y" "n"
+    if [[ "$answer" == "y" ]]; then
+        if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
+            installApp apache2
+        fi
+        if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
+            installApp httpd
+        fi
     fi
 }
 

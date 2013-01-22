@@ -118,6 +118,7 @@ bash installFour.sh /var/www/blog myBlog YES
 
 * All script installation files were moved to /tmp/l4i/
 * Added a list of supported operating systems and a question if the user OS is not in this list
+* Optionally installs a webserver
 
 2013/01/22 00:58 (GMT-3) - Version 1.2.0
 
