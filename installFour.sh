@@ -113,6 +113,13 @@ function installUnzip() {
 
 function getIPAddress() {
     IPADDRESS=`$SUDO_APP ifconfig | sed -n 's/.*inet addr:\([0-9.]\+\)\s.*/\1/p' | grep -v 127 | head -n 1`
+    if [[ "$IPADDRESS" == "" ]]; then
+        IPADDRESS=`$SUDO_APP ifconfig | sed -n 's/.*inet \([0-9.]\+\)\s.*/\1/p' | grep -v 127 | head -n 1`
+    fi
+    if [[ "$IPADDRESS" == "" ]]; then
+        inquireText "Please type the IP address of your box:"
+        IPADDRESS=$answer
+    fi
 }
 
 function createVirtualHost() {
@@ -184,11 +191,9 @@ function checkPHP() {
 
     if [[ "$phpver" < "$PHP_MINIMUN_VERSION" ]]; then
       abortIt "Your PHP version is $phpver, minumum required is $PHP_MINIMUN_VERSION."
-    else
-       echo "fine"
     fi
 
-    message "PHP is installed."
+    message "PHP $phpver is available."
 }
 
 function checkPHPUnit() {
