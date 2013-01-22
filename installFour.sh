@@ -1,10 +1,11 @@
 #!/bin/bash
 
 ## This is your playground
-L4I_VERSION=1.2.0
-L4I_BRANCH=master
+L4I_VERSION=1.3.0
+L4I_BRANCH=v1.3.0
 L4I_REPOSITORY="-b $L4I_BRANCH https://github.com/antonioribeiro/l4i.git"
-L4I_REPOSITORY_DIR="/tmp/l4i-git-repository"
+L4I_REPOSITORY_DIR="/tmp/l4i/"
+L4I_REPOSITORY_GIT="$L4I_REPOSITORY_DIR/git"
 LARAVEL_APP_BRANCH=" -b develop "
 LARAVEL_APP_REPOSITORY="https://github.com/laravel/laravel.git"
 BASH_DIR=`which bash`
@@ -22,7 +23,8 @@ PHP_APP=php
 INSTALL_DIR=$1
 SITE_NAME=$2
 INSTALL_DIR_ESCAPED="***will be set on checkParameters***"
-LOG_FILE="***will be set on checkParameters***"
+LOG_FILE="***will be set on showLogFile***"
+SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint"
 
         EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry")
      EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "dev-master"                     "dev-master"                                    "2.0.*")
@@ -40,10 +42,14 @@ EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\F
 
 function main() {
     showHeader
-    checkParameters
+    cleanL4IRepository
     showLogFile
+
     checkOS
+    checkParameters
     checkSudo
+    getIPAddress
+
     checkPHP
     checkWebserver
     checkApp $GIT_APP
@@ -64,27 +70,28 @@ function main() {
 
 function downloadL4IRepository {
     echo "Downloading l4i git repository..."
-    rm -rf $L4I_REPOSITORY_DIR  &>> $LOG_FILE
-    git clone $L4I_REPOSITORY $L4I_REPOSITORY_DIR &>> $LOG_FILE
+    git clone $L4I_REPOSITORY $L4I_REPOSITORY_GIT &>> $LOG_FILE
+    checkErrors "An error ocurred while trying to clone L4I git repository, please check log file: $LOG_FILE."
 }
 
 function installTwitterBootstrap() {
     inquireYN "Install Twitter Bootstrap? " "y" "n"
     if [ "$answer" == "y" ]; then 
         echo "Installing Twitter Bootstrap..."
-        wget --no-check-certificate -O /tmp/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip &>> $LOG_FILE
-        rm -rf /tmp/tb &>> $LOG_FILE
-        unzip /tmp/twitter.bootstrap.zip -d /tmp/tb &>> $LOG_FILE
-        cp -a /tmp/tb/bootstrap/css $INSTALL_DIR/public
-        cp -a /tmp/tb/bootstrap/js $INSTALL_DIR/public
-        cp -a /tmp/tb/bootstrap/img $INSTALL_DIR/public
+        wget --no-check-certificate -O $L4I_REPOSITORY_DIR/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip &>> $LOG_FILE
+        rm -rf $L4I_REPOSITORY_DIR/twitter.bootstrap &>> $LOG_FILE
+        unzip $L4I_REPOSITORY_DIR/twitter.bootstrap.zip -d $L4I_REPOSITORY_DIR/twitter.bootstrap &>> $LOG_FILE
+        rm $L4I_REPOSITORY_DIR/twitter.bootstrap.zip
+        cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/css $INSTALL_DIR/public
+        cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/js $INSTALL_DIR/public
+        cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/img $INSTALL_DIR/public
 
         rm $INSTALL_DIR/app/views/hello.php &>> $LOG_FILE
         mkdir $INSTALL_DIR/app/views/layouts &>> $LOG_FILE
         mkdir $INSTALL_DIR/app/views/views &>> $LOG_FILE
 
-        cp $L4I_REPOSITORY_DIR/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  &>> $LOG_FILE
-        cp $L4I_REPOSITORY_DIR/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
+        cp $L4I_REPOSITORY_GIT/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  &>> $LOG_FILE
+        cp $L4I_REPOSITORY_GIT/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
 
         perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php &>> $LOG_FILE
         perl -pi -e "s/%l4i_branch%/$L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php &>> $LOG_FILE
@@ -105,17 +112,21 @@ function createVirtualHost() {
     if [ $WEBSERVER == "apache2" ]; then
         echo "Creating apache2 VirtualHost..."
 
-        $SUDO_APP cp $L4I_REPOSITORY_DIR/apache.directory.template /etc/apache2/sites-available/$SITE_NAME  &>> $LOG_FILE
+        $conf = $VHOST_CONF_DIR/$VHOST_CONF_FILE
 
-        $SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" /etc/apache2/sites-available/$SITE_NAME  &>> $LOG_FILE
-        $SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR_ESCAPED/g" /etc/apache2/sites-available/$SITE_NAME  &>> $LOG_FILE
+        $SUDO_APP cp $L4I_REPOSITORY_GIT/apache.directory.template $conf  &>> $LOG_FILE
 
-        $SUDO_APP a2ensite $SITE_NAME &>> $LOG_FILE
-        $SUDO_APP service apache2 restart &>> $LOG_FILE
-        getIPAddress 
+        $SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $conf  &>> $LOG_FILE
+        $SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR_ESCAPED/g" $conf  &>> $LOG_FILE
+
+        if [ "$VHOST_ENABLE_COMMAND" != "" ]; then
+            $SUDO_APP $VHOST_ENABLE_COMMAND $SITE_NAME &>> $LOG_FILE
+        fi
+
+        $SUDO_APP $WS_RESTART_COMMAND &>> $LOG_FILE
 
         cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  &>> $LOG_FILE
-        cp $L4I_REPOSITORY_DIR/htaccess.template $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
+        cp $L4I_REPOSITORY_GIT/htaccess.template $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
 
         $SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  &>> $LOG_FILE
 
@@ -145,8 +156,8 @@ function installAdditionalPackages() {
 }
 
 function installComposerPackage() {
-    $PHP_APP $L4I_REPOSITORY_DIR/json.edit.php $INSTALL_DIR $1 $2
-    echo "$PHP_APP $L4I_REPOSITORY_DIR/json.edit.php $INSTALL_DIR $1 $2" &>> $LOG_FILE
+    $PHP_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2
+    echo "$PHP_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2" &>> $LOG_FILE
 
     if [ "$3$4" != "" ]; then
         addAppAlias $3 $4
@@ -176,15 +187,33 @@ function checkPHPUnit() {
 #     # sudo apt-get --yes intall php5
 # }
 
+function locateWebserverProcess() {
+    ws_process=
+    ws_process=`$SUDO_APP ps -eaf |grep apache2 |grep -v grep |wc -l` && [ "$ws_process" -gt "0" ] && ws_process=apache2
+    ws_process=`$SUDO_APP ps -eaf |grep nginx |grep -v grep |wc -l` && [ "$ws_process" -gt "0" ] && ws_process=nginx
+    ws_process=`$SUDO_APP ps -eaf |grep lighthttpd |grep -v grep |wc -l` && [ "$ws_process" -gt "0" ] && ws_process=lighttpd
+    ws_process=`$SUDO_APP ps -eaf |grep httpd |grep -v grep |wc -l` && [ "$ws_process" -gt "0" ] && ws_process=httpd
+}
+
 function checkWebserver() {
-    WEBSERVER=
-    webserver=`ps -eaf |grep apache2 |grep -v grep |wc -l` && [ "$webserver" -gt "0" ] && WEBSERVER=apache2
-    webserver=`ps -eaf |grep nginx |grep -v grep |wc -l` && [ "$webserver" -gt "0" ] && WEBSERVER=nginx
-    webserver=`ps -eaf |grep lighthttpd |grep -v grep |wc -l` && [ "$webserver" -gt "0" ] && WEBSERVER=lighttpd
+    locateWebserverProcess
+    WEBSERVER=$ws_process
+    VHOST_ENABLE_COMMAND=
+    VHOST_CONF_DIR=/etc/apache2/sites-available
+    VHOST_CONF_FILE=$SITE_NAME
+    WS_RESTART_COMMAND=service $WEBSERVER restart
+    VHOST_ENABLE_COMMAND=a2ensite
 
     if [ "$WEBSERVER" == "" ]; then
         echo "Looks like there is no webserver software intalled or runnig. Aborted."
         abortIt
+    fi
+
+    if [ "$WEBSERVER" == "httpd" ]; then
+        VHOST_CONF_DIR=/etc/httpd/conf.d
+        VHOST_CONF_FILE=$SITE_NAME.conf
+        VHOST_ENABLE_COMMAND=
+        WEBSERVER=apache2 # httpd usually is also apache2, with some differences covered here
     fi
 
     echo "Webserver ($WEBSERVER) is installed."
@@ -262,6 +291,8 @@ function downloadSkeleton() {
     echo "Downloading Laravel 4 skeleton from $LARAVEL_APP_REPOSITORY..."
 
     git clone $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR  &>> $LOG_FILE
+
+    checkErrors "An error ocurred while trying to clone Laravel 4 git repository, please check log file: $LOG_FILE."
 
     ### Installing using zip file, git is better but I'll keep this for possible future use
     # 
@@ -355,8 +386,6 @@ function checkParameters() {
 
         SITE_NAME=$answer
     fi
-
-    LOG_FILE=/tmp/l4i.$SITE_NAME.install.log
 }
 
 function makeInstallDirectory {
@@ -427,12 +456,14 @@ function installPackage() {
 }
 
 function checkOS() {
+    OPERATING_SYSTEM=Unknown
+
     if type -p lsb_release &>> $LOG_FILE; then
         OPERATING_SYSTEM=$(lsb_release -si)
     else
-        if type -p lsb_release &>> $LOG_FILE; then
+        if type -p /etc/redhat-release &>> $LOG_FILE; then
             OPERATING_SYSTEM=Redhat
-        fi        
+        fi
     fi
 
     if [ "$OPERATING_SYSTEM" == "Debian" ] ||  [ "$OPERATING_SYSTEM" == "Ubuntu" ]; then
@@ -445,6 +476,19 @@ function checkOS() {
         PACKAGER_NAME="yum"
         PACKAGE_UPDATE_COMMAND="yum -y update "
         PACKAGE_INSTALL_COMMAND="yum -y install "
+    fi
+
+    if grep -q "$OPERATING_SYSTEM" <<< "$SUPPORTED_OPERATING_SYSTEMS"; then
+        echo "Your operating system ($OPERATING_SYSTEM) is fully supported."
+    else
+        echo
+        echo "Supported operating systems: $SUPPORTED_OPERATING_SYSTEMS"
+        inquireYN "Looks like your operating system ($OPERATING_SYSTEM) is not supported by this scrit, but it still can work, do you wish to continue anyway? " "y" "n"
+
+        if [ "$answer" != "y" ]; then
+            echo "Aborting."
+            exit 1
+        fi        
     fi
 }
 
@@ -479,11 +523,15 @@ function inquireText()  {
 }
 
 function showLogFile() {
+    LOG_FILE=$L4I_REPOSITORY_DIR/log/l4i.$SITE_NAME.install.log
+
+    mkdir -p $L4I_REPOSITORY_DIR/log/
+
     echo "A log of this installation is available at $LOG_FILE."
 }
 
 function installOurArtisan() {
-    $SUDO_APP cp $L4I_REPOSITORY_DIR/artisan $BIN_DIR/artisan  &>> $LOG_FILE
+    $SUDO_APP cp $L4I_REPOSITORY_GIT/artisan $BIN_DIR/artisan  &>> $LOG_FILE
     $SUDO_APP chmod +x $BIN_DIR/artisan &>> $LOG_FILE
 }
 
@@ -496,6 +544,11 @@ function showHeader() {
     clear
     echo "l4i - The Laravel 4 Installer Script"
     echo ""
+}
+
+function cleanL4IRepository() {
+    rm -rf $L4I_REPOSITORY_DIR  &>> /dev/null
+    checkErrors "You're not allowed to write in $L4I_REPOSITORY_DIR."
 }
 
 main

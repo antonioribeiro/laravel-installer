@@ -48,9 +48,9 @@ Selecting aditional packages
 Page after installing Laravel 4 with this script
 ![l4i screenshot](http://puu.sh/1PI8I)
 
-### Screencast
+### Screencasts
 
-http://www.screenr.com/IlX7
+From version 1.2.0: http://www.screenr.com/HNO7
 
 ### Installed software
 
@@ -113,6 +113,11 @@ bash installFour.sh /var/www/blog myBlog YES
 * Ubuntu Server 11.10
 
 # Changelog
+
+2013/01/22 13:01 (GMT-3) - Version 1.3.0
+
+* All script installation files were moved to /tmp/l4i/
+* Added a list of supported operating systems and a question if the user OS is not in this list
 
 2013/01/22 00:58 (GMT-3) - Version 1.2.0
 
