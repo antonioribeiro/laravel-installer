@@ -78,8 +78,15 @@ In the process of intalling Laravel 4, this script will also try to install, if 
 
 This script will create the following commands in your system:
 
-* composer - this is just composer.phar moved o /bin
-* artisan - you can call artisan from any Laravel directory, no more typing "php artisan" every time
+#### composer
+This is an executable version of composer.phar 
+
+#### artisan 
+You can call this artisan from any place in your system and has 3 main options:
+
+* Calling from a Laravel directory it will act as "php artisan", so you don't need to use php anymore for artisan
+* Calling from outside a Laravel directory it will fire installFour script to let you create a new Laravel service environment
+* Calling it from any place using the argument "new" (e.g.: artisan new) it will fire installFour installer script as well
 
 ### Installation and Examples
 
@@ -106,6 +113,11 @@ bash installFour.sh /var/www/blog myBlog YES
 * Ubuntu Server 11.10
 
 # Changelog
+
+2013/01/22 00:58 (GMT-3) - Version 1.2.0
+
+* artisan command now also has the ability to create new services, just execute "artisan new"
+* installFour script now also asks for its parameters interactivelly
 
 2013/01/21 19:27 (GMT-3) - Version 1.1.0
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-L4I_BRANCH=v1.2.0
+L4I_BRANCH=master
 
 function main()  {
 	if [ "$1" != "new" ] && [ "$1" != "NEW" ] && [ -f "./artisan" ]; then

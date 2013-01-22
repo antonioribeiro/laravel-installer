@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ## This is your playground
-L4I_VERSION=1.1.0
-L4I_BRANCH=v1.2.0
+L4I_VERSION=1.2.0
+L4I_BRANCH=master
 L4I_REPOSITORY="-b $L4I_BRANCH https://github.com/antonioribeiro/l4i.git"
 L4I_REPOSITORY_DIR="/tmp/l4i-git-repository"
 LARAVEL_APP_BRANCH=" -b develop "
