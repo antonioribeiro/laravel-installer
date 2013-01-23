@@ -604,7 +604,7 @@ function checkOS() {
 	if grep -q "$OPERATING_SYSTEM" <<< "$SUPPORTED_OPERATING_SYSTEMS"; then
 		message "Your operating system ($OPERATING_SYSTEM) is fully supported."
 		if [[ "$OPERATING_SYSTEM" == "$DISTRIBUTION" ]]; then
-			# != was not working here in some cases, go figure!
+			message "Distribution and operating system have the same name."
 		else
 			message "Your distribution is \"$OPERATING_SYSTEM\"."
 		fi
