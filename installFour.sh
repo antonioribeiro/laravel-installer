@@ -24,6 +24,8 @@ PHPUNIT_DIR=/etc/phpunit
 PHPUNIT_DIR_ESCAPED=`echo $PHPUNIT_DIR | sed s,/,\\\\\\\\\\/,g`
 PHP_SUHOSIN_CONF=/etc/php5/cli/conf.d/suhosin.ini
 PHP_MINIMUN_VERSION=5.2.0
+PHP_INI=/etc/php/php.ini
+APACHE_CONF=
 INSTALL_DIR=$1
 SITE_NAME=$2
 INSTALL_DIR_ESCAPED="***will be set on checkParameters***"
@@ -63,6 +65,8 @@ function main() {
 
 	checkWebserver
 	checkPHP
+	configurePHP
+	restartWebserver
 
 	checkParameters
 
@@ -145,7 +149,7 @@ function createVirtualHost() {
 	if [[ "$WEBSERVER" == "apache2" ]] || [[ "$WEBSERVER" == "httpd" ]]; then
 		message "Creating $WEBSERVER VirtualHost..."
 
-		conf=$VHOST_CONF_DIR/$VHOST_CONF_FILE
+		conf=$INSTALL_DIR/$VHOST_CONF_FILE
 		log "vhost conf = $conf"
 
 		$SUDO_APP cp $L4I_REPOSITORY_GIT/apache.directory.template $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -153,9 +157,11 @@ function createVirtualHost() {
 		$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 		$SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR_ESCAPED/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-		if [[ "$VHOST_ENABLE_COMMAND" != "" ]]; then
-			$SUDO_APP $VHOST_ENABLE_COMMAND $SITE_NAME 2>&1 | tee -a $LOG_FILE &> /dev/null
-		fi
+		# if [[ "$VHOST_ENABLE_COMMAND" != "" ]]; then
+		# 	$SUDO_APP $VHOST_ENABLE_COMMAND $SITE_NAME 2>&1 | tee -a $LOG_FILE &> /dev/null
+		# fi
+
+        echo "Include $conf" | $SUDO_APP tee -a $APACHE_CONF
 
 		$SUDO_APP $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
 
@@ -205,6 +211,10 @@ function installComposerPackage() {
 function checkPHP() {
 	phpcli=`type -p $PHP_CLI_APP`
 	phpcgi=`type -p $PHP_CGI_APP`
+
+	if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
+		phpcgi=$phpcli
+	fi
 
 	if [[ "$phpcli" == "" ]] || [[ "$phpcgi" == "" ]]; then
 		message "Looks like PHP or part of it is not installed."
@@ -283,8 +293,16 @@ function checkWebserver() {
 		abortIt "You need a webserver to run Laravel 4, please install one and restart."
 	fi
 
+    #Debian default
+    APACHE_CONF=/etc/apache2/apache2.conf
+
 	if [[ "$WEBSERVER" == "httpd" ]]; then
-		VHOST_CONF_DIR=/etc/httpd/conf.d
+        APACHE_CONF=/etc/httpd/httpd.conf
+		if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
+			VHOST_CONF_DIR=/etc/httpd/conf
+		else
+			VHOST_CONF_DIR=/etc/httpd/conf.d
+		fi
 		VHOST_ENABLE_COMMAND=
 	fi
 
@@ -334,7 +352,7 @@ function checkComposer() {
 	fi
 
 	if [[ "$RETURN_VALUE" == "TRUE" ]]; then
-		message "Found composer at $COMPOSER_PATH."
+		message "Found Composer at $COMPOSER_PATH."
 	fi
 }
 
@@ -485,9 +503,6 @@ function checkParameters() {
 	fi
 
 	VHOST_CONF_FILE=$SITE_NAME
-	if [[ "$WEBSERVER" == "httpd" ]]; then
-		VHOST_CONF_FILE=$SITE_NAME.conf
-	fi
 }
  
 function makeInstallDirectory {
@@ -500,6 +515,7 @@ function checkSudo() {
 	if [[ $EUID -ne 0 ]]; then
 		message "Your sudo password is required for some commands."
 		$SUDO_APP -k
+        $SUDO_APP echo -n
 		CAN_I_RUN_SUDO=$(sudo -n uptime 2>&1|grep "load"|wc -l)
 		[ ${CAN_I_RUN_SUDO} -gt 0 ] && CAN_I_RUN_SUDO="YES" || CAN_I_RUN_SUDO="NO"
 		if [[ "$CAN_I_RUN_SUDO" == "NO" ]]; then
@@ -582,12 +598,8 @@ function checkOS() {
 	fi
 
 	if [[ -f /etc/arch-release ]]; then
-		if [[ "$OPERATING_SYSTEM" == "" ]]; then
-			DISTRIBUTION=`cat /etc/redhat-release | cut -d \( -f 1`
-		else 
-			DISTRIBUTION=$OPERATING_SYSTEM
-		fi
 		OPERATING_SYSTEM=arch
+		DISTRIBUTION=arch
 	fi
 
 	if [[ "$OPERATING_SYSTEM" == "Ubuntu" ]] || [[ "$OPERATING_SYSTEM" == "Linux Mint" ]]; then
@@ -744,8 +756,6 @@ function installWebserver() {
 			WEBSERVER=httpd
 		fi
 	fi
-
-	restartWebserver
 }
 
 function restartWebserver() {
@@ -782,8 +792,6 @@ function installPHP() {
 		installApp php
 		installApp php-apache
 	fi
-
-	restartWebserver
 }
 
 function execute() {
@@ -806,5 +814,14 @@ function updatePackagerApp() {
 	fi
 }
 
-main
+function configurePHP() {
+	if [[ -f $PHP_INI ]]; then
+		message "Checking php.ini options..."
+		$SUDO_APP cp $PHP_INI $PHP_INI.backup
+		$SUDO_APP perl -pi -e "s/;extension=phar.so/extension=phar.so/g" $PHP_INI 2>&1 | tee -a $LOG_FILE &> /dev/null
+		$SUDO_APP perl -pi -e "s/^open_basedir =/;open_basedir =/g" $PHP_INI 2>&1 | tee -a $LOG_FILE &> /dev/null
+		diff=`diff -q $PHP_INI $PHP_INI.backup | grep differ`
+	fi
+}
 
+main
