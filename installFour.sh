@@ -2,7 +2,7 @@
 
 ## This is your playground
 L4I_VERSION=1.3.0
-L4I_BRANCH=v1.3.0
+L4I_BRANCH=master
 L4I_REPOSITORY="-b $L4I_BRANCH https://github.com/antonioribeiro/l4i.git"
 L4I_REPOSITORY_DIR=/tmp/l4i
 L4I_REPOSITORY_GIT="$L4I_REPOSITORY_DIR/git"
