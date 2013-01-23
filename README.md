@@ -21,7 +21,7 @@ When I first said I was building this script someone asked me "does Laravel 4 ne
 
 You just need a Linux box with nothing else installed and script will install everything for you or you can use a working PHP development environment and it will install only Laravel 4 and what is missing for it to work.
 
-A the moment it will install and configure apache2 only.
+Web Server: a the moment it only knows how to install and configure apache2, if you need any other webserver (nginx, lighthttpd...), you'll need to do the virtual host creation part manually.
 
 Your user need to have writing permissions to the installation directory, this script will not use sudo to create you directories and download files, but will use it to install needed software.
 
