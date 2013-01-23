@@ -59,6 +59,7 @@ function main() {
  
 	checkOS
 	updatePackagerSources
+	updatePackagerApp
 
 	checkWebserver
 	checkPHP
@@ -94,13 +95,13 @@ function downloadL4IRepository {
 function installTwitterBootstrap() {
 	inquireYN "Install Twitter Bootstrap? " "y" "n"
 	if [[ "$answer" == "y" ]]; then
-		inquireYN "Install the LESS version of Twitter Bootstrap? " "y" "n"
-		if [[ "$answer" == "y" ]]; then
-			less=YES
-			tbzip="twitter.bootstrap.zip"
-		else
-			tbzip="twitter.bootstrap.zip"
-		fi
+		# inquireYN "Install the LESS version of Twitter Bootstrap? " "y" "n"
+		# if [[ "$answer" == "y" ]]; then
+		# 	less=YES
+		# 	tbzip="twitter.bootstrap.zip"
+		# else
+		# 	tbzip="twitter.bootstrap.zip"
+		# fi
 
 		message "Installing Twitter Bootstrap..."
 		wget --no-check-certificate -O $L4I_REPOSITORY_DIR/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip 2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -580,6 +581,15 @@ function checkOS() {
 		OPERATING_SYSTEM=Redhat
 	fi
 
+	if [[ -f /etc/arch-release ]]; then
+		if [[ "$OPERATING_SYSTEM" == "" ]]; then
+			DISTRIBUTION=`cat /etc/redhat-release | cut -d \( -f 1`
+		else 
+			DISTRIBUTION=$OPERATING_SYSTEM
+		fi
+		OPERATING_SYSTEM=arch
+	fi
+
 	if [[ "$OPERATING_SYSTEM" == "Ubuntu" ]] || [[ "$OPERATING_SYSTEM" == "Linux Mint" ]]; then
 		DISTRIBUTION=$OPERATING_SYSTEM
 		OPERATING_SYSTEM=Debian
@@ -587,14 +597,20 @@ function checkOS() {
 
 	if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
 		PACKAGER_NAME="apt-get"
-		PACKAGER_UPDATE_COMMAND="apt-get --yes update "
-		PACKAGER_INSTALL_COMMAND="apt-get --yes install "
+		PACKAGER_UPDATE_COMMAND="$PACKAGER_NAME --yes update "
+		PACKAGER_INSTALL_COMMAND="$PACKAGER_NAME --yes install "
 	fi
 
 	if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
 		PACKAGER_NAME="yum"
 		PACKAGER_UPDATE_COMMAND=""
-		PACKAGER_INSTALL_COMMAND="yum -y install "
+		PACKAGER_INSTALL_COMMAND="$PACKAGER_NAME -y install "
+	fi
+
+	if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
+		PACKAGER_NAME="pacman"
+		PACKAGER_UPDATE_COMMAND="$PACKAGER_NAME --noconfirm -Sy "
+		PACKAGER_INSTALL_COMMAND="$PACKAGER_NAME --noconfirm -S "
 	fi
 
 	if [[ "$OPERATING_SYSTEM" == "" ]] ; then
@@ -723,6 +739,10 @@ function installWebserver() {
 			installApp httpd
 			WEBSERVER=httpd
 		fi
+		if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
+			installApp apache
+			WEBSERVER=httpd
+		fi
 	fi
 
 	restartWebserver
@@ -731,11 +751,17 @@ function installWebserver() {
 function restartWebserver() {
 	buildRestartWebserverCommand
 	message "Restarting $WEBSERVER..."
-	$SUDO_APP $WS_RESTART_COMMAND $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
+	$SUDO_APP $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function buildRestartWebserverCommand() {
-	WS_RESTART_COMMAND="service $WEBSERVER restart"
+	if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
+		if [[ "$WEBSERVER" == "httpd" ]]; then
+			WS_RESTART_COMMAND="apachectl restart"
+		fi
+	else 
+		WS_RESTART_COMMAND="service $WEBSERVER restart"
+	fi
 }
 
 function installPHP() {
@@ -752,6 +778,10 @@ function installPHP() {
 		installApp php-cli 
 		installApp php-xml
 	fi
+	if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
+		installApp php
+		installApp php-apache
+	fi
 
 	restartWebserver
 }
@@ -766,6 +796,13 @@ function updatePackagerSources() {
 	if [[ "$PACKAGER_UPDATE_COMMAND" != "" ]]; then
 		message "Running $PACKAGER_UPDATE_COMMAND..."
 		$SUDO_APP $PACKAGER_UPDATE_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
+	fi
+}
+
+function updatePackagerApp() {
+	if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
+		message "Cheking and upgrading pacman..."
+		$SUDO_APP $PACKAGER_INSTALL_COMMAND pacman 2>&1 | tee -a $LOG_FILE &> /dev/null
 	fi
 }
 
