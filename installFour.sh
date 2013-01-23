@@ -28,7 +28,7 @@ INSTALL_DIR=$1
 SITE_NAME=$2
 INSTALL_DIR_ESCAPED="***will be set on checkParameters***"
 LOG_FILE=$L4I_REPOSITORY_DIR/l4i.install.log
-SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint|Redhat|Fedora|CentOS"
+SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint|Redhat|Fedora|CentOS|arch"
 
 		EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry")
 	 EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "dev-master"                     "dev-master"                                    "2.0.*")
@@ -620,7 +620,7 @@ function checkOS() {
 	if grep -q "$OPERATING_SYSTEM" <<< "$SUPPORTED_OPERATING_SYSTEMS"; then
 		message "Your operating system ($OPERATING_SYSTEM) is fully supported."
 		if [[ "$OPERATING_SYSTEM" == "$DISTRIBUTION" ]]; then
-			# != was not working here in some cases, go figure!
+			message "Distribution and operating system have the same name."
 		else
 			message "Your distribution is \"$OPERATING_SYSTEM\"."
 		fi
