@@ -303,7 +303,7 @@ function installComposer() {
         perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" $PHP_SUHOSIN_CONF  2>&1 | tee -a $LOG_FILE &> /dev/null
     fi
 
-    execute "$CURL_APP -s http://getcomposer.org/installer | $PHP_CLI_APP"
+    # execute "$CURL_APP -s http://getcomposer.org/installer | $PHP_CLI_APP"
 
     $CURL_APP -s http://getcomposer.org/installer | $PHP_CLI_APP  2>&1 | tee -a $LOG_FILE &> /dev/null
     checkErrors "Composer installation failed."
@@ -724,7 +724,8 @@ function installPHP() {
 }
 
 function execute() {
-    ${$1} >>$LOG_FILE 2>&1
+    command=$1
+    ${command} >>$LOG_FILE 2>&1
     log ":execute: $1"
 }
 
