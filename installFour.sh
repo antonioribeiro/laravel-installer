@@ -54,16 +54,16 @@ function main() {
 	showHeader
 	cleanL4IRepository
 	createLogDirectory
+	showLogFile 
 	checkSudo
-
+ 
 	checkOS
 	updatePackagerSources
 
-	checkPHP
 	checkWebserver
+	checkPHP
 
 	checkParameters
-	showLogFile 
 
 	getIPAddress
 
@@ -738,10 +738,14 @@ function buildRestartWebserverCommand() {
 
 function installPHP() {
 	if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
-		installApp php5 php5-cgi php5-cli php5-curl
+		installApp php5 
+		installApp php5-common 
+		installApp php5-cgi 
+		installApp php5-cli
+		installApp php-xml-parser
 	fi
 	if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
-		installApp php 
+		installApp php
 		installApp php-common 
 		installApp php-cli 
 		installApp php-xml
