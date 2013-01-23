@@ -11,17 +11,21 @@ When I first said I was building this script someone asked me "does Laravel 4 ne
 
 ### Supported Operating Systems
 
-* Debian
+* Debian (tested on 6 and 7)
 * Ubuntu (Desktop and Server)
 * Redhat
-* Fedora
-* CentOS
+* Fedora (tested on 17 and 18)
+* CentOS (tested on 6.3)
 
 ### Requirements
 
-You basically need a Linux box with PHP and a webserver (nginx, apache2 or lighthttpd) installed.
+You just need a Linux box with nothing else installed and script will install everything for you or you can use a working PHP development environment and it will install only Laravel 4 and what is missing for it to work.
+
+A the moment it will install and configure apache2 only.
 
 Your user need to have writing permissions to the installation directory, this script will not use sudo to create you directories and download files, but will use it to install needed software.
+
+If this script needs to install software, you will need sudo or root permissions.
 
 ### Process of installation
 
