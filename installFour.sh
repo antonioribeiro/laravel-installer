@@ -6,6 +6,7 @@ L4I_BRANCH=v1.3.0
 L4I_REPOSITORY="-b $L4I_BRANCH https://github.com/antonioribeiro/l4i.git"
 L4I_REPOSITORY_DIR=/tmp/l4i
 L4I_REPOSITORY_GIT="$L4I_REPOSITORY_DIR/git"
+L4I_INSTALLED_APPS="/etc/l4i.installed.txt"
 LARAVEL_APP_BRANCH=" -b develop "
 LARAVEL_APP_REPOSITORY="https://github.com/laravel/laravel.git"
 BASH_DIR=`type -p bash`
@@ -42,6 +43,12 @@ EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\F
 #### ** Usually this one is harmless and will not compromise your installation
 
 #################################################################### 
+# redirection
+
+  # rm $INSTALL_DIR/app/views/hello.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+  # mkdir $INSTALL_DIR/app/views/layouts 2>&1 | tee -a $LOG_FILE &> /dev/null
+  # mkdir $INSTALL_DIR/app/views/views 2>&1 | tee -a $LOG_FILE &> /dev/null
+
 
 function main() {
     showHeader
@@ -384,11 +391,14 @@ function checkMCrypt() {
 }
 
 function addL4InstalledApp() {
-    echo "$1" | $SUDO_APP tee -a /etc/l4i.installed.txt 2>&1 | tee -a $LOG_FILE &> /dev/null
+    echo "$1" | $SUDO_APP tee -a $L4I_INSTALLED_APPS 2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function checkL4InstalledApp() {
-    installed=`cat /etc/l4i.installed.txt | grep $1`
+    installed=
+    if [[ -f $L4I_INSTALLED_APPS ]]; then
+        installed=`cat $L4I_INSTALLED_APPS | grep $1`
+    fi
 }
 
 function checkApp() {
@@ -419,7 +429,7 @@ function checkApp() {
 
 function checkErrors() {
     if [ $? -gt 0 ]; then
-        message $1
+        echo $1
         abortIt "Please check log file at $LOG_FILE."
     fi
 }
@@ -614,7 +624,7 @@ function inquireText()  {
 }
 
 function createLogDirectory() {
-    mkdir -p $L4I_REPOSITORY_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
+    mkdir -p $L4I_REPOSITORY_DIR >/dev/null 2>&1
     checkErrors "You might not have permissions to create files in $L4I_REPOSITORY_DIR, please check log: $LOG_FILE."
 }
 
@@ -629,21 +639,22 @@ function installOurArtisan() {
 
 function abortIt() {
     if [ "$1" != "" ]; then
-        message $1
+        echo $1
     fi
-    message "Aborted."
+    echo "Aborted."
     exit 1
 }
 
 function showHeader() {
     clear
-    message "l4i - The Laravel 4 Installer Script"
-    message ""
+    ## will not use message because it logs and log file might not be available at the moment
+    echo "l4i - The Laravel 4 Installer Script"
+    echo ""
 }
 
 function cleanL4IRepository() {
     if [ -d $L4I_REPOSITORY_DIR ]; then
-        rm -rf $L4I_REPOSITORY_DIR  2>&1 /dev/null
+        rm -rf $L4I_REPOSITORY_DIR >/dev/null 2>&1 
         checkErrors "You're not allowed to write in $L4I_REPOSITORY_DIR."
     fi
 }
@@ -665,8 +676,8 @@ function message() {
 }
 
 function log() {
-    if [ "$LOG_FILE" != "" ]; then
-        echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" 2>&1 | tee -a $LOG_FILE &> /dev/null
+    if [[ "$LOG_FILE" != "" ]] && [[ -f $LOG_FILE ]]; then
+        echo "$1 $2 $3 $4 $5 $6 $7 $8 $9" >>$LOG_FILE 2>&1
     fi
 }
 

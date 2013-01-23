@@ -116,6 +116,7 @@ bash installFour.sh /var/www/blog myBlog YES
 
 2013/01/22 13:01 (GMT-3) - Version 1.3.0
 
+* Now supporting some Redhat based distributions (Redhat, Fedora and CentOS)
 * All script installation files were moved to /tmp/l4i/
 * Added a list of supported operating systems and a question if the user OS is not in this list
 * Optionally installs a webserver
