@@ -479,7 +479,7 @@ function checkParameters() {
         VHOST_CONF_FILE=$SITE_NAME.conf
     fi
 }
-
+ 
 function makeInstallDirectory {
 
     mkdir $INSTALL_DIR

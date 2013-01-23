@@ -117,7 +117,7 @@ bash installFour.sh /var/www/blog myBlog YES
 
 # Changelog
 
-2013/01/22 13:01 (GMT-3) - Version 1.3.0
+2013/01/23 12:12 (GMT-3) - Version 1.3.0
 
 * Optionally installs PHP and a webserver (apache), if it cannot find them
 * Added support for some Redhat based distributions (Redhat, Fedora and CentOS)
