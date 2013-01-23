@@ -499,6 +499,7 @@ function checkSudo() {
 	if [[ $EUID -ne 0 ]]; then
 		message "Your sudo password is required for some commands."
 		$SUDO_APP -k
+        $SUDO_APP echo -n
 		CAN_I_RUN_SUDO=$(sudo -n uptime 2>&1|grep "load"|wc -l)
 		[ ${CAN_I_RUN_SUDO} -gt 0 ] && CAN_I_RUN_SUDO="YES" || CAN_I_RUN_SUDO="NO"
 		if [[ "$CAN_I_RUN_SUDO" == "NO" ]]; then
