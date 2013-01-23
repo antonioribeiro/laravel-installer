@@ -12,7 +12,8 @@ BASH_DIR=`type -p bash`
 BIN_DIR=`dirname $BASH_DIR`
 GIT_APP=git
 CURL_APP=curl
-PHP_APP=php
+PHP_CLI_APP=php
+PHP_CGI_APP=php-cgi
 UNZIP_APP=unzip
 SUDO_APP=sudo
 COMPOSER_APP=composer
@@ -20,7 +21,6 @@ ARTISAN_APP=artisan
 PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
 PHPUNIT_DIR_ESCAPED=`echo $PHPUNIT_DIR | sed s,/,\\\\\\\\\\/,g`
-PHP_APP=php
 PHP_SUHOSIN_CONF=/etc/php5/cli/conf.d/suhosin.ini
 PHP_MINIMUN_VERSION=5.2.0
 INSTALL_DIR=$1
@@ -170,8 +170,8 @@ function installAdditionalPackages() {
 }
 
 function installComposerPackage() {
-    $PHP_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2
-    log "$PHP_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2"
+    $PHP_CLI_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2
+    log "$PHP_CLI_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2"
 
     if [[ "$3$4" != "" ]]; then
         addAppAlias $3 $4
@@ -183,8 +183,30 @@ function installComposerPackage() {
 }
 
 function checkPHP() {
-    php=`$PHP_APP -v 2>&1 | tee -a $LOG_FILE &> /dev/null `
-    checkErrors "PHP is not installed."
+    phpcli=`type -p $PHP_CLI_APP`
+    phpcgi=`type -p $PHP_CGI_APP`
+
+    if [[ "$phpcli" == "" ]] || [[ "$phpcgi" == "" ]]; then
+        message "Looks like PHP or part of it is not installed."
+        if [[ "$php_install_attempt" == "" ]]; then
+            inquireYN "Do you want to install PHP? " "y" "n"
+            if [[ "$answer" == "y" ]]; then
+                php_install_attempt=YES
+                installPHP
+                checkPHP
+            fi
+        fi
+    fi
+
+    if [[ "$phpcli" == "" ]]; then
+        message "PHP cli not found."
+    fi
+    if [[ "$phpcgi" == "" ]]; then
+        message "PHP cgi not found."
+    fi
+    if [[ "$phpcli" == "" ]] || [[ "$phpcgi" == "" ]]; then
+        abortIt "You'll need PHP to run Laravel 4, please install it."
+    fi
 
     echo "<?php echo PHP_VERSION;" > /tmp/phpver.php
     phpver=`php /tmp/phpver.php`
@@ -647,6 +669,17 @@ function restartWebserver() {
 
 function buildRestartWebserverCommand() {
     WS_RESTART_COMMAND="service $WEBSERVER restart"
+}
+
+function installPHP() {
+    if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
+        installApp php5 php5-cgi php5-cli php5-curl php5-mcrypt
+    fi
+    if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
+        installApp php php-common php-mcrypt php-cli php-xml
+    fi
+
+    restartWebserver
 }
 
 main
