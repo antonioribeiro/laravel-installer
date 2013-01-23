@@ -94,13 +94,13 @@ function downloadL4IRepository {
 function installTwitterBootstrap() {
 	inquireYN "Install Twitter Bootstrap? " "y" "n"
 	if [[ "$answer" == "y" ]]; then
-		inquireYN "Install the LESS version of Twitter Bootstrap? " "y" "n"
-		if [[ "$answer" == "y" ]]; then
-			less=YES
-			tbzip="twitter.bootstrap.zip"
-		else
-			tbzip="twitter.bootstrap.zip"
-		fi
+		#inquireYN "Install the LESS version of Twitter Bootstrap? " "y" "n"
+		#if [[ "$answer" == "y" ]]; then
+		#	less=YES
+		#	tbzip="twitter.bootstrap.zip"
+		#else
+		#	tbzip="twitter.bootstrap.zip"
+		#fi
 
 		message "Installing Twitter Bootstrap..."
 		wget --no-check-certificate -O $L4I_REPOSITORY_DIR/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip 2>&1 | tee -a $LOG_FILE &> /dev/null
