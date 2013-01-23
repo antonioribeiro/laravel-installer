@@ -49,14 +49,16 @@ function main() {
     createLogDirectory
 
     checkOS
+
+    checkPHP
+    checkWebserver
+    
     checkParameters
     showLogFile 
 
     checkSudo
     getIPAddress
 
-    checkPHP
-    checkWebserver
     checkApp $CURL_APP
     checkApp $UNZIP_APP installUnzip
     checkApp $GIT_APP
@@ -123,8 +125,8 @@ function getIPAddress() {
 }
 
 function createVirtualHost() {
-    if [[ "$WEBSERVER" == "apache2" ]]; then
-        message "Creating apache2 VirtualHost..."
+    if [[ "$WEBSERVER" == "apache2" ]] || [[ "$WEBSERVER" == "httpd" ]]; then
+        message "Creating $WEBSERVER VirtualHost..."
 
         conf=$VHOST_CONF_DIR/$VHOST_CONF_FILE
 
@@ -268,7 +270,6 @@ function checkWebserver() {
         VHOST_CONF_DIR=/etc/httpd/conf.d
         VHOST_CONF_FILE=$SITE_NAME.conf
         VHOST_ENABLE_COMMAND=
-        WEBSERVER=apache2 # httpd usually is also apache2, with some differences covered here
     fi
 
     message "Webserver ($WEBSERVER) is installed."
@@ -295,7 +296,7 @@ function installComposer() {
         perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" $PHP_SUHOSIN_CONF  2>&1 | tee -a $LOG_FILE &> /dev/null
     fi
 
-    $CURL_APP -s http://getcomposer.org/installer | $PHP_APP
+    $CURL_APP -s http://getcomposer.org/installer | $PHP_CLI_APP
     checkErrors "Composer installation failed."
 
     COMPOSER_APP=$BIN_DIR/composer
