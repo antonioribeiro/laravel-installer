@@ -26,7 +26,7 @@ PHP_MINIMUN_VERSION=5.2.0
 INSTALL_DIR=$1
 SITE_NAME=$2
 INSTALL_DIR_ESCAPED="***will be set on checkParameters***"
-LOG_FILE="***will be set on showLogFile***"
+LOG_FILE=$L4I_REPOSITORY_DIR/l4i.install.log
 SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint|Redhat"
 
         EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry")
@@ -52,7 +52,7 @@ function main() {
 
     checkPHP
     checkWebserver
-    
+
     checkParameters
     showLogFile 
 
@@ -129,6 +129,7 @@ function createVirtualHost() {
         message "Creating $WEBSERVER VirtualHost..."
 
         conf=$VHOST_CONF_DIR/$VHOST_CONF_FILE
+        log "vhost conf = $conf"
 
         $SUDO_APP cp $L4I_REPOSITORY_GIT/apache.directory.template $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 
@@ -245,7 +246,6 @@ function checkWebserver() {
     WEBSERVER=$ws_process
     VHOST_ENABLE_COMMAND=
     VHOST_CONF_DIR=/etc/apache2/sites-available
-    VHOST_CONF_FILE=$SITE_NAME
     VHOST_ENABLE_COMMAND="a2ensite"
 
     buildRestartWebserverCommand
@@ -268,7 +268,6 @@ function checkWebserver() {
 
     if [[ "$WEBSERVER" == "httpd" ]]; then
         VHOST_CONF_DIR=/etc/httpd/conf.d
-        VHOST_CONF_FILE=$SITE_NAME.conf
         VHOST_ENABLE_COMMAND=
     fi
 
@@ -284,6 +283,7 @@ function installPHPUnit() {
         $SUDO_APP perl -pi -e "s/%phpunit_dir%/$PHPUNIT_DIR_ESCAPED/g" $PHPUNIT_DIR/composer.json  2>&1 | tee -a $LOG_FILE &> /dev/null
         cd $PHPUNIT_DIR
         composerUpdate $PHPUNIT_DIR
+        checkErrors "Error installing PHPUnit."
         $SUDO_APP chmod +x $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit 2>&1 | tee -a $LOG_FILE &> /dev/null
         $SUDO_APP ln -s $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit $BIN_DIR/$PHPUNIT_APP 2>&1 | tee -a $LOG_FILE &> /dev/null
     fi 
@@ -296,7 +296,7 @@ function installComposer() {
         perl -pi -e "s/;suhosin.executor.include.whitelist =$/suhosin.executor.include.whitelist = phar/g" $PHP_SUHOSIN_CONF  2>&1 | tee -a $LOG_FILE &> /dev/null
     fi
 
-    $CURL_APP -s http://getcomposer.org/installer | $PHP_CLI_APP
+    $CURL_APP -s http://getcomposer.org/installer | $PHP_CLI_APP  2>&1 | tee -a $LOG_FILE &> /dev/null
     checkErrors "Composer installation failed."
 
     COMPOSER_APP=$BIN_DIR/composer
@@ -364,11 +364,31 @@ function installApp() {
 }
 
 function checkMCrypt() {
-    if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
-        installPackage php5-mcrypt
-    else
-        installPackage php-mcrypt
+    checkL4InstalledApp "php-mcrypt"
+    if [[ "$installed" = "" ]]; then 
+        if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
+            installPackage php5-mcrypt
+        else
+            ## Some CentOS will need this EPEL repository to install php-mcrypt
+            if [[ $DISTRIBUTION > "CentOS release 1.0" ]] && [[ $DISTRIBUTION < "CentOS release 6.4" ]]; then
+                message "Installing EPEL repository for CentOS..."
+                wget --no-check-certificate -O $L4I_REPOSITORY_DIR/epel-release-6-8.noarch.rpm http://epel.gtdinternet.com/6/i386/epel-release-6-8.noarch.rpm 2>&1 | tee -a $LOG_FILE &> /dev/null
+                $SUDO_APP yum -y install $L4I_REPOSITORY_DIR/epel-release-6-8.noarch.rpm 2>&1 | tee -a $LOG_FILE &> /dev/null
+                checkErrors "Error trying to install EPEL repository for CentOS"
+            fi
+            installPackage php-mcrypt
+            checkErrors "Error installing php-mcrypt."
+            addL4InstalledApp "php-mcrypt"
+        fi
     fi
+}
+
+function addL4InstalledApp() {
+    echo "$1" | $SUDO_APP tee -a /etc/l4i.installed.txt 2>&1 | tee -a $LOG_FILE &> /dev/null
+}
+
+function checkL4InstalledApp() {
+    installed=`cat /etc/l4i.installed.txt | grep $1`
 }
 
 function checkApp() {
@@ -442,8 +462,10 @@ function checkParameters() {
         SITE_NAME=$answer
     fi
 
-    #log file is set again, now for site
-    LOG_FILE=$L4I_REPOSITORY_DIR/log/l4i.$SITE_NAME.install.log
+    VHOST_CONF_FILE=$SITE_NAME
+    if [[ "$WEBSERVER" == "httpd" ]]; then
+        VHOST_CONF_FILE=$SITE_NAME.conf
+    fi
 }
 
 function makeInstallDirectory {
@@ -522,11 +544,15 @@ function checkOS() {
     if [[ "$lsb_program" != "" ]] ; then
         OPERATING_SYSTEM=$($lsb_program -si)
     else
-        [[ -f /etc/redhat-release ]] && OPERATING_SYSTEM=Redhat
+        if [[ -f /etc/redhat-release ]]; then
+            OPERATING_SYSTEM=Redhat
+            DISTRIBUTION=`cat /etc/redhat-release | cut -d \( -f 1`
+        fi
     fi
 
     if [[ "$OPERATING_SYSTEM" == "Debian" ]] ||  [[ "$OPERATING_SYSTEM" == "Ubuntu" ]]; then
         OPERATING_SYSTEM_SUBTYPE=$OPERATING_SYSTEM
+        DISTRIBUTION=$OPERATING_SYSTEM
         OPERATING_SYSTEM=Debian
         PACKAGER_NAME="apt-get"
         PACKAGE_UPDATE_COMMAND="apt-get --yes update "
@@ -588,15 +614,11 @@ function inquireText()  {
 }
 
 function createLogDirectory() {
-    #this is a temporary name for our log file
-    LOG_FILE=/tmp/l4i.log
-    mkdir -p $L4I_REPOSITORY_DIR/log/ 2>&1 | tee -a $LOG_FILE &> /dev/null
-    checkErrors "You might not have permissions to create files in $L4I_REPOSITORY_DIR/log/, please check log: $LOG_FILE."
+    mkdir -p $L4I_REPOSITORY_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
+    checkErrors "You might not have permissions to create files in $L4I_REPOSITORY_DIR, please check log: $LOG_FILE."
 }
 
 function showLogFile() {
-    LOG_FILE=$L4I_REPOSITORY_DIR/log/l4i.$SITE_NAME.install.log
-
     message "A log of this installation is available at $LOG_FILE."
 }
 
@@ -620,8 +642,10 @@ function showHeader() {
 }
 
 function cleanL4IRepository() {
-    rm -rf $L4I_REPOSITORY_DIR  2>&1 | tee -a $LOG_FILE &> /dev/null
-    checkErrors "You're not allowed to write in $L4I_REPOSITORY_DIR."
+    if [ -d $L4I_REPOSITORY_DIR ]; then
+        rm -rf $L4I_REPOSITORY_DIR  2>&1 /dev/null
+        checkErrors "You're not allowed to write in $L4I_REPOSITORY_DIR."
+    fi
 }
 
 function findProgram() {
@@ -665,7 +689,7 @@ function installWebserver() {
 function restartWebserver() {
     buildRestartWebserverCommand
     message "Restarting $WEBSERVER..."
-    ${WS_RESTART_COMMAND} 2>&1 | tee -a $LOG_FILE &> /dev/null
+    $SUDO_APP $WS_RESTART_COMMAND $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function buildRestartWebserverCommand() {
@@ -674,13 +698,17 @@ function buildRestartWebserverCommand() {
 
 function installPHP() {
     if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
-        installApp php5 php5-cgi php5-cli php5-curl php5-mcrypt
+        installApp php5 php5-cgi php5-cli php5-curl
     fi
     if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
-        installApp php php-common php-mcrypt php-cli php-xml
+        installApp php 
+        installApp php-common 
+        installApp php-cli 
+        installApp php-xml
     fi
 
     restartWebserver
 }
 
 main
+
