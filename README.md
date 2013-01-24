@@ -85,6 +85,7 @@ In the process of intalling Laravel 4, this script will also try to install, if 
 * jasonlewis/basset (https://github.com/jasonlewis/basset)
 * bigelephant/string (https://github.com/bigelephant/string)
 * cartalyst/sentry (https://github.com/cartalyst/sentry)
+* anahkiasen/former (https://github.com/anahkiasen/former, https://packagist.org/packages/anahkiasen/former)
 
 ### Commands
 
@@ -120,6 +121,13 @@ bash installFour.sh /var/www/blog myBlog YES
 ```
 
 # Changelog
+
+2013/01/23 12:12 (GMT-3) - Version 1.5.0
+
+* Changed the way VirtualHosts are created, conf file now is hosted inside the site directory
+* Webserver restart rewritten
+* anahkiasen/former added to the list of packages
+* Added option to install lessphp
 
 2013/01/23 12:12 (GMT-3) - Version 1.4.0
 

@@ -1,8 +1,14 @@
 #!/bin/bash
 
+L4I_VERSION=1.5.0
+L4I_BRANCH=v1.5.0
+INSTALL_DIR=$1
+SITE_NAME=$2
+
+############################################  
 ## This is your playground
-L4I_VERSION=1.4.0
-L4I_BRANCH=master
+
+
 L4I_REPOSITORY="-b $L4I_BRANCH https://github.com/antonioribeiro/l4i.git"
 L4I_REPOSITORY_DIR=/tmp/l4i
 L4I_REPOSITORY_GIT="$L4I_REPOSITORY_DIR/git"
@@ -13,30 +19,45 @@ BASH_DIR=`type -p bash`
 BIN_DIR=`dirname $BASH_DIR`
 GIT_APP=git
 CURL_APP=curl
-PHP_CLI_APP=php
-PHP_CGI_APP=php-cgi
 UNZIP_APP=unzip
 SUDO_APP=sudo
+
 COMPOSER_APP=composer
+
 ARTISAN_APP=artisan
+
 PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
 PHPUNIT_DIR_ESCAPED=`echo $PHPUNIT_DIR | sed s,/,\\\\\\\\\\/,g`
+
+LESSPHP_APP=lessphp
+LESSPHP_DIR=/etc/lessphp
+LESSPHP_DIR_ESCAPED=`echo $LESSPHP_DIR | sed s,/,\\\\\\\\\\/,g`
+
 PHP_SUHOSIN_CONF=/etc/php5/cli/conf.d/suhosin.ini
 PHP_MINIMUN_VERSION=5.2.0
 PHP_INI=/etc/php/php.ini
+PHP_CLI_APP=php
+PHP_CGI_APP=php-cgi
 APACHE_CONF=
-INSTALL_DIR=$1
-SITE_NAME=$2
 INSTALL_DIR_ESCAPED="***will be set on checkParameters***"
 LOG_FILE=$L4I_REPOSITORY_DIR/l4i.install.log
-SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint|Redhat|Fedora|CentOS|arch"
 
-		EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry")
-	 EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "dev-master"                     "dev-master"                                    "2.0.*")
-  EP_ALIAS_NAME=(""             "HTML"                                "Form"                                "Str"                              ""                   "Basset"                         "String"                                        "Sentry")
-EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\Form\\\FormFacade"           "Meido\\\Str\\\StrFacade"          ""                   "Basset\\\Facades\\\Basset"      "BigElephant\\\String\\\StringFacade"           "Cartalyst\\\Sentry\\\Facades\\\Laravel\\\Sentry")
-	EP_PROVIDER=(""             "Meido\\\HTML\\\HTMLServiceProvider"  "Meido\\\Form\\\FormServiceProvider"  "Meido\\\Str\\\StrServiceProvider" ""                   "Basset\\\BassetServiceProvider" "BigElephant\\\String\\\StringServiceProvider"  "Cartalyst\\\Sentry\\\SentryServiceProvider")
+SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint|Redhat|Fedora|CentOS"
+#################################################################### 
+# operating systems to be supported
+#
+# MacOS
+# arch - almost done, but will have to study how to enable php on apache via bash
+# Gentoo
+#
+#
+
+		EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry"                                 "anahkiasen/former"                 )
+	 EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "dev-master"                     "dev-master"                                    "2.0.*"                                            "dev-composer"                      )
+  EP_ALIAS_NAME=(""             "HTML"                                "Form"                                "Str"                              ""                   "Basset"                         "String"                                        "Sentry"                                           "Former"                            )
+EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\Form\\\FormFacade"           "Meido\\\Str\\\StrFacade"          ""                   "Basset\\\Facades\\\Basset"      "BigElephant\\\String\\\StringFacade"           "Cartalyst\\\Sentry\\\Facades\\\Laravel\\\Sentry"  "Former\\\Facades\\\Former"         )
+	EP_PROVIDER=(""             "Meido\\\HTML\\\HTMLServiceProvider"  "Meido\\\Form\\\FormServiceProvider"  "Meido\\\Str\\\StrServiceProvider" ""                   "Basset\\\BassetServiceProvider" "BigElephant\\\String\\\StringServiceProvider"  "Cartalyst\\\Sentry\\\SentryServiceProvider"       "Former\\\FormerServiceProvider"    )
 
 #################################################################### 
 # kwnown errors 
@@ -66,7 +87,6 @@ function main() {
 	checkWebserver
 	checkPHP
 	configurePHP
-	restartWebserver
 
 	checkParameters
 
@@ -81,6 +101,7 @@ function main() {
 	checkComposer $INSTALL_DIR
 	checkPHPUnit
 	checkMCrypt
+	checkLessPHP
 	downloadSkeleton
 	installAdditionalPackages
 	installOurArtisan
@@ -88,6 +109,8 @@ function main() {
 	installTwitterBootstrap
 	createVirtualHost $INSTALL_DIR
 	setGlobalPermissions
+
+	restartWebserver
 }
 
 function downloadL4IRepository {
@@ -161,7 +184,7 @@ function createVirtualHost() {
 		# 	$SUDO_APP $VHOST_ENABLE_COMMAND $SITE_NAME 2>&1 | tee -a $LOG_FILE &> /dev/null
 		# fi
 
-        echo "Include $conf" | $SUDO_APP tee -a $APACHE_CONF
+		echo "Include $conf" | $SUDO_APP tee -a $APACHE_CONF 2>&1 | tee -a $LOG_FILE &> /dev/null
 
 		$SUDO_APP $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
 
@@ -245,7 +268,10 @@ function checkPHP() {
 	  abortIt "Your PHP version is $phpver, minumum required is $PHP_MINIMUN_VERSION."
 	fi
 
-	message "PHP $phpver is available."
+	if [[ "$phpisavailable" == "" ]]; then 
+		message "PHP $phpver is available."
+		phpisavailable=YES
+	fi
 }
 
 function checkPHPUnit() {
@@ -293,11 +319,30 @@ function checkWebserver() {
 		abortIt "You need a webserver to run Laravel 4, please install one and restart."
 	fi
 
-    #Debian default
-    APACHE_CONF=/etc/apache2/apache2.conf
+	# If APACHE_CONF was not set before, lets configure it
+	if [[ "$APACHE_CONF" == "" ]]; then 
+		#Debian default
+		APACHE_CONF=/etc/apache2/apache2.conf
+		if [[ "$OPERATING_SYSTEM" == "Redhat" ]] || [[ "$OPERATING_SYSTEM" == "arch" ]]; then
+			APACHE_CONF=
+
+			if [[ "$APACHE_CONF" == "" ]]; then
+				hasFile /etc/httpd/httpd.conf APACHE_CONF
+			fi
+			if [[ "$APACHE_CONF" == "" ]]; then
+				hasFile /etc/httpd/conf/httpd.conf APACHE_CONF
+			fi
+			if [[ "$APACHE_CONF" == "" ]]; then
+				hasFile /etc/httpd/conf.d/httpd.conf APACHE_CONF
+			fi
+		fi
+	fi
+
+	if [[ "$APACHE_CONF" == "" ]]; then
+		abortIt "This script could not find your apache.conf (or httpd.conf) file."
+	fi
 
 	if [[ "$WEBSERVER" == "httpd" ]]; then
-        APACHE_CONF=/etc/httpd/httpd.conf
 		if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
 			VHOST_CONF_DIR=/etc/httpd/conf
 		else
@@ -306,7 +351,10 @@ function checkWebserver() {
 		VHOST_ENABLE_COMMAND=
 	fi
 
-	message "Webserver ($WEBSERVER) is installed."
+	if [[ "$webserverisinstalled" == "" ]]; then 
+		message "Webserver ($WEBSERVER) is installed."
+		webserverisinstalled=YES
+	fi
 }
 
 function installPHPUnit() {
@@ -316,7 +364,6 @@ function installPHPUnit() {
 		$SUDO_APP chmod 777 $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
 		$SUDO_APP cp $L4I_REPOSITORY_GIT/phpunit.composer.json $PHPUNIT_DIR/composer.json
 		$SUDO_APP perl -pi -e "s/%phpunit_dir%/$PHPUNIT_DIR_ESCAPED/g" $PHPUNIT_DIR/composer.json  2>&1 | tee -a $LOG_FILE &> /dev/null
-		cd $PHPUNIT_DIR
 		composerUpdate $PHPUNIT_DIR
 		checkErrors "Error installing PHPUnit."
 		$SUDO_APP chmod +x $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit 2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -502,7 +549,7 @@ function checkParameters() {
 		SITE_NAME=$answer
 	fi
 
-	VHOST_CONF_FILE=$SITE_NAME
+	VHOST_CONF_FILE=$SITE_NAME.apache.conf
 }
  
 function makeInstallDirectory {
@@ -515,7 +562,7 @@ function checkSudo() {
 	if [[ $EUID -ne 0 ]]; then
 		message "Your sudo password is required for some commands."
 		$SUDO_APP -k
-        $SUDO_APP echo -n
+		$SUDO_APP echo -n
 		CAN_I_RUN_SUDO=$(sudo -n uptime 2>&1|grep "load"|wc -l)
 		[ ${CAN_I_RUN_SUDO} -gt 0 ] && CAN_I_RUN_SUDO="YES" || CAN_I_RUN_SUDO="NO"
 		if [[ "$CAN_I_RUN_SUDO" == "NO" ]]; then
@@ -634,7 +681,7 @@ function checkOS() {
 		if [[ "$OPERATING_SYSTEM" == "$DISTRIBUTION" ]]; then
 			message "Distribution and operating system have the same name."
 		else
-			message "Your distribution is \"$OPERATING_SYSTEM\"."
+			message "Your distribution is \"$DISTRIBUTION\"."
 		fi
 	else
 		message
@@ -755,22 +802,25 @@ function installWebserver() {
 			installApp apache
 			WEBSERVER=httpd
 		fi
+
+		restartWebserver
 	fi
 }
 
 function restartWebserver() {
 	buildRestartWebserverCommand
 	message "Restarting $WEBSERVER..."
-	$SUDO_APP $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
+	$SUDO_APP $WS_RESTART_COMMAND stop 2>&1 | tee -a $LOG_FILE &> /dev/null
+	sleep 3
+	$SUDO_APP $WS_RESTART_COMMAND start 2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function buildRestartWebserverCommand() {
-	if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
-		if [[ "$WEBSERVER" == "httpd" ]]; then
-			WS_RESTART_COMMAND="apachectl restart"
-		fi
+	apachectl=`type -p apachectl`
+	if [[ "$apachectl" == "" ]]; then 
+		WS_RESTART_COMMAND="service $WEBSERVER "
 	else 
-		WS_RESTART_COMMAND="service $WEBSERVER restart"
+		WS_RESTART_COMMAND="apachectl "
 	fi
 }
 
@@ -822,6 +872,63 @@ function configurePHP() {
 		$SUDO_APP perl -pi -e "s/^open_basedir =/;open_basedir =/g" $PHP_INI 2>&1 | tee -a $LOG_FILE &> /dev/null
 		diff=`diff -q $PHP_INI $PHP_INI.backup | grep differ`
 	fi
+}
+
+function hasFile() {
+	file=$1
+	var=$2
+
+	if [[ -f $file ]]; then
+		eval $var=\$file
+	fi
+}
+
+function checkApp() {
+	log "Locating app $1... "
+
+	if [[ "$2" == "" ]]; then
+		installer=installApp
+	else 
+		installer=$2
+	fi
+
+	program=`type -p $1`
+
+	if [[ "$program" == "" ]]; then
+		message -n "Trying to install $1 (with command $installer)..."
+		$installer $1 2>&1 | tee -a $LOG_FILE &> /dev/null
+		if ! type -p $1 2>&1 | tee -a $LOG_FILE &> /dev/null; then
+			message ""
+			message ""
+			message "Looks like $1 is not installed or not available for this application."
+			exit 0
+		fi
+		message " done."
+	else 
+		message "$1 is installed and available."
+	fi
+}
+
+function checkLessPHP() {
+	program=`type -p $LESSPHP_APP`
+
+	if [[ "$program" == "" ]]; then
+		inquireYN "Do you wish to install lessphp? " "y" "n"
+		installLessPHP
+	fi
+}
+
+function installLessPHP() {
+	if [[ "$CAN_I_RUN_SUDO" == "YES" ]]; then
+		message "Installing lessphp..."
+		$SUDO_APP mkdir -p $LESSPHP_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
+		$SUDO_APP chmod 777 $LESSPHP_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
+		$SUDO_APP cp $L4I_REPOSITORY_GIT/lessphp.composer.json $LESSPHP_DIR/composer.json
+		composerUpdate $LESSPHP_DIR
+		checkErrors "Error installing lessphp."
+		$SUDO_APP chmod +x $LESSPHP_DIR/vendor/leafo/lessphp/lessc.inc.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+		$SUDO_APP ln -s $LESSPHP_DIR/vendor/leafo/lessphp/lessc.inc.php $BIN_DIR/$LESSPHP_APP 2>&1 | tee -a $LOG_FILE &> /dev/null
+	fi 
 }
 
 main
