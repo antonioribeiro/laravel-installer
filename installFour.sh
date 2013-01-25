@@ -1,7 +1,7 @@
 #!/bin/bash
 
 L4I_VERSION=1.5.0
-L4I_BRANCH=v1.5.0
+L4I_BRANCH=master
 INSTALL_DIR=$1
 SITE_NAME=$2
 
@@ -77,6 +77,9 @@ EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\F
 
 #### composer -> The contents of https://packagist.org/p/providers-stale.json do not match its signature,
 #### ** Usually this one is harmless and will not compromise your installation
+
+#### lessc: FATAL ERROR: v8::Context::New() V8 is no longer usable
+#### ** Sometimes this error occurs for no reason 
 
 #################################################################### 
 # redirection
@@ -178,10 +181,29 @@ function installBootstrapLess() {
 		compressed=" -c "
 	fi
 
-	$LESS_APP $compressed $INSTALL_DIR/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/css/bootstrap.min.css
-	$LESS_APP             $INSTALL_DIR/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/css/bootstrap.css
+	compileLess $compressed $INSTALL_DIR/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/css/bootstrap.min.css
+	compileLess             $INSTALL_DIR/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/css/bootstrap.css
 
 	installBootstrapTemplate
+}
+
+function compileLess() {
+	compiled=false
+	i=0
+	message "Compiling less file from $1 to $2..."
+	while true; do
+		$LESS_APP $1 $2 $3 2>&1 | tee -a $LOG_FILE &> /dev/null
+		if [ $? -eq 0 ]; then
+			break
+		fi
+
+		if [[ $i -gt 3 ]]; then
+			message "Error trying compile, please check log at $LOG_FILE."
+			break
+		fi
+
+		i=$[$i+1]
+	done
 }
 
 function installBootstrapTemplate() {

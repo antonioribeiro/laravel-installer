@@ -62,7 +62,9 @@ Page after installing Laravel 4 with this script
 
 ### Screencasts
 
-From version 1.2.0: http://www.screenr.com/HNO7
+Version 1.5.0
+This is a screenshot from a full install, not only Laravel 4, but also apache, php, Node.js and less:
+http://puu.sh/1Sez1
 
 ### Installed software
 
