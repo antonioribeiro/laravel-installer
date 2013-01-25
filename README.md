@@ -54,17 +54,17 @@ If you need something different from this, you'll have to tweak your .htaccess a
 
 ### Screenshots
 
-Selecting aditional packages
-![l4i screenshot](http://puu.sh/1QM19)
+Version 1.5.0
+
+This is a screenshot of a full install session, not only Laravel 4, but also apache, php, Node.js and less:
+![l4i screenshot](http://puu.sh/1Sez1)
 
 Page after installing Laravel 4 with this script
 ![l4i screenshot](http://puu.sh/1PI8I)
 
 ### Screencasts
 
-Version 1.5.0
-This is a screenshot from a full install, not only Laravel 4, but also apache, php, Node.js and less:
-http://puu.sh/1Sez1
+From version 1.2.0: http://www.screenr.com/HNO7
 
 ### Installed software
 
