@@ -131,6 +131,11 @@ bash installFour.sh /var/www/blog myBlog YES
 
 # Changelog
 
+2013/01/25 19:09 (GMT-3) - Version 1.5.2
+
+* Moved Twitter Bootstrap source files to public/vendor
+* Added option to select a different Laravel app repository or branch
+
 2013/01/25 00:06 (GMT-3) - Version 1.5.0
 
 * Changed the way VirtualHosts are created, conf file now is hosted inside the site directory

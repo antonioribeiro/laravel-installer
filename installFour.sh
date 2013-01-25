@@ -1,20 +1,21 @@
 #!/bin/bash
 
-L4I_VERSION=1.5.0
+L4I_VERSION=1.5.2
 L4I_BRANCH=master
+LARAVEL_APP_DEFAULT_REPOSITORY="https://github.com/laravel/laravel.git"
+LARAVEL_APP_DEFAULT_BRANCH="develop"
 INSTALL_DIR=$1
 SITE_NAME=$2
 
 ############################################  
 ## This is your playground
 
-
 L4I_REPOSITORY="-b $L4I_BRANCH https://github.com/antonioribeiro/l4i.git"
 L4I_REPOSITORY_DIR=/tmp/l4i
 L4I_REPOSITORY_GIT="$L4I_REPOSITORY_DIR/git"
 L4I_INSTALLED_APPS="/etc/l4i.installed.txt"
-LARAVEL_APP_BRANCH=" -b develop "
-LARAVEL_APP_REPOSITORY="https://github.com/laravel/laravel.git"
+LARAVEL_APP_BRANCH=$LARAVEL_APP_DEFAULT_BRANCH
+LARAVEL_APP_REPOSITORY=$LARAVEL_APP_DEFAULT_REPOSITORY
 BASH_DIR=`type -p bash`
 BIN_DIR=`dirname $BASH_DIR`
 GIT_APP=git
@@ -137,16 +138,15 @@ function downloadL4IRepository {
 }
 
 function installTwitterBootstrap() {
-	inquireYN "Install Twitter Bootstrap? " "y" "n"
-	if [[ "$answer" == "y" ]]; then
-		# inquireYN "Install the LESS version of Twitter Bootstrap? " "y" "n"
-		# if [[ "$answer" == "y" ]]; then
-		# 	less=YES
-		# 	tbzip="twitter.bootstrap.zip"
-		# else
-		# 	tbzip="twitter.bootstrap.zip"
-		# fi
+	if [[ "$LARAVEL_APP_REPOSITORY" != "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
+		message "You are using a non default version of Laravel 4 app, Twitter Bootstrap may break your installation."
+		question="Do you still wish to install Twitter Bootstrap? "
+	fi
+		question="Install Twitter Bootstrap? "
+	fi
 
+	inquireYN $question "y" "n"
+	if [[ "$answer" == "y" ]]; then
 		if [[ "$LESS_COMPILER_NAME" == "" ]]; then
 			installBootstrapCSS
 		else
@@ -164,13 +164,13 @@ function installBootstrapLess() {
 	message "Installing Twitter Bootstrap (less version)..."
 	message "Cloning Bootstrap git repository..."
 
-	mkdir -p $INSTALL_DIR/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
-	git clone https://github.com/twitter/bootstrap.git $INSTALL_DIR/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
+	mkdir -p $INSTALL_DIR/public/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
+	git clone https://github.com/twitter/bootstrap.git $INSTALL_DIR/public/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
 	mkdir -p $INSTALL_DIR/public/js  2>&1 | tee -a $LOG_FILE &> /dev/null
 	mkdir -p $INSTALL_DIR/public/css  2>&1 | tee -a $LOG_FILE &> /dev/null
 	mkdir -p $INSTALL_DIR/public/img  2>&1 | tee -a $LOG_FILE &> /dev/null
-	cp $INSTALL_DIR/vendor/twitter/bootstrap/js/* $INSTALL_DIR/public/js  2>&1 | tee -a $LOG_FILE &> /dev/null
-	cp $INSTALL_DIR/vendor/twitter/bootstrap/img/* $INSTALL_DIR/public/img  2>&1 | tee -a $LOG_FILE &> /dev/null
+	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/js/* $INSTALL_DIR/public/js  2>&1 | tee -a $LOG_FILE &> /dev/null
+	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/img/* $INSTALL_DIR/public/img  2>&1 | tee -a $LOG_FILE &> /dev/null
 
 	message "Compiling bootstrap..."
 
@@ -181,8 +181,8 @@ function installBootstrapLess() {
 		compressed=" -c "
 	fi
 
-	compileLess $compressed $INSTALL_DIR/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/css/bootstrap.min.css
-	compileLess             $INSTALL_DIR/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/css/bootstrap.css
+	compileLess $compressed $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/css/bootstrap.min.css
+	compileLess             $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/css/bootstrap.css
 
 	installBootstrapTemplate
 }
@@ -637,7 +637,7 @@ function checkComposerInstalled() {
 function downloadLaravel4Skeleton() {
 	message "Downloading Laravel 4 skeleton from $LARAVEL_APP_REPOSITORY..."
 
-	git clone $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR  2>&1 | tee -a $LOG_FILE &> /dev/null
+	git clone -b $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR  2>&1 | tee -a $LOG_FILE &> /dev/null
 
 	checkErrorsAndAbort "An error ocurred while trying to clone Laravel 4 git repository."
 
@@ -769,6 +769,23 @@ function checkParameters() {
 		fi
 
 		SITE_NAME=$answer
+	fi
+
+	if [[ "$LARAVEL_APP_REPOSITORY" == "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
+		message 
+		message "Laravel 4 repository is set to $LARAVEL_APP_REPOSITORY."
+		inquireYN "Do you want to download Laravel 4 app from a different repository or branch? " "y" "n"
+		if [[ "$answer" == "y" ]]; then
+			inquireText "Please type a new repository: " $LARAVEL_APP_REPOSITORY
+			if [[ "$answer" != "" ]]; then
+				LARAVEL_APP_REPOSITORY=$answer
+
+				inquireText "Please type a new branch: " $LARAVEL_APP_BRANCH
+				if [[ "$answer" != "" ]]; then
+					LARAVEL_APP_BRANCH=$answer
+				fi
+			fi
+		fi
 	fi
 
 	VHOST_CONF_FILE=$SITE_NAME.apache.conf
@@ -957,8 +974,12 @@ function inquireText()  {
   answer=""
   while [ "$answer" = "" ]
   do
-	# read -e -p "$1 " -i "$2" answer ######### -i is present on bash version 4 only
-	read -e -p "$1 [hit enter for $2] " answer
+  	if [[ $BASH_VERSION > '3.9' ]]; then
+		read -e -p "$1 " -i "$2" answer
+	else
+		read -e -p "$1 [hit enter for $2] " answer
+  	fi
+
 	if [ "$answer" == "" ]; then
 		answer=$2
 	fi
