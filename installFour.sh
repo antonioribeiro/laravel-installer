@@ -141,7 +141,7 @@ function installTwitterBootstrap() {
 	if [[ "$LARAVEL_APP_REPOSITORY" != "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
 		message "You are using a non default version of Laravel 4 app, Twitter Bootstrap may break your installation."
 		question="Do you still wish to install Twitter Bootstrap? "
-	fi
+	else
 		question="Install Twitter Bootstrap? "
 	fi
 
