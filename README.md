@@ -34,7 +34,7 @@ If this script needs to install software, you will need sudo or root permissions
 * Install PHPUnit (using Composer)
 * Install Composer packages
 * Create VirtualHost (currently apache2 only) and restart webserver
-* Download, install and configure Twitter Bootstrap from git
+* Download, compile, install and configure Twitter Bootstrap from git
 * Configure a main template, a home view using main template and a route to home, so we can see Laravel 4 and Blade running
 
 ### Warnings
@@ -66,14 +66,22 @@ From version 1.2.0: http://www.screenr.com/HNO7
 
 ### Installed software
 
-In the process of intalling Laravel 4, this script will also try to install, if needed, the following applications in your system:
+In the process of installing the entire environment or just Laravel 4, this script will also try to install, if needed, the following applications in your system:
 
+* Apache2
+* PHP 5
 * Composer (http://getcomposer.org/)
 * git 
 * curl
+* wget
+* unzip
 * php5-mcrypt
 * PHPUnit (composer install)
-* Twitter Bootstrap
+* Twitter Bootstrap (CSS or less)
+* less (http://lesscss.org/ and https://github.com/cloudhead/less.js)
+* Node.js and npm
+* lessphp (a less compiler in php)
+* All packages needed to compile applications
 
 ### Composer packages available to install
 

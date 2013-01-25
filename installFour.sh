@@ -19,6 +19,7 @@ BASH_DIR=`type -p bash`
 BIN_DIR=`dirname $BASH_DIR`
 GIT_APP=git
 CURL_APP=curl
+WGET_APP=wget
 UNZIP_APP=unzip
 SUDO_APP=sudo
 
@@ -30,9 +31,13 @@ PHPUNIT_APP=phpunit
 PHPUNIT_DIR=/etc/phpunit
 PHPUNIT_DIR_ESCAPED=`echo $PHPUNIT_DIR | sed s,/,\\\\\\\\\\/,g`
 
-LESSPHP_APP=lessphp
+LESSC_APP=lessc
+LESSPHP_APP=plessc
 LESSPHP_DIR=/etc/lessphp
 LESSPHP_DIR_ESCAPED=`echo $LESSPHP_DIR | sed s,/,\\\\\\\\\\/,g`
+LESS_APP=`type -p $LESS_COMPILER_APP`
+
+NODEJS_VERSION="v0.8.18"
 
 PHP_SUHOSIN_CONF=/etc/php5/cli/conf.d/suhosin.ini
 PHP_MINIMUN_VERSION=5.2.0
@@ -53,11 +58,19 @@ SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint|Redhat|Fedora|CentOS"
 #
 #
 
-		EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry"                                 "anahkiasen/former"                 )
-	 EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "dev-master"                     "dev-master"                                    "2.0.*"                                            "dev-composer"                      )
-  EP_ALIAS_NAME=(""             "HTML"                                "Form"                                "Str"                              ""                   "Basset"                         "String"                                        "Sentry"                                           "Former"                            )
-EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\Form\\\FormFacade"           "Meido\\\Str\\\StrFacade"          ""                   "Basset\\\Facades\\\Basset"      "BigElephant\\\String\\\StringFacade"           "Cartalyst\\\Sentry\\\Facades\\\Laravel\\\Sentry"  "Former\\\Facades\\\Former"         )
-	EP_PROVIDER=(""             "Meido\\\HTML\\\HTMLServiceProvider"  "Meido\\\Form\\\FormServiceProvider"  "Meido\\\Str\\\StrServiceProvider" ""                   "Basset\\\BassetServiceProvider" "BigElephant\\\String\\\StringServiceProvider"  "Cartalyst\\\Sentry\\\SentryServiceProvider"       "Former\\\FormerServiceProvider"    )
+		EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry"                                 )
+	 EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "dev-master"                     "dev-master"                                    "2.0.*"                                            )
+  EP_ALIAS_NAME=(""             "HTML"                                "Form"                                "Str"                              ""                   "Basset"                         "String"                                        "Sentry"                                           )
+EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\Form\\\FormFacade"           "Meido\\\Str\\\StrFacade"          ""                   "Basset\\\Facades\\\Basset"      "BigElephant\\\String\\\StringFacade"           "Cartalyst\\\Sentry\\\Facades\\\Laravel\\\Sentry"  )
+	EP_PROVIDER=(""             "Meido\\\HTML\\\HTMLServiceProvider"  "Meido\\\Form\\\FormServiceProvider"  "Meido\\\Str\\\StrServiceProvider" ""                   "Basset\\\BassetServiceProvider" "BigElephant\\\String\\\StringServiceProvider"  "Cartalyst\\\Sentry\\\SentryServiceProvider"       )
+
+# former removed due to problems with meido
+# changelog: * anahkiasen/former added to the list of packages
+# "anahkiasen/former"              
+# "dev-composer"                   
+#  "Former"                        
+#  "Former\\\Facades\\\Former"     
+#  "Former\\\FormerServiceProvider"
 
 #################################################################### 
 # kwnown errors 
@@ -81,7 +94,7 @@ function main() {
 	checkSudo
  
 	checkOS
-	updatePackagerSources
+	installPackager
 	updatePackagerApp
 
 	checkWebserver
@@ -92,6 +105,7 @@ function main() {
 
 	getIPAddress
 
+	checkApp $WGET_APP
 	checkApp $CURL_APP
 	checkApp $UNZIP_APP installUnzip
 	checkApp $GIT_APP
@@ -101,11 +115,11 @@ function main() {
 	checkComposer $INSTALL_DIR
 	checkPHPUnit
 	checkMCrypt
-	checkLessPHP
-	downloadSkeleton
+	downloadLaravel4Skeleton
 	installAdditionalPackages
 	installOurArtisan
 	composerUpdate
+	checkLessCompiler
 	installTwitterBootstrap
 	createVirtualHost $INSTALL_DIR
 	setGlobalPermissions
@@ -116,7 +130,7 @@ function main() {
 function downloadL4IRepository {
 	message "Downloading l4i git repository..."
 	git clone $L4I_REPOSITORY $L4I_REPOSITORY_GIT 2>&1 | tee -a $LOG_FILE &> /dev/null
-	checkErrors "An error ocurred while trying to clone L4I git repository."
+	checkErrorsAndAbort "An error ocurred while trying to clone L4I git repository."
 }
 
 function installTwitterBootstrap() {
@@ -130,26 +144,184 @@ function installTwitterBootstrap() {
 		# 	tbzip="twitter.bootstrap.zip"
 		# fi
 
-		message "Installing Twitter Bootstrap..."
-		wget --no-check-certificate -O $L4I_REPOSITORY_DIR/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip 2>&1 | tee -a $LOG_FILE &> /dev/null
-		rm -rf $L4I_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
-		unzip $L4I_REPOSITORY_DIR/twitter.bootstrap.zip -d $L4I_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
-		rm $L4I_REPOSITORY_DIR/twitter.bootstrap.zip
-		cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/css $INSTALL_DIR/public
-		cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/js $INSTALL_DIR/public
-		cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/img $INSTALL_DIR/public
-
-		rm $INSTALL_DIR/app/views/hello.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-		mkdir $INSTALL_DIR/app/views/layouts 2>&1 | tee -a $LOG_FILE &> /dev/null
-		mkdir $INSTALL_DIR/app/views/views 2>&1 | tee -a $LOG_FILE &> /dev/null
-
-		cp $L4I_REPOSITORY_GIT/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  2>&1 | tee -a $LOG_FILE &> /dev/null
-		cp $L4I_REPOSITORY_GIT/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-
-		perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-		perl -pi -e "s/%l4i_branch%/$L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-		perl -pi -e "s/%l4i_version%/$L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+		if [[ "$LESS_COMPILER_NAME" == "" ]]; then
+			installBootstrapCSS
+		else
+			inquireYN "Do you wish to install the LESS version of Twitter Bootstrap? " "y" "n"
+			if [[ "$answer" == "y" ]]; then
+				installBootstrapLess
+			else 
+				installBootstrapCSS
+			fi
+		fi
 	fi
+}
+
+function installBootstrapLess() {
+	message "Installing Twitter Bootstrap (less version)..."
+	message "Cloning Bootstrap git repository..."
+
+	mkdir -p $INSTALL_DIR/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
+	git clone https://github.com/twitter/bootstrap.git $INSTALL_DIR/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
+	mkdir -p $INSTALL_DIR/public/js  2>&1 | tee -a $LOG_FILE &> /dev/null
+	mkdir -p $INSTALL_DIR/public/css  2>&1 | tee -a $LOG_FILE &> /dev/null
+	mkdir -p $INSTALL_DIR/public/img  2>&1 | tee -a $LOG_FILE &> /dev/null
+	cp $INSTALL_DIR/vendor/twitter/bootstrap/js/* $INSTALL_DIR/public/js  2>&1 | tee -a $LOG_FILE &> /dev/null
+	cp $INSTALL_DIR/vendor/twitter/bootstrap/img/* $INSTALL_DIR/public/img  2>&1 | tee -a $LOG_FILE &> /dev/null
+
+	message "Compiling bootstrap..."
+
+	if [[ "$LESS_COMPILER_NAME" == "$LESSC_APP" ]]; then
+		compress=" --compress "
+	fi
+	if [[ "$LESS_COMPILER_NAME" == "$LESSPHP_APP" ]]; then
+		compressed=" -c "
+	fi
+
+	$LESS_APP $compressed $INSTALL_DIR/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/css/bootstrap.min.css
+	$LESS_APP             $INSTALL_DIR/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/css/bootstrap.css
+
+	installBootstrapTemplate
+}
+
+function installBootstrapTemplate() {
+	message "Installing bootstrap template..."
+	rm $INSTALL_DIR/app/views/hello.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+	mkdir $INSTALL_DIR/app/views/layouts 2>&1 | tee -a $LOG_FILE &> /dev/null
+	mkdir $INSTALL_DIR/app/views/views 2>&1 | tee -a $LOG_FILE &> /dev/null
+
+	cp $L4I_REPOSITORY_GIT/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  2>&1 | tee -a $LOG_FILE &> /dev/null
+	cp $L4I_REPOSITORY_GIT/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+
+	perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+	perl -pi -e "s/%l4i_branch%/$L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+	perl -pi -e "s/%l4i_version%/$L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+}
+
+function findLessCompiler() {
+	LESS_COMPILER_NAME=$LESSC_APP
+	LESS_APP=`type -p $LESSC_APP`
+	if [[ "$LESS_APP" == "" ]]; then
+		LESS_COMPILER_NAME=$LESSPHP_APP
+		LESS_APP=`type -p $LESSPHP_APP`
+	fi
+	if [[ "$LESS_APP" == "" ]]; then
+		LESS_COMPILER_NAME=
+	else 
+		message "less compiler ($LESS_COMPILER_NAME) found at $LESS_APP"
+	fi
+}
+
+function checkLessCompiler() {
+	findLessCompiler
+	if [[ "$LESS_COMPILER_NAME" == "" ]]; then
+		inquireYN "Do you wish to install a less compiler? " "y" "n"
+		if [[ "$answer" == "y" ]]; then
+			installNodeAndLess
+			installLessPHP
+			findLessCompiler
+		fi
+	fi
+}
+
+function installNodeAndLess() {
+	program=`type -p npm`
+	if [[ "$program" == "" ]]; then
+		inquireYN "Looks like Node.js is not installed you really wish to install it? " "y" "n"
+		if [[ "$answer" == "y" ]]; then
+			installNode
+			program=`type -p npm`
+		fi
+	fi
+
+	if [[ "$program" == "" ]]; then
+		message "npm is not available to install less."
+	else 
+		installLess
+	fi
+}
+
+function installNode() {
+	installPackage make
+	installPackage python
+
+	if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
+		installPackage build-essential
+	fi
+	if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
+		message "Installing development tools..."
+		$PACKAGER_APP groupinstall -y "Development Tools"  2>&1 | tee -a $LOG_FILE &> /dev/null
+	fi
+
+	wget --no-check-certificate -O $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz http://nodejs.org/dist/$NODEJS_VERSION/node-$NODEJS_VERSION.tar.gz 2>&1 | tee -a $LOG_FILE &> /dev/null
+	checkErrors "Error downloading Node.js."
+	if [[ "$ERROR" == "" ]]; then
+		mkdir -p $L4I_REPOSITORY_DIR/node  2>&1 | tee -a $LOG_FILE &> /dev/null
+		tar xvfz $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz -C $L4I_REPOSITORY_DIR/node  2>&1 | tee -a $LOG_FILE &> /dev/null
+		checkErrors "Error unpacking Node.js."
+
+		cd $L4I_REPOSITORY_DIR/node/node-$NODEJS_VERSION
+
+		./configure 2>&1 | tee -a $LOG_FILE &> /dev/null
+		checkErrors "Error configuring Node.js."
+
+		message "Compiling Node.js. This may take several minutes."
+		message "You can follow this instalation by opening a new terminal and executing 'tail -f $LOG_FILE'."
+
+		make 2>&1 | tee -a $LOG_FILE &> /dev/null
+		checkErrors "Error making Node.js."
+
+		make install 2>&1 | tee -a $LOG_FILE &> /dev/null
+		checkErrors "Error installing Node.js."
+	else
+		message "Node.js installation aborted."
+	fi
+}
+
+function installLess() {
+	message "Installing less..."
+	npm install -g less  2>&1 | tee -a $LOG_FILE &> /dev/null
+	checkErrors "Error installing less."
+}
+
+function checkLessPHP() {
+	LESS_APP=`type -p $LESS_COMPILER_APP`
+	program=`type -p plessc`
+
+	if [[ "$program" == "" ]]; then
+		inquireYN "Do you wish to install lessphp? " "y" "n"
+		installLessPHP
+	fi
+}
+
+function installLessPHP() {
+	if [[ "$CAN_I_RUN_SUDO" == "YES" ]]; then
+		inquireYN "Do you wish to install lessphp? " "y" "n"
+		if [[ "$answer" == "y" ]]; then
+			message "Installing lessphp..."
+			$SUDO_APP mkdir -p $LESSPHP_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
+			$SUDO_APP chmod 777 $LESSPHP_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
+			$SUDO_APP cp $L4I_REPOSITORY_GIT/lessphp.composer.json $LESSPHP_DIR/composer.json
+			composerUpdate $LESSPHP_DIR
+			checkErrors "Error installing lessphp."
+			$SUDO_APP chmod +x $LESSPHP_DIR/vendor/leafo/lessphp/plessc 2>&1 | tee -a $LOG_FILE &> /dev/null
+			$SUDO_APP ln -s $LESSPHP_DIR/vendor/leafo/lessphp/plessc $BIN_DIR/$LESSPHP_APP 2>&1 | tee -a $LOG_FILE &> /dev/null
+			$SUDO_APP ln -s $LESSPHP_DIR/vendor/leafo/lessphp/lessc.inc.php $BIN_DIR/lessc.inc.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+		fi 
+	fi
+}
+
+function installBootstrapCSS() {
+	message "Installing Twitter Bootstrap (CSS version)..."
+	wget --no-check-certificate -O $L4I_REPOSITORY_DIR/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip 2>&1 | tee -a $LOG_FILE &> /dev/null
+	rm -rf $L4I_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
+	unzip $L4I_REPOSITORY_DIR/twitter.bootstrap.zip -d $L4I_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
+	rm $L4I_REPOSITORY_DIR/twitter.bootstrap.zip
+	cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/css $INSTALL_DIR/public
+	cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/js $INSTALL_DIR/public
+	cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/img $INSTALL_DIR/public
+
+	installBootstrapTemplate
 }
 
 function installUnzip() {
@@ -286,7 +458,21 @@ function checkPHPUnit() {
 #     # sudo apt-get --yes intall php5
 # }
 
-function locateWebserverProcess() {
+function locateWebserver() {
+	locateWebserverProc
+	if [[ "$ws_process" == "" ]]; then 
+		WEBSERVER=apache2
+		restartWebserver
+		locateWebserverProc
+		if [[ "$ws_process" == "" ]]; then
+			WEBSERVER=httpd
+			restartWebserver
+			locateWebserverProc
+		fi
+	fi
+}
+
+function locateWebserverProc() {
 	ws_process=
 	processes=`$SUDO_APP ps -eaf |grep apache2 |grep -v grep |wc -l` && [ "$processes" -gt "0" ] && ws_process=apache2
 	processes=`$SUDO_APP ps -eaf |grep nginx |grep -v grep |wc -l` && [ "$processes" -gt "0" ] && ws_process=nginx
@@ -295,7 +481,8 @@ function locateWebserverProcess() {
 }
 
 function checkWebserver() {
-	locateWebserverProcess
+	# locateWebserver
+	locateWebserverProc
 	WEBSERVER=$ws_process
 	VHOST_ENABLE_COMMAND=
 	VHOST_CONF_DIR=/etc/apache2/sites-available
@@ -335,6 +522,9 @@ function checkWebserver() {
 			if [[ "$APACHE_CONF" == "" ]]; then
 				hasFile /etc/httpd/conf.d/httpd.conf APACHE_CONF
 			fi
+			if [[ "$APACHE_CONF" == "" ]]; then
+				hasFile /etc/apache2/httpd.conf APACHE_CONF
+			fi
 		fi
 	fi
 
@@ -365,7 +555,7 @@ function installPHPUnit() {
 		$SUDO_APP cp $L4I_REPOSITORY_GIT/phpunit.composer.json $PHPUNIT_DIR/composer.json
 		$SUDO_APP perl -pi -e "s/%phpunit_dir%/$PHPUNIT_DIR_ESCAPED/g" $PHPUNIT_DIR/composer.json  2>&1 | tee -a $LOG_FILE &> /dev/null
 		composerUpdate $PHPUNIT_DIR
-		checkErrors "Error installing PHPUnit."
+		checkErrorsAndAbort "Error installing PHPUnit."
 		$SUDO_APP chmod +x $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit 2>&1 | tee -a $LOG_FILE &> /dev/null
 		$SUDO_APP ln -s $PHPUNIT_DIR/vendor/phpunit/phpunit/composer/bin/phpunit $BIN_DIR/$PHPUNIT_APP 2>&1 | tee -a $LOG_FILE &> /dev/null
 	fi 
@@ -381,7 +571,7 @@ function installComposer() {
 	# execute "$CURL_APP -s http://getcomposer.org/installer | $PHP_CLI_APP"
 
 	$CURL_APP -s http://getcomposer.org/installer | $PHP_CLI_APP  2>&1 | tee -a $LOG_FILE &> /dev/null
-	checkErrors "Composer installation failed."
+	checkErrorsAndAbort "Composer installation failed."
 
 	COMPOSER_APP=$BIN_DIR/composer
 	$SUDO_APP mv composer.phar $COMPOSER_APP  2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -422,12 +612,12 @@ function checkComposerInstalled() {
 	fi
 }
 
-function downloadSkeleton() {
+function downloadLaravel4Skeleton() {
 	message "Downloading Laravel 4 skeleton from $LARAVEL_APP_REPOSITORY..."
 
 	git clone $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-	checkErrors "An error ocurred while trying to clone Laravel 4 git repository."
+	checkErrorsAndAbort "An error ocurred while trying to clone Laravel 4 git repository."
 
 	### Installing using zip file, git is better but I'll keep this for possible future use
 	# 
@@ -458,10 +648,10 @@ function checkMCrypt() {
 				message "Installing EPEL repository for CentOS..."
 				wget --no-check-certificate -O $L4I_REPOSITORY_DIR/epel-release-6-8.noarch.rpm http://epel.gtdinternet.com/6/i386/epel-release-6-8.noarch.rpm 2>&1 | tee -a $LOG_FILE &> /dev/null
 				$SUDO_APP yum -y install $L4I_REPOSITORY_DIR/epel-release-6-8.noarch.rpm 2>&1 | tee -a $LOG_FILE &> /dev/null
-				checkErrors "Error trying to install EPEL repository for CentOS"
+				checkErrorsAndAbort "Error trying to install EPEL repository for CentOS"
 			fi
 			installPackage php-mcrypt
-			checkErrors "Error installing php-mcrypt."
+			checkErrorsAndAbort "Error installing php-mcrypt."
 			addL4InstalledApp "php-mcrypt"
 		fi
 	fi
@@ -504,10 +694,20 @@ function checkApp() {
 	fi
 }
 
-function checkErrors() {
+function checkErrorsAndAbort() {
 	if [ $? -gt 0 ]; then
 		echo $1
 		abortIt "Please check log file at $LOG_FILE."
+	fi
+}
+
+function checkErrors() {
+	ERROR=
+	if [ $? -gt 0 ]; then
+		message $1
+		message "Please check log file at $LOG_FILE."
+		echo
+		ERROR=YES
 	fi
 }
 
@@ -555,7 +755,7 @@ function checkParameters() {
 function makeInstallDirectory {
 
 	mkdir $INSTALL_DIR
-	checkErrors "Error creating directory $INSTALL_DIR"
+	checkErrorsAndAbort "Error creating directory $INSTALL_DIR"
 }
 
 function checkSudo() {
@@ -613,17 +813,25 @@ function setGlobalPermissions() {
 }
 
 function installPackage() {
+	updatePackagerSources
 	message "Installing $1..."
 	$SUDO_APP $PACKAGER_INSTALL_COMMAND $1 $2 2>&1 | tee -a $LOG_FILE &> /dev/null
-	checkErrors "An error ocurred while installing $1."
+	checkErrorsAndAbort "An error ocurred while installing $1."
 }
 
 function checkOS() {
 	OPERATING_SYSTEM=
 	findProgram lsb_release lsb_program
-
 	if [[ "$lsb_program" != "" ]] ; then
 		OPERATING_SYSTEM=$($lsb_program -si)
+	fi
+
+	findProgram sw_vers sw_vers
+	if [[ "$sw_vers" != "" ]] ; then
+		os=$($sw_vers | grep "Mac OS X")
+		if [[ "$os" != "" ]]; then
+			OPERATING_SYSTEM="MacOS"
+		fi
 	fi
 
 	if [[ -f /etc/debian_version ]]; then
@@ -655,21 +863,27 @@ function checkOS() {
 	fi
 
 	if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
-		PACKAGER_NAME="apt-get"
-		PACKAGER_UPDATE_COMMAND="$PACKAGER_NAME --yes update "
-		PACKAGER_INSTALL_COMMAND="$PACKAGER_NAME --yes install "
+		PACKAGER_APP="apt-get"
+		PACKAGER_UPDATE_COMMAND="$PACKAGER_APP --yes update "
+		PACKAGER_INSTALL_COMMAND="$PACKAGER_APP --yes install "
 	fi
 
 	if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
-		PACKAGER_NAME="yum"
+		PACKAGER_APP="yum"
 		PACKAGER_UPDATE_COMMAND=""
-		PACKAGER_INSTALL_COMMAND="$PACKAGER_NAME -y install "
+		PACKAGER_INSTALL_COMMAND="$PACKAGER_APP -y install "
 	fi
 
 	if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
-		PACKAGER_NAME="pacman"
-		PACKAGER_UPDATE_COMMAND="$PACKAGER_NAME --noconfirm -Sy "
-		PACKAGER_INSTALL_COMMAND="$PACKAGER_NAME --noconfirm -S "
+		PACKAGER_APP="pacman"
+		PACKAGER_UPDATE_COMMAND="$PACKAGER_APP --noconfirm -Sy "
+		PACKAGER_INSTALL_COMMAND="$PACKAGER_APP --noconfirm -S "
+	fi
+
+	if [[ "$OPERATING_SYSTEM" == "MacOS" ]]; then
+		PACKAGER_APP="brew"
+		PACKAGER_UPDATE_COMMAND="$PACKAGER_APP doctor "
+		PACKAGER_INSTALL_COMMAND="$PACKAGER_APP --noconfirm -S "
 	fi
 
 	if [[ "$OPERATING_SYSTEM" == "" ]] ; then
@@ -731,7 +945,7 @@ function inquireText()  {
 
 function createLogDirectory() {
 	mkdir -p $L4I_REPOSITORY_DIR >/dev/null 2>&1
-	checkErrors "You might not have permissions to create files in $L4I_REPOSITORY_DIR, please check log: $LOG_FILE."
+	checkErrorsAndAbort "You might not have permissions to create files in $L4I_REPOSITORY_DIR, please check log: $LOG_FILE."
 }
 
 function showLogFile() {
@@ -761,7 +975,7 @@ function showHeader() {
 function cleanL4IRepository() {
 	if [ -d $L4I_REPOSITORY_DIR ]; then
 		rm -rf $L4I_REPOSITORY_DIR >/dev/null 2>&1 
-		checkErrors "You're not allowed to write in $L4I_REPOSITORY_DIR."
+		checkErrorsAndAbort "You're not allowed to write in $L4I_REPOSITORY_DIR."
 	fi
 }
 
@@ -801,6 +1015,9 @@ function installWebserver() {
 		if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
 			installApp apache
 			WEBSERVER=httpd
+		fi
+		if [[ "$OPERATING_SYSTEM" == "MacOS" ]]; then
+			abortIt "Unfortunately this app is unable to install a webserver Mac OS, but it should be already installed, check your system setup."
 		fi
 
 		restartWebserver
@@ -842,6 +1059,10 @@ function installPHP() {
 		installApp php
 		installApp php-apache
 	fi
+	if [[ "$OPERATING_SYSTEM" == "MacOS" ]]; then
+		installApp php54
+		installApp php54-mcrypt
+	fi
 }
 
 function execute() {
@@ -851,9 +1072,12 @@ function execute() {
 }
 
 function updatePackagerSources() {
-	if [[ "$PACKAGER_UPDATE_COMMAND" != "" ]]; then
-		message "Running $PACKAGER_UPDATE_COMMAND..."
-		$SUDO_APP $PACKAGER_UPDATE_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
+	if [[ "$packagerUpdated" == "" ]]; then
+		packagerUpdated=YES
+		if [[ "$PACKAGER_UPDATE_COMMAND" != "" ]]; then
+			message "Running $PACKAGER_UPDATE_COMMAND..."
+			$SUDO_APP $PACKAGER_UPDATE_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
+		fi
 	fi
 }
 
@@ -909,26 +1133,26 @@ function checkApp() {
 	fi
 }
 
-function checkLessPHP() {
-	program=`type -p $LESSPHP_APP`
-
-	if [[ "$program" == "" ]]; then
-		inquireYN "Do you wish to install lessphp? " "y" "n"
-		installLessPHP
+function installPackager() {
+	if [[ "$OPERATING_SYSTEM" == "MacOS" ]]; then
+		checkHomebrew
 	fi
 }
 
-function installLessPHP() {
-	if [[ "$CAN_I_RUN_SUDO" == "YES" ]]; then
-		message "Installing lessphp..."
-		$SUDO_APP mkdir -p $LESSPHP_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
-		$SUDO_APP chmod 777 $LESSPHP_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
-		$SUDO_APP cp $L4I_REPOSITORY_GIT/lessphp.composer.json $LESSPHP_DIR/composer.json
-		composerUpdate $LESSPHP_DIR
-		checkErrors "Error installing lessphp."
-		$SUDO_APP chmod +x $LESSPHP_DIR/vendor/leafo/lessphp/lessc.inc.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-		$SUDO_APP ln -s $LESSPHP_DIR/vendor/leafo/lessphp/lessc.inc.php $BIN_DIR/$LESSPHP_APP 2>&1 | tee -a $LOG_FILE &> /dev/null
-	fi 
+function checkHomebrew() {
+	checkApp $PACKAGER_APP installHomebrew
+	brew tap homebrew/dupes 2>&1 | tee -a $LOG_FILE &> /dev/null
+	brew tap josegonzalez/php 2>&1 | tee -a $LOG_FILE &> /dev/null
+}
+
+function installHomebrew() {
+	message "Installing Homebrew..."
+	ruby -e "$(curl -fsSkL raw.github.com/mxcl/homebrew/go)"  2>&1 | tee -a $LOG_FILE &> /dev/null
+	checkApp $PACKAGER_APP installHomebrewFailed
+}
+
+function installHomebrewFailed() {
+	abortIt "Homebrew installation failed."
 }
 
 main
