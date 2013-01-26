@@ -1,6 +1,6 @@
 #!/bin/bash
 
-L4I_VERSION=1.5.2
+L4I_VERSION=1.5.3
 L4I_BRANCH=master
 LARAVEL_APP_DEFAULT_REPOSITORY="https://github.com/laravel/laravel.git"
 LARAVEL_APP_DEFAULT_BRANCH="develop"
@@ -59,11 +59,14 @@ SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint|Redhat|Fedora|CentOS"
 #
 #
 
-		EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry"                                 )
-	 EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "dev-master"                     "dev-master"                                    "2.0.*"                                            )
-  EP_ALIAS_NAME=(""             "HTML"                                "Form"                                "Str"                              ""                   "Basset"                         "String"                                        "Sentry"                                           )
-EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\Form\\\FormFacade"           "Meido\\\Str\\\StrFacade"          ""                   "Basset\\\Facades\\\Basset"      "BigElephant\\\String\\\StringFacade"           "Cartalyst\\\Sentry\\\Facades\\\Laravel\\\Sentry"  )
-	EP_PROVIDER=(""             "Meido\\\HTML\\\HTMLServiceProvider"  "Meido\\\Form\\\FormServiceProvider"  "Meido\\\Str\\\StrServiceProvider" ""                   "Basset\\\BassetServiceProvider" "BigElephant\\\String\\\StringServiceProvider"  "Cartalyst\\\Sentry\\\SentryServiceProvider"       )
+		EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry"                                 "jasonlewis/expressive-date"     )
+	 EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "dev-master"                     "dev-master"                                    "2.0.*"                                            "1.*"                            )
+  EP_ALIAS_NAME=(""             "HTML"                                "Form"                                "Str"                              ""                   "Basset"                         "String"                                        "Sentry"                                           ""                               )
+EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\Form\\\FormFacade"           "Meido\\\Str\\\StrFacade"          ""                   "Basset\\\Facades\\\Basset"      "BigElephant\\\String\\\StringFacade"           "Cartalyst\\\Sentry\\\Facades\\\Laravel\\\Sentry"  ""                               )
+	EP_PROVIDER=(""             "Meido\\\HTML\\\HTMLServiceProvider"  "Meido\\\Form\\\FormServiceProvider"  "Meido\\\Str\\\StrServiceProvider" ""                   "Basset\\\BassetServiceProvider" "BigElephant\\\String\\\StringServiceProvider"  "Cartalyst\\\Sentry\\\SentryServiceProvider"       "ExpressiveDateServiceProvider"  )
+
+
+
 
 # former removed due to problems with meido
 # changelog: * anahkiasen/former added to the list of packages
@@ -145,7 +148,7 @@ function installTwitterBootstrap() {
 		question="Install Twitter Bootstrap? "
 	fi
 
-	inquireYN $question "y" "n"
+	inquireYN "$question" "y" "n"
 	if [[ "$answer" == "y" ]]; then
 		if [[ "$LESS_COMPILER_NAME" == "" ]]; then
 			installBootstrapCSS
@@ -183,6 +186,9 @@ function installBootstrapLess() {
 
 	compileLess $compressed $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/assets/css/bootstrap.min.css
 	compileLess             $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/assets/css/bootstrap.css
+
+	compileLess $compressed $INSTALL_DIR/public/vendor/twitter/bootstrap/less/responsive.less $INSTALL_DIR/public/assets/css/bootstrap-responsive.min.css
+	compileLess             $INSTALL_DIR/public/vendor/twitter/bootstrap/less/responsive.less $INSTALL_DIR/public/assets/css/bootstrap-responsive.css
 
 	installBootstrapTemplate
 }
@@ -774,7 +780,7 @@ function checkParameters() {
 	if [[ "$LARAVEL_APP_REPOSITORY" == "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
 		message 
 		message "Default Laravel 4 repository is set to $LARAVEL_APP_REPOSITORY, but you can now install a different one."
-		inquireYN "Do you want to install default Laravel 4 app? " "y" "n"
+		inquireYN "Do you want to install the default Laravel 4 app? " "y" "n"
 		if [[ "$answer" == "n" ]]; then
 			inquireText "Please type a new repository: " $LARAVEL_APP_REPOSITORY
 			if [[ "$answer" != "" ]]; then

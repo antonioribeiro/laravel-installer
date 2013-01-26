@@ -145,7 +145,12 @@ bash installFour.sh /var/www/blog myBlog YES
 
 # Changelog
 
-2013/01/25 19:09 (GMT-3) - Version 1.5.2
+2013/01/26 02:25 (GMT-3) - Version 1.5.3
+
+* Added package jasonlewis/expressive-date
+* Added compilation of responsive.less to bootstrap-responsive.css
+
+2013/01/25 23:41 (GMT-3) - Version 1.5.2
 
 * Moved Twitter Bootstrap source files to public/vendor
 * Moved css, js and img files to public/assets
