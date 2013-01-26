@@ -1,7 +1,7 @@
 #!/bin/bash
 
 L4I_VERSION=1.5.2
-L4I_BRANCH=v1.5.2
+L4I_BRANCH=master
 LARAVEL_APP_DEFAULT_REPOSITORY="https://github.com/laravel/laravel.git"
 LARAVEL_APP_DEFAULT_BRANCH="develop"
 INSTALL_DIR=$1
