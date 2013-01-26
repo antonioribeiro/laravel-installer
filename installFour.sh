@@ -41,7 +41,7 @@ LESS_APP=`type -p $LESS_COMPILER_APP`
 NODEJS_VERSION="v0.8.18"
 
 PHP_SUHOSIN_CONF=/etc/php5/cli/conf.d/suhosin.ini
-PHP_MINIMUN_VERSION=5.2.0
+PHP_MINIMUN_VERSION=5.3.7
 PHP_INI=/etc/php/php.ini
 PHP_CLI_APP=php
 PHP_CGI_APP=php-cgi
