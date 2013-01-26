@@ -2,9 +2,15 @@
 
 L4I_BRANCH=master
 
+ARTISAN_APP=./artisan
+
 function main()  {
-	if [ "$1" != "new" ] && [ "$1" != "NEW" ] && [ -f "./artisan" ]; then
-		php artisan "$@"
+	findArtisan
+
+
+	if [ "$1" != "new" ] && [ "$1" != "NEW" ] && [ "$1" != "New" ] && [ "$ARTISAN_APP" != "" ] && [ -f $ARTISAN_APP ]; then
+		echo "artisan found at $ARTISAN_APP"
+ 		php $ARTISAN_APP $@
 	else
 		makeTemp
 
@@ -14,6 +20,40 @@ function main()  {
 
 		removeTemp
 	fi
+}
+
+function findArtisan() {
+	artisan=$ARTISAN_APP
+	ARTISAN_APP=
+
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../../../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../../../../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../../../../../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../../../../../../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../../../../../../../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	# if [[ "$ARTISAN_APP" != "" ]]; then
+	# 	dir=`dirname $ARTISAN_APP`
+	# 	dir=$(dirname )
+	# 	if [[]]	
+	# fi
 }
 
 function makeTemp() {
@@ -43,4 +83,4 @@ function removeTemp() {
 	rm $SCRIPT
 }
 
-main $1
+main $@

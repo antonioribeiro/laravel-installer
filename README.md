@@ -145,6 +145,10 @@ bash installFour.sh /var/www/blog myBlog YES
 
 # Changelog
 
+2013/01/26 16:52 (GMT-3) - Version 1.5.4
+
+* Our Artisan command now search for the real artisan in the whole (max of 7 levels) directory tree below it, so you can still run it while being inside, e.g., site/app/database/migrations.
+
 2013/01/26 02:25 (GMT-3) - Version 1.5.3
 
 * Added package jasonlewis/expressive-date
