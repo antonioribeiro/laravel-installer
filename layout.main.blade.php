@@ -8,7 +8,7 @@
 	<meta name="author" content="">
 
 	<!-- Le styles -->
-	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="assets/css/bootstrap.min.css" rel="stylesheet">
 	<style type="text/css">
       body {
         padding-top: 60px;
@@ -139,7 +139,7 @@
     ================================================== -->
 	<!-- Placed at the end of the document so the pages load faster -->
     <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="js/bootstrap.min.js"></script>
+    <script src="assets/js/bootstrap.min.js"></script>
 
 	<a class="hiddenlink" href="#" accesskey="t"></a>
 	<div style="display: none;" id="hiddenlpsubmitdiv"></div>

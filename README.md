@@ -37,6 +37,14 @@ If this script needs to install software, you will need sudo or root permissions
 * Download, compile, install and configure Twitter Bootstrap from git
 * Configure a main template, a home view using main template and a route to home, so we can see Laravel 4 and Blade running
 
+### Laravel 4 Applications
+
+You might be interested in installing another base app for your Laravel 4 site, this script will ask you about it during the process and here are some you might be interested in:
+
+* [FluxBB 2](https://github.com/fluxbb/fluxbb2) - (`https://github.com/fluxbb/fluxbb2.git`, master branch)
+* [niallobrien's Laravel 4 Starter Template](https://github.com/niallobrien/laravel4-template) (`https://github.com/niallobrien/laravel4-template.git`, master branch)
+* [Bruno Gaspar's Laravel 4 - Bootstrap Application](https://github.com/brunogaspar/Laravel4-Bootstrap) - (`https://github.com/brunogaspar/Laravel4-Bootstrap.git`, develop branch)
+
 ### Warnings
 
 This is a bash Debian (Debian and Ubuntu) based installation, for now, so if you are on MacOS, Fedora, CentOS, etc. it may not work.
@@ -119,11 +127,17 @@ wget -N --no-check-certificate -O installFour.sh https://raw.github.com/antonior
 
 And run it:
 ```
+bash installFour.sh
+```
+
+You can also pass some parameters to it:
+```
 bash installFour.sh <install directory> <site name> <Install twitter bootstrap? YES or NO>
 ```
 
 Examples of usage:
 ```
+bash installFour.sh
 bash installFour.sh /var/www/blog blog YES
 bash installFour.sh /home/taylor/www blog NO
 bash installFour.sh /var/www/blog myBlog YES

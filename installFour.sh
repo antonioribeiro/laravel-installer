@@ -166,11 +166,11 @@ function installBootstrapLess() {
 
 	mkdir -p $INSTALL_DIR/public/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
 	git clone https://github.com/twitter/bootstrap.git $INSTALL_DIR/public/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
-	mkdir -p $INSTALL_DIR/public/js  2>&1 | tee -a $LOG_FILE &> /dev/null
-	mkdir -p $INSTALL_DIR/public/css  2>&1 | tee -a $LOG_FILE &> /dev/null
-	mkdir -p $INSTALL_DIR/public/img  2>&1 | tee -a $LOG_FILE &> /dev/null
-	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/js/* $INSTALL_DIR/public/js  2>&1 | tee -a $LOG_FILE &> /dev/null
-	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/img/* $INSTALL_DIR/public/img  2>&1 | tee -a $LOG_FILE &> /dev/null
+	mkdir -p $INSTALL_DIR/public/assets/js  2>&1 | tee -a $LOG_FILE &> /dev/null
+	mkdir -p $INSTALL_DIR/public/assets/css  2>&1 | tee -a $LOG_FILE &> /dev/null
+	mkdir -p $INSTALL_DIR/public/assets/img  2>&1 | tee -a $LOG_FILE &> /dev/null
+	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/js/* $INSTALL_DIR/public/assets/js  2>&1 | tee -a $LOG_FILE &> /dev/null
+	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/img/* $INSTALL_DIR/public/assets/img  2>&1 | tee -a $LOG_FILE &> /dev/null
 
 	message "Compiling bootstrap..."
 
@@ -181,8 +181,8 @@ function installBootstrapLess() {
 		compressed=" -c "
 	fi
 
-	compileLess $compressed $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/css/bootstrap.min.css
-	compileLess             $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/css/bootstrap.css
+	compileLess $compressed $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/assets/css/bootstrap.min.css
+	compileLess             $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/assets/css/bootstrap.css
 
 	installBootstrapTemplate
 }
@@ -773,9 +773,9 @@ function checkParameters() {
 
 	if [[ "$LARAVEL_APP_REPOSITORY" == "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
 		message 
-		message "Laravel 4 repository is set to $LARAVEL_APP_REPOSITORY."
-		inquireYN "Do you want to download Laravel 4 app from a different repository or branch? " "y" "n"
-		if [[ "$answer" == "y" ]]; then
+		message "Default Laravel 4 repository is set to $LARAVEL_APP_REPOSITORY, but you can now install a different one."
+		inquireYN "Do you want to install default Laravel 4 app? " "y" "n"
+		if [[ "$answer" == "n" ]]; then
 			inquireText "Please type a new repository: " $LARAVEL_APP_REPOSITORY
 			if [[ "$answer" != "" ]]; then
 				LARAVEL_APP_REPOSITORY=$answer
