@@ -148,6 +148,7 @@ bash installFour.sh /var/www/blog myBlog YES
 2013/01/25 19:09 (GMT-3) - Version 1.5.2
 
 * Moved Twitter Bootstrap source files to public/vendor
+* Moved css, js and img files to public/assets
 * Added option to select a different Laravel app repository or branch
 
 2013/01/25 00:06 (GMT-3) - Version 1.5.0
