@@ -95,9 +95,6 @@ In the process of installing the entire environment or just Laravel 4, this scri
 * cartalyst/sentry (https://github.com/cartalyst/sentry)
 * jasonlewis/expressive-date (https://github.com/jasonlewis/expressive-date)
 
-"anahkiasen/underscore-php" : "dev-master"
-https://github.com/Anahkiasen/underscore-php
-
 ### Commands
 
 This script will create the following commands in your system:
