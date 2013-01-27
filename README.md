@@ -27,16 +27,6 @@ Your user need to have writing permissions to the installation directory, this s
 
 If this script needs to install software, you will need sudo or root permissions.
 
-### Process of installation
-
-* Git clone the current laravel app repository
-* Install Composer
-* Install PHPUnit (using Composer)
-* Install Composer packages
-* Create VirtualHost (currently apache2 only) and restart webserver
-* Download, compile, install and configure Twitter Bootstrap from git
-* Configure a main template, a home view using main template and a route to home, so we can see Laravel 4 and Blade running
-
 ### Laravel 4 Applications
 
 You might be interested in installing another base app for your Laravel 4 site, this script will ask you about it during the process and here are some you might be interested in:
@@ -103,6 +93,10 @@ In the process of installing the entire environment or just Laravel 4, this scri
 * jasonlewis/basset (https://github.com/jasonlewis/basset)
 * bigelephant/string (https://github.com/bigelephant/string)
 * cartalyst/sentry (https://github.com/cartalyst/sentry)
+* jasonlewis/expressive-date (https://github.com/jasonlewis/expressive-date)
+
+"anahkiasen/underscore-php" : "dev-master"
+https://github.com/Anahkiasen/underscore-php
 
 ### Commands
 
@@ -142,6 +136,34 @@ bash installFour.sh /var/www/blog blog YES
 bash installFour.sh /home/taylor/www blog NO
 bash installFour.sh /var/www/blog myBlog YES
 ```
+
+### Process of installation
+
+* Create temporary install directory
+* Create log directory
+* Check if user is root or has sudo powers
+* Get operating system version and distribution
+* Update packages list (apt-get update, yum sync...)
+* Install webserver (apache2), if not available
+* Check PHP version (min=5.3.7), if none available, install
+* Configure PHP
+* Ask for installation parameters (directory and site name) if not sent via command line
+* Check or install wget
+* Check or install curl
+* Check or install unzip
+* Check or install git
+* Check or install phpunit
+* Check or install MCrypt
+* Check or install Composer
+* Git clone l4i repository to temporary directory
+* Select Laravel 4 app repository
+* Git clone Laravel 4 app repository
+* Select and install additional composer packages
+* Install a new artisan command
+* Check or install a less compiler (Node.js and/or lessphp)
+* Install Twitter Bootstrap (less or CSS version)
+* Create VirtualHost (currently apache2 only) and restart webserver
+* Configure a main template, a home view using main template and a route to home, so we can see Laravel 4 and Blade running
 
 # Changelog
 
