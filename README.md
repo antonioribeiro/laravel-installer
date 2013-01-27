@@ -186,6 +186,10 @@ bash installFour.sh /var/www/blog myBlog YES
 
 # Changelog
 
+2013/01/27 21:33 (GMT-3) - Version 1.6.5
+
+* Packages list are now on a separate file (packages.csv), easier to maintain by the community
+
 2013/01/27 14:28 (GMT-3) - Version 1.6.0
 
 * Our artisan command is now inside installFour.sh

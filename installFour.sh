@@ -101,9 +101,6 @@ function main() {
 }
 
 function createSite() {
-	loadPackagesArray
-	exit 1
-
 	showHeader
 	cleanL4IRepository
 	createLogDirectory
@@ -566,20 +563,21 @@ function installAdditionalPackages() {
 
 function loadPackagesArray() {
 
-	while IFS=, read col1 col2 col3 col4 col5
-	do
-	  trim $col1
-	  col1=$?
-	  trim $col2
-	  col2=$?
-	  trim $col3
-	  col3=$?
-	  trim $col4
-	  col4=$?
-	  trim $col5
-	  col5=$?
+	while IFS=, read -r col1 col2 col3 col4 col5; do
+		trim $col1 ; col1=$trimmed
+		trim $col2 ; col2=$trimmed
+		trim $col3 ; col3=$trimmed
+		trim $col4 ; col4=$trimmed ; col4=$(echo $col4 | sed 's/\\/\\\\\\/g')
+		trim $col5 ; col5=$trimmed ; col5=$(echo $col5 | sed 's/\\/\\\\\\/g')
 
-	  echo ">-$col1- -$col2- -$col3- -$col4- -$col5-"
+		substring=`echo $col1 | cut -b1-3`
+		if [[ "$col1" != "NAME" ]] && [[ "$substring" != "---" ]]; then
+			EP_NAME[${#EP_NAME[*]}]=$col1
+			EP_VERSION[${#EP_VERSION[*]}]=$col2
+			EP_ALIAS_NAME[${#EP_ALIAS_NAME[*]}]=$col3
+			EP_ALIAS_FACADE[${#EP_ALIAS_FACADE[*]}]=$col4
+			EP_PROVIDER[${#EP_PROVIDER[*]}]=$col5
+		fi
 	done < $L4I_REPOSITORY_GIT/packages.csv
 
 }
@@ -1466,10 +1464,9 @@ function vercomp () {
 }
 
 function trim() {
-	local trimmed=$1
+	trimmed=$1
     trimmed="${trimmed#"${trimmed%%[![:space:]]*}"}"   # remove leading whitespace characters
     trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"   # remove trailing whitespace characters
-    return $trimmed
 }
 
 main $@
