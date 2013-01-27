@@ -103,11 +103,24 @@ This script will create the following commands in your system:
 This is an executable version of composer.phar 
 
 #### artisan 
-You can call this artisan from any place in your system and has 3 main options:
+You can call this artisan from any place in your system and has some options:
 
-* Calling from a Laravel directory it will act as "php artisan", so you don't need to use php anymore for artisan
-* Calling from outside a Laravel directory it will fire installFour script to let you create a new Laravel service environment
-* Calling it from any place using the argument "new" (e.g.: artisan new) it will fire installFour installer script as well
+* Running it inside a Laravel directory (or subdirectory) it will act as "php artisan", so you don't need to use php anymore for artisan:
+```taylor@l4server:/var/www/blog> artisan```
+
+* Running from outside a Laravel directory it will fire installFour script to let you create a new Laravel service environment:
+
+```taylor@l4server:/> artisan```
+
+* Runnning it from any place using the argument "new" it will fire installFour installer script as well
+
+```taylor@l4server:/> artisan new```
+
+* Runnning it from any place using the argument "destroy" it will help you remove a site created with it:
+
+```taylor@l4server:/> artisan destroy```
+```taylor@l4server:/> artisan destroy blog```
+```taylor@l4server:/> artisan destroy blog -y```
 
 ### Installation and Examples
 
@@ -163,6 +176,11 @@ bash installFour.sh /var/www/blog myBlog YES
 * Configure a main template, a home view using main template and a route to home, so we can see Laravel 4 and Blade running
 
 # Changelog
+
+2013/01/27 14:28 (GMT-3) - Version 1.6.0
+
+* Our artisan command is now inside installFour.sh
+* Added command "artisan destroy <site> [-y]" to remove sites created with installFour
 
 2013/01/26 16:52 (GMT-3) - Version 1.5.4
 

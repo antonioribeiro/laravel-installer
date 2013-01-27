@@ -1,7 +1,7 @@
 #!/bin/bash
 
-L4I_VERSION=1.5.4
-L4I_BRANCH=master
+L4I_VERSION=1.6.0
+L4I_BRANCH=v1.6.0
 LARAVEL_APP_DEFAULT_REPOSITORY="https://github.com/laravel/laravel.git"
 LARAVEL_APP_DEFAULT_BRANCH="develop"
 INSTALL_DIR=$1
@@ -14,6 +14,8 @@ L4I_REPOSITORY="-b $L4I_BRANCH https://github.com/antonioribeiro/l4i.git"
 L4I_REPOSITORY_DIR=/tmp/l4i
 L4I_REPOSITORY_GIT="$L4I_REPOSITORY_DIR/git"
 L4I_INSTALLED_APPS="/etc/l4i.installed.txt"
+L4I_WEBSERVER_SUFFIX=l4i.conf
+
 LARAVEL_APP_BRANCH=$LARAVEL_APP_DEFAULT_BRANCH
 LARAVEL_APP_REPOSITORY=$LARAVEL_APP_DEFAULT_REPOSITORY
 BASH_DIR=`type -p bash`
@@ -23,6 +25,7 @@ CURL_APP=curl
 WGET_APP=wget
 UNZIP_APP=unzip
 SUDO_APP=sudo
+THIS=`basename $0`
 
 COMPOSER_APP=composer
 
@@ -92,8 +95,15 @@ EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\F
   # mkdir $INSTALL_DIR/app/views/layouts 2>&1 | tee -a $LOG_FILE &> /dev/null
   # mkdir $INSTALL_DIR/app/views/views 2>&1 | tee -a $LOG_FILE &> /dev/null
 
-
 function main() {
+	if [[ $THIS == 'artisan' ]]; then
+		ourArtisan $@
+	else 
+		createSite $@
+	fi
+}
+
+function createSite() {
 	showHeader
 	cleanL4IRepository
 	createLogDirectory
@@ -130,6 +140,126 @@ function main() {
 	installTwitterBootstrap
 	createVirtualHost $INSTALL_DIR
 	setGlobalPermissions
+
+	restartWebserver
+}
+
+function ourArtisan()  {
+	if [ "$1" == "new" ] || [ "$1" == "NEW" ] || [ "$1" == "New" ]; then
+		runLaravelArtisan $@
+	fi
+
+	if [ "$1" == "destroy" ] || [ "$1" == "DESTROY" ] || [ "$1" == "Destroy" ]; then
+		destroySite $@
+	fi
+
+ 	downloadAndRunInstallFour
+}
+
+function downloadAndRunInstallFour() {
+	##
+ 	## Download and run an updated version of installFour every time we use it
+ 	##
+	makeTemp
+
+	wget -N --no-check-certificate -O $SCRIPT https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/installFour.sh &> $LOG
+	checkErrorsAndAbort "An error while downloading i4l script, please check the log file at $LOG"
+	bash $SCRIPT
+
+	removeTemp
+}
+
+function runLaravelArtisan() {
+	findLaravelArtisan
+	if [ "$ARTISAN_APP" != "" ] && [ -f $ARTISAN_APP ]; then 
+		php $ARTISAN_APP $@
+		exit 1
+	fi
+}
+
+function destroySite() {
+	cleanL4IRepository
+	createLogDirectory
+	checkOS
+	locateWebserverConf
+
+	if [[ "$APACHE_CONF" == "" ]]; then begin
+		abortIt "Webserver configuration file not found."
+	fi
+
+	site=$2
+	if [[ "$2" == "-y" ]]; then
+		yes=YES
+		site=$3
+	fi
+
+	if [[ "$3" == "-y" ]]; then
+		yes=YES
+	fi
+
+	if [[ "$site" != "" ]]; then
+		siteFilter=" | grep \"$site\" "
+	fi
+
+	command="cat $APACHE_CONF $siteFilter | grep -P \"^Include \/.*$L4I_WEBSERVER_SUFFIX$\" | cut -d\" \" -f2"
+
+	array=(`eval $command`)
+	count=${#array[*]}
+
+	if [[ $count -gt 1 ]]; then
+		if [[ "$yes" == "YES" ]]; then
+			echo "You search resulted in more than one site, please choose one to destroy."
+			yes=NO
+		else
+			echo "Please choose one site to destroy."
+		fi
+
+		for i in ${!array[*]} ; do 
+			dir=`dirname ${array[$i]}` 
+			echo "$i) $dir " ; 
+		done
+
+		inquireText "Site number:"
+
+		if [ "$answer" -eq "$answer" ] 2>/dev/null; then
+			site=array[$answer]
+		else 
+			site=
+		fi
+
+		if [[ "$site" == "" ]]; then
+			abortIt "$answer is not a valid option."
+		fi
+
+		site=${array[$answer]}
+	else
+		site=${array[0]}
+	fi
+
+	dir=`dirname $site` 
+	if [[ "$yes" != "YES" ]]; then
+		inquireYN "Are you sure you want to completely destroy $dir and all related files?" "y" "n"
+	else
+		answer=y
+	fi
+
+	if [[ "$answer" == "y" ]]; then
+		zapSite $dir $site
+	fi
+
+	exit 1
+}
+
+function zapSite {
+	dir=$1
+	conf=$2
+	conf_escaped=`echo $conf | sed s,/,\\\\\\\\\\/,g`
+	echo $conf_escaped
+
+	checkSudo
+
+	$SUDO_APP rm -rf $dir
+	$SUDO_APP perl -pi -e "s/Include $conf_escaped\n//g" $APACHE_CONF 2>&1 | tee -a $LOG_FILE &> /dev/null
 
 	restartWebserver
 }
@@ -384,7 +514,7 @@ function createVirtualHost() {
 		# 	$SUDO_APP $VHOST_ENABLE_COMMAND $SITE_NAME 2>&1 | tee -a $LOG_FILE &> /dev/null
 		# fi
 
-		echo "Include $conf" | $SUDO_APP tee -a $APACHE_CONF 2>&1 | tee -a $LOG_FILE &> /dev/null
+		echo -e "\nInclude $conf" | $SUDO_APP tee -a $APACHE_CONF 2>&1 | tee -a $LOG_FILE &> /dev/null
 
 		$SUDO_APP $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
 
@@ -462,11 +592,14 @@ function checkPHP() {
 	fi
 
 	echo "<?php echo PHP_VERSION;" > /tmp/phpver.php
-	phpver=`php /tmp/phpver.php`
+	phpver=`php /tmp/phpver.php | cut -d- -f1`
 
-	if [[ "$phpver" < "$PHP_MINIMUN_VERSION" ]]; then
-	  abortIt "Your PHP version is $phpver, minumum required is $PHP_MINIMUN_VERSION."
-	fi
+	vercomp $phpver $PHP_MINIMUN_VERSION
+    case $? in
+        0) op='=';;
+        1) op='>';;
+        2) abortIt "Your PHP version is $phpver, minumum required is $PHP_MINIMUN_VERSION.";;
+    esac
 
 	if [[ "$phpisavailable" == "" ]]; then 
 		message "PHP $phpver is available."
@@ -534,27 +667,7 @@ function checkWebserver() {
 		abortIt "You need a webserver to run Laravel 4, please install one and restart."
 	fi
 
-	# If APACHE_CONF was not set before, lets configure it
-	if [[ "$APACHE_CONF" == "" ]]; then 
-		#Debian default
-		APACHE_CONF=/etc/apache2/apache2.conf
-		if [[ "$OPERATING_SYSTEM" == "Redhat" ]] || [[ "$OPERATING_SYSTEM" == "arch" ]]; then
-			APACHE_CONF=
-
-			if [[ "$APACHE_CONF" == "" ]]; then
-				hasFile /etc/httpd/httpd.conf APACHE_CONF
-			fi
-			if [[ "$APACHE_CONF" == "" ]]; then
-				hasFile /etc/httpd/conf/httpd.conf APACHE_CONF
-			fi
-			if [[ "$APACHE_CONF" == "" ]]; then
-				hasFile /etc/httpd/conf.d/httpd.conf APACHE_CONF
-			fi
-			if [[ "$APACHE_CONF" == "" ]]; then
-				hasFile /etc/apache2/httpd.conf APACHE_CONF
-			fi
-		fi
-	fi
+	locateWebserverConf
 
 	if [[ "$APACHE_CONF" == "" ]]; then
 		abortIt "This script could not find your apache.conf (or httpd.conf) file."
@@ -572,6 +685,26 @@ function checkWebserver() {
 	if [[ "$webserverisinstalled" == "" ]]; then 
 		message "Webserver ($WEBSERVER) is installed."
 		webserverisinstalled=YES
+	fi
+}
+
+function locateWebserverConf() {
+	hasFile "$APACHE_CONF" APACHE_CONF
+
+	if [[ "$APACHE_CONF" == "" ]]; then
+		hasFile /etc/apache2/apache2.conf APACHE_CONF
+	fi
+	if [[ "$APACHE_CONF" == "" ]]; then
+		hasFile /etc/httpd/httpd.conf APACHE_CONF
+	fi
+	if [[ "$APACHE_CONF" == "" ]]; then
+		hasFile /etc/httpd/conf/httpd.conf APACHE_CONF
+	fi
+	if [[ "$APACHE_CONF" == "" ]]; then
+		hasFile /etc/httpd/conf.d/httpd.conf APACHE_CONF
+	fi
+	if [[ "$APACHE_CONF" == "" ]]; then
+		hasFile /etc/apache2/httpd.conf APACHE_CONF
 	fi
 }
 
@@ -794,7 +927,7 @@ function checkParameters() {
 		fi
 	fi
 
-	VHOST_CONF_FILE=$SITE_NAME.l4i.conf
+	VHOST_CONF_FILE=$SITE_NAME.$L4I_WEBSERVER_SUFFIX
 }
  
 function makeInstallDirectory {
@@ -1002,7 +1135,7 @@ function showLogFile() {
 }
 
 function installOurArtisan() {
-	$SUDO_APP cp $L4I_REPOSITORY_GIT/artisan $BIN_DIR/artisan  2>&1 | tee -a $LOG_FILE &> /dev/null
+	$SUDO_APP cp $L4I_REPOSITORY_GIT/installFour.sh $BIN_DIR/artisan  2>&1 | tee -a $LOG_FILE &> /dev/null
 	$SUDO_APP chmod +x $BIN_DIR/artisan 2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
@@ -1151,8 +1284,12 @@ function hasFile() {
 	file=$1
 	var=$2
 
-	if [[ -f $file ]]; then
-		eval $var=\$file
+	if [[ "$file" != "" ]]; then
+		if [[ -f $file ]]; then
+			eval $var=\$file
+		fi
+	else 
+		eval $var=
 	fi
 }
 
@@ -1204,4 +1341,86 @@ function installHomebrewFailed() {
 	abortIt "Homebrew installation failed."
 }
 
-main
+function findLaravelArtisan() {
+	artisan=$ARTISAN_APP
+	ARTISAN_APP=
+
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../../../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../../../../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../../../../../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../../../../../../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	artisan=../../../../../../../artisan
+	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
+
+	if [[ "$ARTISAN_APP" != "" ]]; then
+		echo "artisan found at $ARTISAN_APP"
+	fi
+}
+
+function makeTemp() {
+	SCRIPT=`mktemp`
+
+	if [ "$SCRIPT" == "" ]; then
+		SCRIPT=/tmp/$(basename $0).$$.tmp
+	fi
+
+	if [ "$SCRIPT" == "" ]; then
+		rm -f /tmp/installFour.sh &> /dev/null
+		sudo rm -f /tmp/installFour.sh &> /dev/null
+		SCRIPT=/tmp/installFour.sh
+	fi
+
+	LOG=$SCRIPT.log
+}
+
+function removeTemp() {
+	rm $SCRIPT
+}
+
+function vercomp () {
+    if [[ $1 == $2 ]]
+    then
+        return 0
+    fi
+    local IFS=.
+    local i ver1=($1) ver2=($2)
+    # fill empty fields in ver1 with zeros
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
+    do
+        ver1[i]=0
+    done
+    for ((i=0; i<${#ver1[@]}; i++))
+    do
+        if [[ -z ${ver2[i]} ]]
+        then
+            # fill empty fields in ver2 with zeros
+            ver2[i]=0
+        fi
+        if ((10#${ver1[i]} > 10#${ver2[i]}))
+        then
+            return 1
+        fi
+        if ((10#${ver1[i]} < 10#${ver2[i]}))
+        then
+            return 2
+        fi
+    done
+    return 0
+}
+main $@
