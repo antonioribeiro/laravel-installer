@@ -1,7 +1,7 @@
 l4i
 ===
 
-Laravel 4 Install Script for Linux
+A Laravel 4 Install Script for Linux
 
 This script will install a working development structure of Laravel 4 with a basic Twitter Booststrap template.
 
