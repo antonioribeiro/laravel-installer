@@ -1,0 +1,11 @@
+NAME,                        BRANCH,               ALIAS,          FACADE,                                      SERVICE_PROVIDER
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+raveren/kint,                dev-master,           ,               ,                                            ,
+meido/html,                  1.1.*,                HTML,           Meido\HTML\HTMLFacade,                       Meido\HTML\HTMLServiceProvider,
+meido/form,                  1.1.*,                Form,           Meido\Form\FormFacade,                       Meido\Form\FormServiceProvider,
+meido/str,                   dev-master,           Str,            Meido\Str\StrFacade,                         Meido\Str\StrServiceProvider,
+machuga/authority,           dev-develop,          ,               ,                                            ,
+jasonlewis/basset,           dev-master,           Basset,         Basset\Facades\Basset,                       Basset\BassetServiceProvider,
+bigelephant/string,          dev-master,           String,         BigElephant\String\StringFacade,             BigElephant\String\StringServiceProvider,
+cartalyst/sentry,            2.0.*,                Sentry,         Cartalyst\Sentry\Facades\Laravel\Sentry,     Cartalyst\Sentry\SentryServiceProvider,
+jasonlewis/expressive-date,  1.*,                  ,               ,                                            ExpressiveDateServiceProvider

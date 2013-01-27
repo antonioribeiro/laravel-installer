@@ -62,11 +62,11 @@ SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint|Redhat|Fedora|CentOS"
 #
 #
 
-		EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry"                                 "jasonlewis/expressive-date"     )
-	 EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "dev-master"                     "dev-master"                                    "2.0.*"                                            "1.*"                            )
-  EP_ALIAS_NAME=(""             "HTML"                                "Form"                                "Str"                              ""                   "Basset"                         "String"                                        "Sentry"                                           ""                               )
-EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\Form\\\FormFacade"           "Meido\\\Str\\\StrFacade"          ""                   "Basset\\\Facades\\\Basset"      "BigElephant\\\String\\\StringFacade"           "Cartalyst\\\Sentry\\\Facades\\\Laravel\\\Sentry"  ""                               )
-	EP_PROVIDER=(""             "Meido\\\HTML\\\HTMLServiceProvider"  "Meido\\\Form\\\FormServiceProvider"  "Meido\\\Str\\\StrServiceProvider" ""                   "Basset\\\BassetServiceProvider" "BigElephant\\\String\\\StringServiceProvider"  "Cartalyst\\\Sentry\\\SentryServiceProvider"       "ExpressiveDateServiceProvider"  )
+#		EP_NAME=("raveren/kint" "meido/html"                          "meido/form"                          "meido/str"                        "machuga/authority"  "jasonlewis/basset"              "bigelephant/string"                            "cartalyst/sentry"                                 "jasonlewis/expressive-date"     )
+#	 EP_VERSION=("dev-master"   "1.1.*"                               "1.1.*"                               "dev-master"                       "dev-develop"        "dev-master"                     "dev-master"                                    "2.0.*"                                            "1.*"                            )
+#  EP_ALIAS_NAME=(""             "HTML"                                "Form"                                "Str"                              ""                   "Basset"                         "String"                                        "Sentry"                                           ""                               )
+#EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\Form\\\FormFacade"           "Meido\\\Str\\\StrFacade"          ""                   "Basset\\\Facades\\\Basset"      "BigElephant\\\String\\\StringFacade"           "Cartalyst\\\Sentry\\\Facades\\\Laravel\\\Sentry"  ""                               )
+#	EP_PROVIDER=(""             "Meido\\\HTML\\\HTMLServiceProvider"  "Meido\\\Form\\\FormServiceProvider"  "Meido\\\Str\\\StrServiceProvider" ""                   "Basset\\\BassetServiceProvider" "BigElephant\\\String\\\StringServiceProvider"  "Cartalyst\\\Sentry\\\SentryServiceProvider"       "ExpressiveDateServiceProvider"  )
 
 # former removed due to problems with meido
 # changelog: * anahkiasen/former added to the list of packages
@@ -101,6 +101,9 @@ function main() {
 }
 
 function createSite() {
+	loadPackagesArray
+	exit 1
+	
 	showHeader
 	cleanL4IRepository
 	createLogDirectory
@@ -541,6 +544,8 @@ function createVirtualHost() {
 function installAdditionalPackages() {
 	message "Configuring additional packages..."
 
+	loadPackagesArray
+
 	total=${#EP_NAME[*]}
 
 	for (( i=0; i<=$(( $total -1 )); i++ ))
@@ -557,6 +562,26 @@ function installAdditionalPackages() {
 			 installComposerPackage $name $version $alias_name $alias_facade $provider
 		fi        
 	done    
+}
+
+function loadPackagesArray() {
+
+	while IFS=, read col1 col2 col3 col4 col5
+	do
+	  trim $col1
+	  col1=$?
+	  trim $col2
+	  col2=$?
+	  trim $col3
+	  col3=$?
+	  trim $col4
+	  col4=$?
+	  trim $col5
+	  col5=$?
+
+	  echo ">-$col1- -$col2- -$col3- -$col4- -$col5-"
+	done < $L4I_REPOSITORY_GIT/packages.csv
+
 }
 
 function installComposerPackage() {
@@ -1439,4 +1464,12 @@ function vercomp () {
     done
     return 0
 }
+
+function trim() {
+	local trimmed=$1
+    trimmed="${trimmed#"${trimmed%%[![:space:]]*}"}"   # remove leading whitespace characters
+    trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"   # remove trailing whitespace characters
+    return $trimmed
+}
+
 main $@
