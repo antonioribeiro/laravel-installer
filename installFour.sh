@@ -68,9 +68,6 @@ SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint|Redhat|Fedora|CentOS"
 EP_ALIAS_FACADE=(""             "Meido\\\HTML\\\HTMLFacade"           "Meido\\\Form\\\FormFacade"           "Meido\\\Str\\\StrFacade"          ""                   "Basset\\\Facades\\\Basset"      "BigElephant\\\String\\\StringFacade"           "Cartalyst\\\Sentry\\\Facades\\\Laravel\\\Sentry"  ""                               )
 	EP_PROVIDER=(""             "Meido\\\HTML\\\HTMLServiceProvider"  "Meido\\\Form\\\FormServiceProvider"  "Meido\\\Str\\\StrServiceProvider" ""                   "Basset\\\BassetServiceProvider" "BigElephant\\\String\\\StringServiceProvider"  "Cartalyst\\\Sentry\\\SentryServiceProvider"       "ExpressiveDateServiceProvider"  )
 
-
-
-
 # former removed due to problems with meido
 # changelog: * anahkiasen/former added to the list of packages
 # "anahkiasen/former"              
@@ -146,14 +143,14 @@ function createSite() {
 
 function ourArtisan()  {
 	if [ "$1" == "new" ] || [ "$1" == "NEW" ] || [ "$1" == "New" ]; then
-		runLaravelArtisan $@
+		downloadAndRunInstallFour $2 $3 $4 $5 $6 $7 $8 $9
 	fi
 
 	if [ "$1" == "destroy" ] || [ "$1" == "DESTROY" ] || [ "$1" == "Destroy" ]; then
 		destroySite $@
 	fi
 
- 	downloadAndRunInstallFour
+ 	runLaravelArtisan $@
 }
 
 function downloadAndRunInstallFour() {
@@ -164,7 +161,7 @@ function downloadAndRunInstallFour() {
 
 	wget -N --no-check-certificate -O $SCRIPT https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/installFour.sh &> $LOG
 	checkErrorsAndAbort "An error while downloading i4l script, please check the log file at $LOG"
-	bash $SCRIPT
+	bash $SCRIPT $@
 
 	removeTemp
 }
