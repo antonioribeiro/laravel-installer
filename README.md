@@ -192,7 +192,7 @@ bash installFour.sh /var/www/blog myBlog YES
 2013/01/27 14:28 (GMT-3) - Version 1.6.0
 
 * Our artisan command is now inside installFour.sh
-* Added command "artisan destroy <site> [-y]" to remove sites created with installFour
+* Added command "artisan destroy [<site>] [-y]" to remove sites created with installFour
 
 2013/01/26 16:52 (GMT-3) - Version 1.5.4
 
