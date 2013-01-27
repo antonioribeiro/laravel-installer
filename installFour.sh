@@ -1,7 +1,7 @@
 #!/bin/bash
 
-L4I_VERSION=1.6.0
-L4I_BRANCH=master
+L4I_VERSION=1.6.5
+L4I_BRANCH=v1.6.5
 LARAVEL_APP_DEFAULT_REPOSITORY="https://github.com/laravel/laravel.git"
 LARAVEL_APP_DEFAULT_BRANCH="develop"
 INSTALL_DIR=$1
@@ -103,7 +103,7 @@ function main() {
 function createSite() {
 	loadPackagesArray
 	exit 1
-	
+
 	showHeader
 	cleanL4IRepository
 	createLogDirectory
