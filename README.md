@@ -134,7 +134,7 @@ bash installFour.sh /home/taylor/www blog NO
 bash installFour.sh /var/www/blog myBlog YES
 ```
 
-### Process of installation
+### Installation Process
 
 * Create temporary install directory
 * Create log directory
