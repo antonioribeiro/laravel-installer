@@ -240,7 +240,7 @@ function destroySite() {
 
 	dir=`dirname $site` 
 	if [[ "$yes" != "YES" ]]; then
-		inquireYN "Are you sure you want to completely destroy $dir and all related files?" "y" "n"
+		inquireYN "Are you sure you want to completely destroy $dir and all related files?" "n"
 
 		if [[ "$answer" == "y" ]]; then
 			number=$RANDOM
@@ -266,7 +266,6 @@ function zapSite {
 	dir=$1
 	conf=$2
 	conf_escaped=`echo $conf | sed s,/,\\\\\\\\\\/,g`
-	echo $conf_escaped
 
 	checkSudo
 
@@ -285,17 +284,17 @@ function downloadL4IRepository {
 function installTwitterBootstrap() {
 	if [[ "$LARAVEL_APP_REPOSITORY" != "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
 		message "You are using a non default version of Laravel 4 app, Twitter Bootstrap may break your installation."
-		question="Do you still wish to install Twitter Bootstrap? "
+		question="Do you still wish to install Twitter Bootstrap?"
 	else
-		question="Install Twitter Bootstrap? "
+		question="Install Twitter Bootstrap?"
 	fi
 
-	inquireYN "$question" "y" "n"
+	inquireYN "$question" "y"
 	if [[ "$answer" == "y" ]]; then
 		if [[ "$LESS_COMPILER_NAME" == "" ]]; then
 			installBootstrapCSS
 		else
-			inquireYN "Do you wish to install the LESS version of Twitter Bootstrap? " "y" "n"
+			inquireYN "Do you wish to install the LESS version of Twitter Bootstrap?" "y"
 			if [[ "$answer" == "y" ]]; then
 				installBootstrapLess
 			else 
@@ -385,7 +384,7 @@ function findLessCompiler() {
 function checkLessCompiler() {
 	findLessCompiler
 	if [[ "$LESS_COMPILER_NAME" == "" ]]; then
-		inquireYN "Do you wish to install a less compiler? " "y" "n"
+		inquireYN "Do you wish to install a less compiler?" "y"
 		if [[ "$answer" == "y" ]]; then
 			installNodeAndLess
 			installLessPHP
@@ -397,7 +396,7 @@ function checkLessCompiler() {
 function installNodeAndLess() {
 	program=`type -p npm`
 	if [[ "$program" == "" ]]; then
-		inquireYN "Looks like Node.js is not installed you really wish to install it? " "y" "n"
+		inquireYN "Looks like Node.js is not installed you really wish to install it?" "y"
 		if [[ "$answer" == "y" ]]; then
 			installNode
 			program=`type -p npm`
@@ -459,14 +458,14 @@ function checkLessPHP() {
 	program=`type -p plessc`
 
 	if [[ "$program" == "" ]]; then
-		inquireYN "Do you wish to install lessphp? " "y" "n"
+		inquireYN "Do you wish to install lessphp?" "n"
 		installLessPHP
 	fi
 }
 
 function installLessPHP() {
 	if [[ "$CAN_I_RUN_SUDO" == "YES" ]]; then
-		inquireYN "Do you wish to install lessphp? " "y" "n"
+		inquireYN "Do you wish to install lessphp?" "n"
 		if [[ "$answer" == "y" ]]; then
 			message "Installing lessphp..."
 			$SUDO_APP mkdir -p $LESSPHP_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -552,7 +551,7 @@ function installAdditionalPackages() {
 		alias_facade="${EP_ALIAS_FACADE[$i]}"
 		provider="${EP_PROVIDER[$i]}"
 
-		inquireYN "Do you wish to install package $name? " "y" "n"
+		inquireYN "Do you wish to install package $name?" "n"
 
 		if [[ "$answer" == "y" ]]; then
 			 installComposerPackage $name $version $alias_name $alias_facade $provider
@@ -584,7 +583,7 @@ function checkPHP() {
 	if [[ "$phpcli" == "" ]] || [[ "$phpcgi" == "" ]]; then
 		message "Looks like PHP or part of it is not installed."
 		if [[ "$php_install_attempt" == "" ]]; then
-			inquireYN "Do you want to install PHP? " "y" "n"
+			inquireYN "Do you want to install PHP?" "y"
 			if [[ "$answer" == "y" ]]; then
 				php_install_attempt=YES
 				installPHP
@@ -666,7 +665,7 @@ function checkWebserver() {
 	if [[ "$WEBSERVER" == "" ]]; then
 		message "Looks like there is no webserver software installed."
 		if [[ "$webserver_install_attempt" == "" ]]; then
-			inquireYN "Do you want to install a webserver? " "y" "n"
+			inquireYN "Do you want to install a webserver?" "y"
 			if [[ "$answer" == "y" ]]; then
 				webserver_install_attempt=YES
 				installWebserver
@@ -925,7 +924,7 @@ function checkParameters() {
 	if [[ "$LARAVEL_APP_REPOSITORY" == "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
 		message 
 		message "Default Laravel 4 repository is set to $LARAVEL_APP_REPOSITORY, but you can now install a different one."
-		inquireYN "Do you want to install the default Laravel 4 app? " "y" "n"
+		inquireYN "Do you want to install the default Laravel 4 app?" "y"
 		if [[ "$answer" == "n" ]]; then
 			inquireText "Please type a new repository: " $LARAVEL_APP_REPOSITORY
 			if [[ "$answer" != "" ]]; then
@@ -1090,7 +1089,7 @@ function checkOS() {
 	else
 		message
 		message "Supported operating systems: $SUPPORTED_OPERATING_SYSTEMS"
-		inquireYN "Looks like your operating system ($OPERATING_SYSTEM) is not supported by this scrit, but it still can work, do you wish to continue anyway? " "y" "n"
+		inquireYN "Looks like your operating system ($OPERATING_SYSTEM) is not supported by this script, but it still can work, do you wish to continue anyway?" "n"
 
 		if [[ "$answer" != "y" ]]; then
 			message "Aborting."
@@ -1100,11 +1099,16 @@ function checkOS() {
 }
 
 function inquireYN()  {
-  message -n "$1 [$2/$3]? "
-  read answer
-  finish="-1"
-  while [ "$finish" = '-1' ]
-  do
+	if [[ "$2" == "y" ]]; then
+		default=Y
+	fi
+	if [[ "$2" == "n" ]]; then
+		default=N
+	fi
+	inquireText "$1" $default
+	finish="-1"
+	while [ "$finish" = '-1' ]
+	do
 	finish="1"
 	if [ "$answer" = '' ];
 	then
@@ -1115,26 +1119,26 @@ function inquireYN()  {
 		n | N | no | NO ) answer="n";;
 		*) finish="-1";
 		   message -n 'Invalid response -- please reenter:';
-		   read answer;;
+		   inquireText "$1" $default;;
 	   esac
 	fi
-  done
+	done
 }
 
 function inquireText()  {
-  answer=""
-  while [ "$answer" = "" ]
-  do
-  	if [[ $BASH_VERSION > '3.9' ]]; then
+	answer=""
+	while [ "$answer" = "" ]
+	do
+		if [[ $BASH_VERSION > '3.9' ]]; then
 		read -e -p "$1 " -i "$2" answer
 	else
 		read -e -p "$1 [hit enter for $2] " answer
-  	fi
+		fi
 
 	if [ "$answer" == "" ]; then
 		answer=$2
 	fi
-  done
+	done
 }
 
 function createLogDirectory() {
@@ -1196,7 +1200,7 @@ function log() {
 }
 
 function installWebserver() {
-	inquireYN "Do you want to install apache? " "y" "n"
+	inquireYN "Do you want to install apache?" "y"
 	if [[ "$answer" == "y" ]]; then
 		if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
 			installApp apache2
