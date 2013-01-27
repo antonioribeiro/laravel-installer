@@ -206,6 +206,11 @@ function destroySite() {
 	array=(`eval $command`)
 	count=${#array[*]}
 
+	if [[ $count -eq 0 ]]; then
+		message "No sites found."
+		exit 1
+	fi
+
 	if [[ $count -gt 1 ]]; then
 		if [[ "$yes" == "YES" ]]; then
 			echo "You search resulted in more than one site, please choose one to destroy."
@@ -239,6 +244,16 @@ function destroySite() {
 	dir=`dirname $site` 
 	if [[ "$yes" != "YES" ]]; then
 		inquireYN "Are you sure you want to completely destroy $dir and all related files?" "y" "n"
+
+		if [[ "$answer" == "y" ]]; then
+			number=$RANDOM
+			inquireText "To destroy, please type $number:" 
+			if [[ "$number" == "$answer" ]]; then
+				answer=y	
+			else
+				abortIt "You typed a wrong number, you might not be so sure."
+			fi
+		fi
 	else
 		answer=y
 	fi

@@ -106,21 +106,33 @@ This is an executable version of composer.phar
 You can call this artisan from any place in your system and has some options:
 
 * Running it inside a Laravel directory (or subdirectory) it will act as "php artisan", so you don't need to use php anymore for artisan:
-```taylor@l4server:/var/www/blog> artisan```
+```
+taylor@l4server:/var/www/blog> artisan
+```
 
 * Running from outside a Laravel directory it will fire installFour script to let you create a new Laravel service environment:
 
-```taylor@l4server:/> artisan```
+```
+taylor@l4server:/> artisan
+```
 
 * Runnning it from any place using the argument "new" it will fire installFour installer script as well
 
-```taylor@l4server:/> artisan new```
+```
+taylor@l4server:/> artisan new
+```
 
 * Runnning it from any place using the argument "destroy" it will help you remove a site created with it:
 
-```taylor@l4server:/> artisan destroy```
-```taylor@l4server:/> artisan destroy blog```
-```taylor@l4server:/> artisan destroy blog -y```
+```
+taylor@l4server:/> artisan destroy
+```
+```
+taylor@l4server:/> artisan destroy blog
+```
+```
+taylor@l4server:/> artisan destroy blog -y
+```
 
 ### Installation and Examples
 
