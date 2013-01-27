@@ -794,7 +794,7 @@ function checkParameters() {
 		fi
 	fi
 
-	VHOST_CONF_FILE=$SITE_NAME.apache.conf
+	VHOST_CONF_FILE=$SITE_NAME.l4i.conf
 }
  
 function makeInstallDirectory {
