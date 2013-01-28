@@ -94,6 +94,7 @@ In the process of installing the entire environment or just Laravel 4, this scri
 * bigelephant/string (https://github.com/bigelephant/string)
 * cartalyst/sentry (https://github.com/cartalyst/sentry)
 * jasonlewis/expressive-date (https://github.com/jasonlewis/expressive-date)
+* anahkiasen/underscore-php (https://github.com/Anahkiasen/underscore-php)
 
 ### Commands
 
@@ -185,6 +186,10 @@ bash installFour.sh /var/www/blog myBlog YES
 * Configure a main template, a home view using main template and a route to home, so we can see Laravel 4 and Blade running
 
 # Changelog
+
+2013/01/28 00:05 (GMT-3) - Version 1.6.6
+
+* Added anahkiasen/underscore-php package (https://github.com/Anahkiasen/underscore-php)
 
 2013/01/27 21:33 (GMT-3) - Version 1.6.5
 

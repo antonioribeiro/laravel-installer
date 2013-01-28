@@ -9,3 +9,4 @@ jasonlewis/basset,           dev-master,           Basset,         Basset\Facade
 bigelephant/string,          dev-master,           String,         BigElephant\String\StringFacade,             BigElephant\String\StringServiceProvider,
 cartalyst/sentry,            2.0.*,                Sentry,         Cartalyst\Sentry\Facades\Laravel\Sentry,     Cartalyst\Sentry\SentryServiceProvider,
 jasonlewis/expressive-date,  1.*,                  ,               ,                                            ExpressiveDateServiceProvider
+anahkiasen/underscore-php,   dev-master,           ,               ,                                            ,
