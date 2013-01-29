@@ -34,6 +34,7 @@ You might be interested in installing another base app for your Laravel 4 site, 
 * [FluxBB 2](https://github.com/fluxbb/fluxbb2) - (`https://github.com/fluxbb/fluxbb2.git`, master branch)
 * [niallobrien's Laravel 4 Starter Template](https://github.com/niallobrien/laravel4-template) (`https://github.com/niallobrien/laravel4-template.git`, master branch)
 * [Bruno Gaspar's Laravel 4 - Bootstrap Application](https://github.com/brunogaspar/Laravel4-Bootstrap) - (`https://github.com/brunogaspar/Laravel4-Bootstrap.git`, develop branch)
+* [ChrisBorgia's radiate](https://github.com/ChrisBorgia/radiate) - (`https://github.com/ChrisBorgia/radiate.git`, master branch)
 
 ### Warnings
 
@@ -190,6 +191,7 @@ bash installFour.sh /var/www/blog myBlog YES
 2013/01/28 00:05 (GMT-3) - Version 1.6.6
 
 * Added anahkiasen/underscore-php package (https://github.com/Anahkiasen/underscore-php)
+* New app boilerplate mention: ChrisBorgia's radiate
 
 2013/01/27 21:33 (GMT-3) - Version 1.6.5
 
