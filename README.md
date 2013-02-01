@@ -133,6 +133,11 @@ taylor@l4server:/> artisan destroy blog
 taylor@l4server:/> artisan destroy blog -y
 ```
 
+* Running "artisan update" from inside a Laravel directory (or subdirectory) it will try to "composer update" and "composer dump-autoload --optimize" site and phpunit:
+```
+taylor@l4server:/var/www/blog> artisan update
+```
+
 ### Installation and Examples
 
 There is no need to clone this git repository, you just have to download the script:
@@ -187,6 +192,10 @@ bash installFour.sh /var/www/blog myBlog YES
 * Configure a main template, a home view using main template and a route to home, so we can see Laravel 4 and Blade running
 
 # Changelog
+
+2013/02/01 12:45 (GMT-3) - Version 1.6.7
+
+* New command: "artisan update". Will execute composer self-update, composer update, phpunit composer update and composer dump-autoload --optimize on site and phpunit.
 
 2013/01/28 00:05 (GMT-3) - Version 1.6.6
 

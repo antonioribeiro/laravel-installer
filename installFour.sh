@@ -1,6 +1,6 @@
 #!/bin/bash
 
-L4I_VERSION=1.6.6
+L4I_VERSION=1.6.7
 L4I_BRANCH=master
 LARAVEL_APP_DEFAULT_REPOSITORY="https://github.com/laravel/laravel.git"
 LARAVEL_APP_DEFAULT_BRANCH="develop"
@@ -148,6 +148,10 @@ function ourArtisan()  {
 
 	if [ "$1" == "destroy" ] || [ "$1" == "DESTROY" ] || [ "$1" == "Destroy" ]; then
 		destroySite $@
+	fi
+
+	if [ "$1" == "update" ] || [ "$1" == "UPDATE" ] || [ "$1" == "Update" ]; then
+		updateAll $@
 	fi
 
  	runLaravelArtisan $@
@@ -1467,6 +1471,42 @@ function trim() {
 	trimmed=$1
     trimmed="${trimmed#"${trimmed%%[![:space:]]*}"}"   # remove leading whitespace characters
     trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"   # remove trailing whitespace characters
+}
+
+function updateAll() {
+	findLaravelArtisan
+	if [ "$ARTISAN_APP" == "" ]; then
+		abortIt "You must be in a Laravel 4 directory to run this command."
+	fi
+	dir=`dirname $ARTISAN_APP`
+
+	cd $dir
+	message "Updating Composer (self-update)..."
+	composer self-update
+	message 
+
+	message "Updating site (composer update)..."
+	composer update
+	message 
+
+	message "Updating classmaps (composer dump-autoload --optimize)..."
+	composer dump-autoload --optimize
+	message 
+
+	if [[ -f "$PHPUNIT_DIR/composer.json" ]]; then
+		message "Updating phpunit..."
+		cd $PHPUNIT_DIR
+		composer update
+		message "Updating phpunit classmaps (composer dump-autoload --optimize)..."
+		composer dump-autoload --optimize
+		message 
+	fi
+
+	message 
+	message "All done."
+	message 
+
+	exit 1
 }
 
 main $@
