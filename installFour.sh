@@ -557,10 +557,17 @@ function installAdditionalPackages() {
 		alias_facade="${EP_ALIAS_FACADE[$i]}"
 		provider="${EP_PROVIDER[$i]}"
 
-		inquireYN "Do you wish to install package $name?" "n"
+		if [[ "$name" != "$lastName" ]]; then
+			inquireYN "Do you wish to install package $name?" "n"
+		else
+			answer=$lastAnswer			
+		fi
+
+		lastAnswer=$answer
+		lastName=$name
 
 		if [[ "$answer" == "y" ]]; then
-			 installComposerPackage $name $version $alias_name $alias_facade $provider
+			installComposerPackage $name $version $alias_name $alias_facade $provider
 		fi        
 	done    
 }
