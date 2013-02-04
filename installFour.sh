@@ -52,6 +52,9 @@ APACHE_CONF=
 INSTALL_DIR_ESCAPED="***will be set on checkParameters***"
 LOG_FILE=$L4I_REPOSITORY_DIR/l4i.install.log
 
+PACKAGE_MANAGER="dpkg"
+PACKAGE_LIST_OPTION="-l"
+
 SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint|Redhat|Fedora|CentOS"
 #################################################################### 
 # operating systems to be supported
@@ -113,6 +116,7 @@ function createSite() {
 
 	checkWebserver
 	checkPHP
+	checkPackageManager
 	configurePHP
 
 	checkParameters
@@ -575,11 +579,11 @@ function installAdditionalPackages() {
 function loadPackagesArray() {
 
 	while IFS=, read -r col1 col2 col3 col4 col5; do
-		trim $col1 ; col1=$trimmed
-		trim $col2 ; col2=$trimmed
-		trim $col3 ; col3=$trimmed
-		trim $col4 ; col4=$trimmed ; col4=$(echo $col4 | sed 's/\\/\\\\\\\\/g')
-		trim $col5 ; col5=$trimmed ; col5=$(echo $col5 | sed 's/\\/\\\\\\\\/g')
+		col1=$(trim "$col1")
+		col2=$(trim "$col2")
+		col3=$(trim "$col3")
+		col4=$(trim "$col4") ; col4=$(echo $col4 | sed 's/\\/\\\\\\\\/g')
+		col5=$(trim "$col5") ; col5=$(echo $col5 | sed 's/\\/\\\\\\\\/g')
 
 		substring=`echo $col1 | cut -b1-3`
 		if [[ "$col1" != "NAME" ]] && [[ "$substring" != "---" ]]; then
@@ -600,9 +604,9 @@ function downloadStarters() {
 function loadStartersArray() {
 
 	while IFS=, read -r col1 col2 col3 col4 col5; do
-		trim $col1 ; col1=$trimmed
-		trim $col2 ; col2=$trimmed
-		trim $col3 ; col3=$trimmed
+		col1=$(trim "$col1")
+		col2=$(trim "$col2")
+		col3=$(trim "$col3")
 
 		substring=`echo $col1 | cut -b1-3`
 		if [[ "$col1" != "NAME" ]] && [[ "$substring" != "---" ]]; then
@@ -671,6 +675,10 @@ function checkPHP() {
 		message "PHP $phpver is available."
 		phpisavailable=YES
 	fi
+}
+
+function checkPackageManager() {
+	PACKAGE_MANAGER=`type -p $PACKAGE_MANAGER`
 }
 
 function checkPHPUnit() {
@@ -865,7 +873,12 @@ function installApp() {
 }
 
 function checkMCrypt() {
-	checkL4InstalledApp "php-mcrypt"
+	if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
+		checkL4InstalledPackage "php5-mcrypt"
+	else 
+		checkL4InstalledPackage "php-mcrypt"
+	fi
+
 	if [[ "$installed" = "" ]]; then 
 		if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
 			installPackage php5-mcrypt
@@ -881,6 +894,8 @@ function checkMCrypt() {
 			checkErrorsAndAbort "Error installing php-mcrypt."
 			addL4InstalledApp "php-mcrypt"
 		fi
+	else
+		message "php5-mcrypt is installed"
 	fi
 }
 
@@ -892,6 +907,13 @@ function checkL4InstalledApp() {
 	installed=
 	if [[ -f $L4I_INSTALLED_APPS ]]; then
 		installed=`cat $L4I_INSTALLED_APPS | grep $1`
+	fi
+}
+
+function checkL4InstalledPackage() {
+	installed=
+	if [[ "$PACKAGE_MANAGER" != "" ]] && [[ -f $L4I_INSTALLED_APPS ]]; then
+		installed=`$PACKAGE_MANAGER $PACKAGE_LIST_OPTION | grep $1 `
 	fi
 }
 
@@ -977,38 +999,63 @@ function checkParameters() {
 	fi
 
 	if [[ "$LARAVEL_APP_REPOSITORY" == "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
-		listStarters
-		message 
-		message "Default Laravel 4 repository is set to $LARAVEL_APP_REPOSITORY, but you can now install a different one."
-		inquireYN "Do you want to install the default Laravel 4 app?" "y"
-		if [[ "$answer" == "n" ]]; then
-			inquireText "Please type a new repository: " $LARAVEL_APP_REPOSITORY
-			if [[ "$answer" != "" ]]; then
-				LARAVEL_APP_REPOSITORY=$answer
+		message
+		message "Select your Laravl 4 App Repository"
+		message
 
-				inquireText "Please type a new branch: " $LARAVEL_APP_BRANCH
-				if [[ "$answer" != "" ]]; then
-					LARAVEL_APP_BRANCH=$answer
+		listStarters
+		message "$(( $total )) I want a different repository"
+
+		total=${#ST_NAME[*]}
+
+		message 
+		answer=
+		while [[ "$answer" == "" ]]; do
+			inquireText "Wich Laravel 4 App Repository do you want to use?" 0
+			if [ `isnumber 0` == "NO" ]; then
+				answer=
+				message "You must type a number."
+			else 
+				if [ $answer -lt 0 ] || [ $answer -gt $total ]; then
+					message "Please type a number between 0 and $total"
+					answer=
 				fi
 			fi
+		done
+
+		if [[ $answer -eq $total ]]; then
+			readThirdPartyRepository
+		else 
+			message "Selected app repository: ${ST_NAME[$answer]}"
+			LARAVEL_APP_REPOSITORY="${ST_REPO[$answer]}"
+			LARAVEL_APP_BRANCH="${ST_BRANCH[$answer]}"
 		fi
 	fi
 
 	VHOST_CONF_FILE=$SITE_NAME.$L4I_WEBSERVER_SUFFIX
 }
- 
+
+function readThirdPartyRepository() {
+	inquireText "Please type a git repository address:" $LARAVEL_APP_REPOSITORY
+	if [[ "$answer" != "" ]]; then
+		LARAVEL_APP_REPOSITORY=$answer
+
+		inquireText "Please type the branch name to be used:" $LARAVEL_APP_BRANCH
+		if [[ "$answer" != "" ]]; then
+			LARAVEL_APP_BRANCH=$answer
+		fi
+	fi
+}
 
 function listStarters() {
-	message "Configuring app starter..."
-
 	downloadStarters
 	loadStartersArray
 
-	total=${#EP_NAME[*]}
+	total=${#ST_NAME[*]}
 
 	for (( i=0; i<=$(( $total -1 )); i++ ))
 	do
-		echo "$i ${EP_NAME[$i]}"
+		echo "$i ${ST_NAME[$i]}"
 	done    
 }
 
@@ -1513,12 +1560,6 @@ function vercomp () {
     return 0
 }
 
-function trim() {
-	trimmed=$1
-    trimmed="${trimmed#"${trimmed%%[![:space:]]*}"}"   # remove leading whitespace characters
-    trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"   # remove trailing whitespace characters
-}
-
 function updateAll() {
 	findLaravelArtisan
 	if [ "$ARTISAN_APP" == "" ]; then
@@ -1555,4 +1596,20 @@ function updateAll() {
 	exit 1
 }
 
+function trim() {
+    # Determine if 'extglob' is currently on.
+    local extglobWasOff=1
+    shopt extglob >/dev/null && extglobWasOff=0
+    (( extglobWasOff )) && shopt -s extglob # Turn 'extglob' on, if currently turned off.
+    # Trim leading and trailing whitespace
+    local var=$1
+    var=${var##+([[:space:]])}
+    var=${var%%+([[:space:]])}
+    (( extglobWasOff )) && shopt -u extglob # If 'extglob' was off before, turn it back off.
+    echo -n "$var"  # Output trimmed string.
+}
+
+function isnumber() { printf '%f' "$1" &>/dev/null && echo "YES" || echo "NO"; }
+
 main $@
+

@@ -35,6 +35,7 @@ You might be interested in installing another base app for your Laravel 4 site, 
 * [niallobrien's Laravel 4 Starter Template](https://github.com/niallobrien/laravel4-template) (`https://github.com/niallobrien/laravel4-template.git`, master branch)
 * [ChrisBorgia's radiate](https://github.com/ChrisBorgia/radiate) - (`https://github.com/ChrisBorgia/radiate.git`, master branch)
 * [laravelbook's laravel4-starter](https://github.com/laravelbook/laravel4-starter) - (`https://github.com/laravelbook/laravel4-starter.git`, master branch)
+* [noherczeg's pizzademo](https://github.com/noherczeg/pizzademo.git) - (`https://github.com/noherczeg/pizzademo`, master branch)
 
 ### Warnings
 
@@ -96,6 +97,10 @@ In the process of installing the entire environment or just Laravel 4, this scri
 * cartalyst/sentry (https://github.com/cartalyst/sentry)
 * jasonlewis/expressive-date (https://github.com/jasonlewis/expressive-date)
 * anahkiasen/underscore-php (https://github.com/Anahkiasen/underscore-php)
+* laravelbook/laravel4-powerpack (https://github.com/laravelbook/laravel4-powerpack)
+* laravelbook/ardent (https://github.com/laravelbook/ardent)
+* Zizaco/confide (https://github.com/Zizaco/confide)
+* Zizaco/lessy (https://github.com/Zizaco/lessy)
 
 ### Commands
 
