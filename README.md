@@ -33,8 +33,8 @@ You might be interested in installing another base app for your Laravel 4 site, 
 
 * [FluxBB 2](https://github.com/fluxbb/fluxbb2) - (`https://github.com/fluxbb/fluxbb2.git`, master branch)
 * [niallobrien's Laravel 4 Starter Template](https://github.com/niallobrien/laravel4-template) (`https://github.com/niallobrien/laravel4-template.git`, master branch)
-* [Bruno Gaspar's Laravel 4 - Bootstrap Application](https://github.com/brunogaspar/Laravel4-Bootstrap) - (`https://github.com/brunogaspar/Laravel4-Bootstrap.git`, develop branch)
 * [ChrisBorgia's radiate](https://github.com/ChrisBorgia/radiate) - (`https://github.com/ChrisBorgia/radiate.git`, master branch)
+* [laravelbook's laravel4-starter](https://github.com/laravelbook/laravel4-starter) - (`https://github.com/laravelbook/laravel4-starter.git`, master branch)
 
 ### Warnings
 

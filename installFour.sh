@@ -578,8 +578,8 @@ function loadPackagesArray() {
 		trim $col1 ; col1=$trimmed
 		trim $col2 ; col2=$trimmed
 		trim $col3 ; col3=$trimmed
-		trim $col4 ; col4=$trimmed ; col4=$(echo $col4 | sed 's/\\/\\\\\\/g')
-		trim $col5 ; col5=$trimmed ; col5=$(echo $col5 | sed 's/\\/\\\\\\/g')
+		trim $col4 ; col4=$trimmed ; col4=$(echo $col4 | sed 's/\\/\\\\\\\\/g')
+		trim $col5 ; col5=$trimmed ; col5=$(echo $col5 | sed 's/\\/\\\\\\\\/g')
 
 		substring=`echo $col1 | cut -b1-3`
 		if [[ "$col1" != "NAME" ]] && [[ "$substring" != "---" ]]; then
@@ -593,16 +593,33 @@ function loadPackagesArray() {
 
 }
 
+function loadStartersArray() {
+
+	while IFS=, read -r col1 col2 col3 col4 col5; do
+		trim $col1 ; col1=$trimmed
+		trim $col2 ; col2=$trimmed
+		trim $col3 ; col3=$trimmed
+
+		substring=`echo $col1 | cut -b1-3`
+		if [[ "$col1" != "NAME" ]] && [[ "$substring" != "---" ]]; then
+			ST_NAME[${#ST_NAME[*]}]=$col1
+			ST_REPO[${#ST_REPO[*]}]=$col2
+			ST_BRANCH[${#ST_BRANCH[*]}]=$col3
+		fi
+	done < $L4I_REPOSITORY_DIR/starters.csv
+
+}
+
 function installComposerPackage() {
 	$PHP_CLI_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2
 	log "$PHP_CLI_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2"
 
 	if [[ "$3$4" != "" ]]; then
-		addAppAlias $3 $4
+		addAppAlias "$3" "$4"
 	fi
 
 	if [[ "$5" != "" ]]; then
-		addAppProvider $5
+		addAppProvider "$5"
 	fi
 }
 
@@ -956,6 +973,7 @@ function checkParameters() {
 	fi
 
 	if [[ "$LARAVEL_APP_REPOSITORY" == "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
+		listStarters
 		message 
 		message "Default Laravel 4 repository is set to $LARAVEL_APP_REPOSITORY, but you can now install a different one."
 		inquireYN "Do you want to install the default Laravel 4 app?" "y"
@@ -975,6 +993,25 @@ function checkParameters() {
 	VHOST_CONF_FILE=$SITE_NAME.$L4I_WEBSERVER_SUFFIX
 }
  
+
+function listStarters() {
+	message "Configuring app starter..."
+
+	downloadStarters
+	loadStartersArray
+
+	total=${#EP_NAME[*]}
+
+	for (( i=0; i<=$(( $total -1 )); i++ ))
+	do
+		echo "$i ${EP_NAME[$i]}"
+	done    
+}
+
+function downloadStarters() {                 
+	wget -N --no-check-certificate -O $L4I_REPOSITORY_DIR/starters.csv https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/starters.csv  &> $LOG
+}
+
 function makeInstallDirectory {
 
 	mkdir $INSTALL_DIR
@@ -1016,12 +1053,14 @@ function addAppProvider() {
 	message "addAppProvider $1" 2>&1 | tee -a $LOG_FILE &> /dev/null
 
 	perl -pi -e "s/WorkbenchServiceProvider',/WorkbenchServiceProvider',\n\t\t'$1',/g" $INSTALL_DIR/app/config/app.php  2>&1 | tee -a $LOG_FILE &> /dev/null
+	perl -pi -e 's/\\\\/\\/g' $INSTALL_DIR/app/config/app.php  2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function addAppAlias() {
 	message "addAppAlias $1" 2>&1 | tee -a $LOG_FILE &> /dev/null
 
 	perl -pi -e "s/View',/View',\n\t\t'$1'       \=\> '$2',/g" $INSTALL_DIR/app/config/app.php  2>&1 | tee -a $LOG_FILE &> /dev/null
+	perl -pi -e 's/\\\\/\\/g' $INSTALL_DIR/app/config/app.php  2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function composerUpdate() {
