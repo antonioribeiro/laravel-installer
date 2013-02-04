@@ -1,0 +1,7 @@
+NAME,                             REPOSITORY,                                                BRANCH,
+---------------------------------------------------------------------------------------------------------------------
+Laravel 4 default app repository, https://github.com/laravel/laravel.git,                    develop,
+FluxBB 2,                         https://github.com/fluxbb/fluxbb2.git,                     master,
+niallobrien / laravel4-template,  https://github.com/niallobrien/laravel4-template.git,      master,
+laravelbook / laravel4-starter,   https://github.com/laravelbook/laravel4-starter.git,       master,
+ChrisBorgia / radiate,            https://github.com/ChrisBorgia/radiate.git,                master,

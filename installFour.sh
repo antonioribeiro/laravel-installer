@@ -163,8 +163,8 @@ function downloadAndRunInstallFour() {
  	##
 	makeTemp
 
-	wget -N --no-check-certificate -O $SCRIPT https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/installFour.sh &> $LOG
-	checkErrorsAndAbort "An error while downloading i4l script, please check the log file at $LOG"
+	wget -N --no-check-certificate -O $SCRIPT https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/installFour.sh &> $LOG_FILE
+	checkErrorsAndAbort "An error while downloading i4l script, please check the log file at $LOG_FILE"
 	bash $SCRIPT $@
 
 	removeTemp
@@ -593,6 +593,10 @@ function loadPackagesArray() {
 
 }
 
+function downloadStarters() {                 
+	wget -N --no-check-certificate -O $L4I_REPOSITORY_DIR/starters.csv https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/starters.csv  &> $LOG_FILE
+}
+
 function loadStartersArray() {
 
 	while IFS=, read -r col1 col2 col3 col4 col5; do
@@ -1006,10 +1010,6 @@ function listStarters() {
 	do
 		echo "$i ${EP_NAME[$i]}"
 	done    
-}
-
-function downloadStarters() {                 
-	wget -N --no-check-certificate -O $L4I_REPOSITORY_DIR/starters.csv https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/starters.csv  &> $LOG
 }
 
 function makeInstallDirectory {
