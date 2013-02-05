@@ -158,6 +158,10 @@ function ourArtisan()  {
 		updateAll $@
 	fi
 
+	if [ "$1" == "installpackage" ]; then
+		addComposerPackage $@
+	fi
+
  	runLaravelArtisan $@
 }
 
@@ -578,6 +582,17 @@ function installAdditionalPackages() {
 
 function loadPackagesArray() {
 
+	if [[ "$1" == "" ]];  then
+		fileName=$L4I_REPOSITORY_GIT/packages.csv
+	else
+		fileName=$1
+	fi
+
+	if [[ "$2" != "" ]];  then
+		cat $fileName | grep -i $2 > $fileName.tmp
+		fileName=$fileName.tmp
+	fi
+
 	while IFS=, read -r col1 col2 col3 col4 col5; do
 		col1=$(trim "$col1")
 		col2=$(trim "$col2")
@@ -593,7 +608,7 @@ function loadPackagesArray() {
 			EP_ALIAS_FACADE[${#EP_ALIAS_FACADE[*]}]=$col4
 			EP_PROVIDER[${#EP_PROVIDER[*]}]=$col5
 		fi
-	done < $L4I_REPOSITORY_GIT/packages.csv
+	done < $fileName
 
 }
 
@@ -1000,7 +1015,7 @@ function checkParameters() {
 
 	if [[ "$LARAVEL_APP_REPOSITORY" == "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
 		message
-		message "Select your Laravl 4 App Repository"
+		message "Select your Laravel 4 App Repository"
 		message
 
 		listStarters
@@ -1012,7 +1027,7 @@ function checkParameters() {
 		answer=
 		while [[ "$answer" == "" ]]; do
 			inquireText "Wich Laravel 4 App Repository do you want to use?" 0
-			if [ `isnumber 0` == "NO" ]; then
+			if [ `isnumber $answer` == "NO" ]; then
 				answer=
 				message "You must type a number."
 			else 
@@ -1175,12 +1190,16 @@ function checkOS() {
 		PACKAGER_APP="apt-get"
 		PACKAGER_UPDATE_COMMAND="$PACKAGER_APP --yes update "
 		PACKAGER_INSTALL_COMMAND="$PACKAGER_APP --yes install "
+		PACKAGE_MANAGER="dpkg"
+		PACKAGE_LIST_OPTION="-l"
 	fi
 
 	if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
 		PACKAGER_APP="yum"
 		PACKAGER_UPDATE_COMMAND=""
 		PACKAGER_INSTALL_COMMAND="$PACKAGER_APP -y install "
+		PACKAGE_MANAGER="rpm"
+		PACKAGE_LIST_OPTION="-qa"
 	fi
 
 	if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
@@ -1478,6 +1497,7 @@ function installHomebrewFailed() {
 }
 
 function findLaravelArtisan() {
+	originalApp=$ARTISAN_APP
 	artisan=$ARTISAN_APP
 	ARTISAN_APP=
 
@@ -1505,7 +1525,10 @@ function findLaravelArtisan() {
 	[ "$ARTISAN_APP" == "" ] && [ -f $artisan ] && ARTISAN_APP=$artisan
 
 	if [[ "$ARTISAN_APP" != "" ]]; then
-		echo "artisan found at $ARTISAN_APP"
+		if [[ $ARTISAN_APP == $originalApp ]]; then
+			ARTISAN_APP="./$ARTISAN_APP"
+		fi
+		INSTALL_DIR=`dirname $ARTISAN_APP`
 	fi
 }
 
@@ -1610,6 +1633,69 @@ function trim() {
 }
 
 function isnumber() { printf '%f' "$1" &>/dev/null && echo "YES" || echo "NO"; }
+
+function addComposerPackage() {
+	downloadPackageList 
+	loadPackagesArray $L4I_REPOSITORY_DIR/packages.csv $2
+
+	total=${#EP_NAME[*]}
+
+	if [[ $total -gt 0 ]]; then
+		message
+		message "Select a package to install"
+		message
+	fi
+
+	for (( i=0; i<=$(( $total -1 )); i++ ))
+	do
+		name="${EP_NAME[$i]}"
+		echo "$i $name"
+	done    
+	message "$total quit"
+
+	message 
+	answer=
+	while [[ "$answer" == "" ]]; do
+		inquireText "Package number:"
+		if [ `isnumber $answer` == "NO" ]; then
+			answer=
+			message "You must type a number."
+		else 
+			if [ $answer -lt 0 ] || [ $answer -gt $total ]; then
+				message "Please type a number between 0 and $total"
+				answer=
+			fi
+		fi
+	done
+
+	if [[ $answer -ne $total ]]; then
+		findLaravelArtisan
+
+		name="${EP_NAME[$answer]}"
+		version="${EP_VERSION[$answer]}"
+		alias_name="${EP_ALIAS_NAME[$answer]}"
+		alias_facade="${EP_ALIAS_FACADE[$answer]}"
+		provider="${EP_PROVIDER[$answer]}"
+		message "Installing selected app repository: $name"
+		installComposerPackage $name $version $alias_name $alias_facade $provider
+
+		message
+		message "Composer updating..."
+		$COMPOSER_APP update
+
+		message
+		message 'Running "composer dump-autoload --optimize"...'
+		$COMPOSER_APP dump-autoload --optimize		
+		message
+		message "All done."
+	fi
+
+	exit 1
+}
+
+function downloadPackageList() {                 
+	wget -N --no-check-certificate -O $L4I_REPOSITORY_DIR/packages.csv https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/packages.csv  &> $LOG_FILE
+}
 
 main $@
 

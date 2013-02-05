@@ -27,15 +27,19 @@ Your user need to have writing permissions to the installation directory, this s
 
 If this script needs to install software, you will need sudo or root permissions.
 
-### Laravel 4 Applications
+### Laravel 4 Application Base
 
-You might be interested in installing another base app for your Laravel 4 site, this script will ask you about it during the process and here are some you might be interested in:
+You might be interested in installing another base app for your Laravel 4 site, this script will ask you about it during the process and will install one of those:
 
+* [Laravel 4 default App Repository](https://github.com/laravel/laravel) - (`https://github.com/laravel/laravel.git`, develop branch)
 * [FluxBB 2](https://github.com/fluxbb/fluxbb2) - (`https://github.com/fluxbb/fluxbb2.git`, master branch)
 * [niallobrien's Laravel 4 Starter Template](https://github.com/niallobrien/laravel4-template) (`https://github.com/niallobrien/laravel4-template.git`, master branch)
 * [ChrisBorgia's radiate](https://github.com/ChrisBorgia/radiate) - (`https://github.com/ChrisBorgia/radiate.git`, master branch)
 * [laravelbook's laravel4-starter](https://github.com/laravelbook/laravel4-starter) - (`https://github.com/laravelbook/laravel4-starter.git`, master branch)
 * [noherczeg's pizzademo](https://github.com/noherczeg/pizzademo.git) - (`https://github.com/noherczeg/pizzademo`, master branch)
+
+A screenshot of it asking for a repository:
+![l4i screenshot](http://puu.sh/1XzWy)
 
 ### Warnings
 
@@ -143,6 +147,17 @@ taylor@l4server:/> artisan destroy blog -y
 taylor@l4server:/var/www/blog> artisan update
 ```
 
+* Running "artisan installpackage" from inside a Laravel directory (or subdirectory) it will try let the user select a package from a list to install.
+```
+taylor@l4server:/var/www/blog> artisan installpackage
+```
+```
+taylor@l4server:/var/www/blog> artisan installpackage form
+```
+```
+taylor@l4server:/var/www/blog> artisan installpackage machuga
+```
+
 ### Installation and Examples
 
 There is no need to clone this git repository, you just have to download the script:
@@ -197,6 +212,18 @@ bash installFour.sh /var/www/blog myBlog YES
 * Configure a main template, a home view using main template and a route to home, so we can see Laravel 4 and Blade running
 
 # Changelog
+
+2013/02/05 00:25 (GMT-3) - Version 1.7.0
+
+* New command: "artisan installpackage [<filter>]". Will filter, show and let the user select a package from a list to install.
+* Application Base (or app starter) is now selectable, but user can still type a different repository
+* A separate file (starters.csv) was created to make it easier to maintain a list of available bases
+* laravelbook / laravel4-starter added to list of bases
+* noherczeg / pizzademo added to the list of bases
+* laravelbook/laravel4-powerpack added to the list of packages
+* laravelbook/ardent added to the list of packages
+* Zizaco/confide added to the list of packages
+* Zizaco/lessy added to the list of packages
 
 2013/02/01 12:45 (GMT-3) - Version 1.6.7
 
