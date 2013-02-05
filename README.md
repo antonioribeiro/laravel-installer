@@ -27,7 +27,7 @@ Your user need to have writing permissions to the installation directory, this s
 
 If this script needs to install software, you will need sudo or root permissions.
 
-### Laravel 4 Application Base
+### Laravel 4 Application Bases
 
 You might be interested in installing another base app for your Laravel 4 site, this script will ask you about it during the process and will install one of those:
 
@@ -39,6 +39,7 @@ You might be interested in installing another base app for your Laravel 4 site, 
 * [noherczeg's pizzademo](https://github.com/noherczeg/pizzademo.git) - (`https://github.com/noherczeg/pizzademo`, master branch)
 
 A screenshot of it asking for a repository:
+
 ![l4i screenshot](http://puu.sh/1XzWy)
 
 ### Warnings
