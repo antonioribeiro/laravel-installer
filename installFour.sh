@@ -176,6 +176,8 @@ function downloadAndRunInstallFour() {
 	bash $SCRIPT $@
 
 	removeTemp
+
+	exit 1
 }
 
 function runLaravelArtisan() {
