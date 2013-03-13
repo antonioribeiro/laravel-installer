@@ -96,6 +96,8 @@ SUPPORTED_OPERATING_SYSTEMS="Debian|Ubuntu|Linux Mint|Redhat|Fedora|CentOS"
   # mkdir $INSTALL_DIR/app/views/views 2>&1 | tee -a $LOG_FILE &> /dev/null
 
 function main() {
+	initializeApplication
+
 	if [[ $THIS == 'artisan' ]]; then
 		ourArtisan $@
 	else 
@@ -103,10 +105,13 @@ function main() {
 	fi
 }
 
-function createSite() {
-	showHeader
+function initializeApplication() {
 	cleanL4IRepository
 	createLogDirectory
+}
+
+function createSite() {
+	showHeader
 	showLogFile 
 	checkSudo
  
