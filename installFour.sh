@@ -108,6 +108,7 @@ function main() {
 function initializeApplication() {
 	cleanL4IRepository
 	createLogDirectory
+	checkOS
 }
 
 function createSite() {
@@ -115,7 +116,6 @@ function createSite() {
 	showLogFile 
 	checkSudo
  
-	checkOS
 	installPackager
 	updatePackagerApp
 
@@ -196,7 +196,6 @@ function runLaravelArtisan() {
 function destroySite() {
 	cleanL4IRepository
 	createLogDirectory
-	checkOS
 	locateWebserverConf
 
 	if [[ "$APACHE_CONF" == "" ]]; then begin
