@@ -3,7 +3,7 @@ l4i
 
 A Laravel 4 Install Script for Linux
 
-This script will install a working development structure of Laravel 4 with a basic Twitter Booststrap template.
+This Linux Bash Script will install from scratch a development environment (webserver, php, dbms, phpunit, node.js...), a Laravel 4 instance, a bunch of great Composer packages and configure it all so you don't have to.
 
 ### Motivation
 
@@ -33,10 +33,6 @@ You might be interested in installing another base app for your Laravel 4 site, 
 
 * [Laravel 4 default App Repository](https://github.com/laravel/laravel) - (`https://github.com/laravel/laravel.git`, develop branch)
 * [FluxBB 2](https://github.com/fluxbb/fluxbb2) - (`https://github.com/fluxbb/fluxbb2.git`, master branch)
-* [niallobrien's Laravel 4 Starter Template](https://github.com/niallobrien/laravel4-template) (`https://github.com/niallobrien/laravel4-template.git`, master branch)
-* [ChrisBorgia's radiate](https://github.com/ChrisBorgia/radiate) - (`https://github.com/ChrisBorgia/radiate.git`, master branch)
-* [laravelbook's laravel4-starter](https://github.com/laravelbook/laravel4-starter) - (`https://github.com/laravelbook/laravel4-starter.git`, master branch)
-* [noherczeg's pizzademo](https://github.com/noherczeg/pizzademo.git) - (`https://github.com/noherczeg/pizzademo`, master branch)
 
 A screenshot of it asking for a repository:
 
@@ -93,9 +89,13 @@ In the process of installing the entire environment or just Laravel 4, this scri
 ### Composer packages available to install
 
 * raveren/kint (https://github.com/raveren/kint)
-* meido/html (https://github.com/meido/html)
-* meido/form (https://github.com/meido/form)
-* meido/str (https://github.com/meido/str)
+* mockery/mockery (http://github.com/padraic/mockery)
+* phpunit/phpunit (http://www.phpunit.de/)
+* iron-io/iron_mq (http://github.com/iron-io/iron_mq_php)
+* aws/aws-sdk-php (https://packagist.org/packages/aws/aws-sdk-php)
+* pda/pheanstalk (https://packagist.org/packages/pda/pheanstalk)
+* way/guard-laravel (https://github.com/JeffreyWay/Laravel-Guard)
+* way/generators (https://github.com/JeffreyWay/Laravel-4-Generators)
 * machuga/authority (https://github.com/machuga/authority)
 * jasonlewis/basset (https://github.com/jasonlewis/basset)
 * bigelephant/string (https://github.com/bigelephant/string)
