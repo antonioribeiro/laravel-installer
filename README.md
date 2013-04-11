@@ -33,6 +33,7 @@ You might be interested in installing another base app for your Laravel 4 site, 
 
 * [Laravel 4 default App Repository](https://github.com/laravel/laravel) - (`https://github.com/laravel/laravel.git`, develop branch)
 * [FluxBB 2](https://github.com/fluxbb/fluxbb2) - (`https://github.com/fluxbb/fluxbb2.git`, master branch)
+* [L4withSentry](https://github.com/rydurham/L4withSentry) - (`https://github.com/rydurham/L4withSentry.git`, master branch)
 
 A screenshot of it asking for a repository:
 

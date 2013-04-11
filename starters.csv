@@ -2,3 +2,4 @@ NAME,                             REPOSITORY,                                   
 ---------------------------------------------------------------------------------------------------------------------
 Laravel 4 default app repository, https://github.com/laravel/laravel.git,                    develop,
 FluxBB 2,                         https://github.com/fluxbb/fluxbb2.git,                     master,
+L4withSentry,                     https://github.com/rydurham/L4withSentry.git,              master,
