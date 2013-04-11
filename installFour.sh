@@ -557,33 +557,37 @@ function createVirtualHost() {
 }
 
 function installAdditionalPackages() {
-	message "Configuring additional packages..."
+	inquireYN "Do you want to select Composer packages now? (you'll be able to do this at any time)" "y"
 
-	loadPackagesArray
+	if [[ "$answer" == "y" ]]; then
+		message "Configuring additional packages..."
 
-	total=${#EP_NAME[*]}
+		loadPackagesArray
 
-	for (( i=0; i<=$(( $total -1 )); i++ ))
-	do
-		name="${EP_NAME[$i]}"
-		version="${EP_VERSION[$i]}"
-		alias_name="${EP_ALIAS_NAME[$i]}"
-		alias_facade="${EP_ALIAS_FACADE[$i]}"
-		provider="${EP_PROVIDER[$i]}"
+		total=${#EP_NAME[*]}
 
-		if [[ "$name" != "$lastName" ]]; then
-			inquireYN "Do you wish to install package $name?" "n"
-		else
-			answer=$lastAnswer			
-		fi
+		for (( i=0; i<=$(( $total -1 )); i++ ))
+		do
+			name="${EP_NAME[$i]} (${EP_VERSION[$i]})"
+			version="${EP_VERSION[$i]}"
+			alias_name="${EP_ALIAS_NAME[$i]}"
+			alias_facade="${EP_ALIAS_FACADE[$i]}"
+			provider="${EP_PROVIDER[$i]}"
 
-		lastAnswer=$answer
-		lastName=$name
+			if [[ "$name" != "$lastName" ]]; then
+				inquireYN "Do you wish to install package $name?" "n"
+			else
+				answer=$lastAnswer			
+			fi
 
-		if [[ "$answer" == "y" ]]; then
-			installComposerPackage $name $version $alias_name $alias_facade $provider
-		fi        
-	done    
+			lastAnswer=$answer
+			lastName=$name
+
+			if [[ "$answer" == "y" ]]; then
+				installComposerPackage $name $version $alias_name $alias_facade $provider
+			fi        
+		done    
+	fi
 }
 
 function loadPackagesArray() {
