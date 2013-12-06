@@ -168,6 +168,7 @@ bash installFour.sh /var/www/blog myBlog YES
 * Dramatically improved speed on Node.js installation
 * Correctly checking if MCrypt is installed
 * Added Laravel 4.1 to install options
+* Moved default Laravel to 4.1
 * Removed All meta repositories
 
 2013/02/05 00:25 (GMT-3) - Version 1.7.0
