@@ -1,7 +1,7 @@
 #!/bin/bash
 
-L4I_VERSION=1.6.8
-L4I_BRANCH=master
+LARAVELINSTALL_VERSION=2.0.0
+LARAVELINSTALL_BRANCH=master
 LARAVEL_APP_DEFAULT_REPOSITORY="https://github.com/laravel/laravel.git"
 LARAVEL_APP_DEFAULT_BRANCH="develop"
 INSTALL_DIR=$1
@@ -10,11 +10,11 @@ SITE_NAME=$2
 ############################################  
 ## This is your playground
 
-L4I_REPOSITORY="-b $L4I_BRANCH https://github.com/antonioribeiro/l4i.git"
-L4I_REPOSITORY_DIR=/tmp/l4i
-L4I_REPOSITORY_GIT="$L4I_REPOSITORY_DIR/git"
-L4I_INSTALLED_APPS="/etc/l4i.installed.txt"
-L4I_WEBSERVER_SUFFIX=l4i.conf
+LARAVELINSTALL_REPOSITORY="-b $LARAVELINSTALL_BRANCH https://github.com/antonioribeiro/laravel-installer.git"
+LARAVELINSTALL_REPOSITORY_DIR=/tmp/laravel-installer
+LARAVELINSTALL_REPOSITORY_GIT="$LARAVELINSTALL_REPOSITORY_DIR/git"
+LARAVELINSTALL_INSTALLED_APPS="/etc/laravel-installer.installed.txt"
+LARAVELINSTALL_WEBSERVER_SUFFIX=laravel-installer.conf
 
 LARAVEL_APP_BRANCH=$LARAVEL_APP_DEFAULT_BRANCH
 LARAVEL_APP_REPOSITORY=$LARAVEL_APP_DEFAULT_REPOSITORY
@@ -41,7 +41,7 @@ LESSPHP_DIR=/etc/lessphp
 LESSPHP_DIR_ESCAPED=`echo $LESSPHP_DIR | sed s,/,\\\\\\\\\\/,g`
 LESS_APP=`type -p $LESS_COMPILER_APP`
 
-NODEJS_VERSION="v0.8.18"
+NODEJS_VERSION="v0.10.22"
 
 PHP_SUHOSIN_CONF=/etc/php5/cli/conf.d/suhosin.ini
 PHP_MINIMUN_VERSION=5.3.7
@@ -50,7 +50,7 @@ PHP_CLI_APP=php
 PHP_CGI_APP=php-cgi
 APACHE_CONF=
 INSTALL_DIR_ESCAPED="***will be set on checkParameters***"
-LOG_FILE=$L4I_REPOSITORY_DIR/l4i.install.log
+LOG_FILE=$LARAVELINSTALL_REPOSITORY_DIR/laravel-installer.install.log
 
 PACKAGE_MANAGER="dpkg"
 PACKAGE_LIST_OPTION="-l"
@@ -92,7 +92,7 @@ function main() {
 }
 
 function initializeApplication() {
-	cleanL4IRepository
+	cleanLARAVELINSTALLRepository
 	createLogDirectory
 	checkOS
 }
@@ -102,12 +102,11 @@ function createSite() {
 	showLogFile 
 	checkSudo
  
-	installPackager
-	updatePackagerApp
+	installSoftwareInstaller
 
 	checkWebserver
 	checkPHP
-	checkPackageManager
+	checkSoftwareManager
 	configurePHP
 
 	checkParameters
@@ -119,18 +118,18 @@ function createSite() {
 	checkApp $UNZIP_APP installUnzip
 	checkApp $GIT_APP
 
-	downloadL4IRepository
+	downloadLARAVELINSTALLRepository
 
-	checkComposer $INSTALL_DIR
+	checkComposer
 	checkPHPUnit
 	checkMCrypt
-	downloadLaravel4Skeleton
-	installAdditionalPackages
+	downloadLaravelSkeleton
 	installOurArtisan
-	composerUpdate
+	checkNode
+	checkBower
 	checkLessCompiler
-	installTwitterBootstrap
-	createVirtualHost $INSTALL_DIR
+	#installTwitterBootstrap
+	createVirtualHost
 	setGlobalPermissions
 
 	restartWebserver
@@ -149,10 +148,6 @@ function ourArtisan()  {
 		updateAll $@
 	fi
 
-	if [ "$1" == "installpackage" ]; then
-		addComposerPackage $@
-	fi
-
  	runLaravelArtisan $@
 }
 
@@ -162,7 +157,7 @@ function downloadAndRunInstallFour() {
  	##
 	makeTemp
 
-	wget -N --no-check-certificate -O $SCRIPT https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/installFour.sh &> $LOG_FILE
+	wget -N --no-check-certificate -O $SCRIPT https://raw.github.com/antonioribeiro/laravel-installer/$LARAVELINSTALL_BRANCH/installFour.sh &> $LOG_FILE
 	checkErrorsAndAbort "An error while downloading i4l script, please check the log file at $LOG_FILE"
 	bash $SCRIPT $@
 
@@ -180,7 +175,7 @@ function runLaravelArtisan() {
 }
 
 function destroySite() {
-	cleanL4IRepository
+	cleanLARAVELINSTALLRepository
 	createLogDirectory
 	locateWebserverConf
 
@@ -202,7 +197,7 @@ function destroySite() {
 		siteFilter=" | grep \"$site\" "
 	fi
 
-	command="cat $APACHE_CONF $siteFilter | grep -P \"^Include \/.*$L4I_WEBSERVER_SUFFIX$\" | cut -d\" \" -f2"
+	command="cat $APACHE_CONF $siteFilter | grep -P \"^Include \/.*$LARAVELINSTALL_WEBSERVER_SUFFIX$\" | cut -d\" \" -f2"
 
 	array=(`eval $command`)
 	count=${#array[*]}
@@ -279,97 +274,97 @@ function zapSite {
 	restartWebserver
 }
 
-function downloadL4IRepository {
-	message "Downloading l4i git repository..."
-	git clone $L4I_REPOSITORY $L4I_REPOSITORY_GIT 2>&1 | tee -a $LOG_FILE &> /dev/null
-	checkErrorsAndAbort "An error ocurred while trying to clone L4I git repository."
+function downloadLARAVELINSTALLRepository {
+	message "Downloading laravel-installer git repository..."
+	git clone $LARAVELINSTALL_REPOSITORY $LARAVELINSTALL_REPOSITORY_GIT 2>&1 | tee -a $LOG_FILE &> /dev/null
+	checkErrorsAndAbort "An error ocurred while trying to clone LARAVELINSTALL git repository."
 }
 
-function installTwitterBootstrap() {
-	if [[ "$LARAVEL_APP_REPOSITORY" != "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
-		message "You are using a non default version of Laravel 4 app, Twitter Bootstrap may break your installation."
-		question="Do you still wish to install Twitter Bootstrap?"
-	else
-		question="Install Twitter Bootstrap?"
-	fi
+#function installTwitterBootstrap() {
+#	if [[ "$LARAVEL_APP_REPOSITORY" != "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
+#		message "You are using a non default version of Laravel app, Twitter Bootstrap may break your installation."
+#		question="Do you still wish to install Twitter Bootstrap?"
+#	else
+#		question="Install Twitter Bootstrap?"
+#	fi
+#
+#	inquireYN "$question" "y"
+#	if [[ "$answer" == "y" ]]; then
+#		if [[ "$LESS_COMPILER_NAME" == "" ]]; then
+#			installBootstrapCSS
+#		else
+#			inquireYN "Do you wish to install the LESS version of Twitter Bootstrap?" "y"
+#			if [[ "$answer" == "y" ]]; then
+#				installBootstrapLess
+#			else 
+#				installBootstrapCSS
+#			fi
+#		fi
+#	fi
+#}
 
-	inquireYN "$question" "y"
-	if [[ "$answer" == "y" ]]; then
-		if [[ "$LESS_COMPILER_NAME" == "" ]]; then
-			installBootstrapCSS
-		else
-			inquireYN "Do you wish to install the LESS version of Twitter Bootstrap?" "y"
-			if [[ "$answer" == "y" ]]; then
-				installBootstrapLess
-			else 
-				installBootstrapCSS
-			fi
-		fi
-	fi
-}
-
-function installBootstrapLess() {
-	message "Installing Twitter Bootstrap (less version)..."
-	message "Cloning Bootstrap git repository..."
-
-	mkdir -p $INSTALL_DIR/public/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
-	git clone https://github.com/twitter/bootstrap.git $INSTALL_DIR/public/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
-	mkdir -p $INSTALL_DIR/public/assets/js  2>&1 | tee -a $LOG_FILE &> /dev/null
-	mkdir -p $INSTALL_DIR/public/assets/css  2>&1 | tee -a $LOG_FILE &> /dev/null
-	mkdir -p $INSTALL_DIR/public/assets/img  2>&1 | tee -a $LOG_FILE &> /dev/null
-	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/js/* $INSTALL_DIR/public/assets/js  2>&1 | tee -a $LOG_FILE &> /dev/null
-	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/img/* $INSTALL_DIR/public/assets/img  2>&1 | tee -a $LOG_FILE &> /dev/null
-
-	message "Compiling bootstrap..."
-
-	if [[ "$LESS_COMPILER_NAME" == "$LESSC_APP" ]]; then
-		compress=" --compress "
-	fi
-	if [[ "$LESS_COMPILER_NAME" == "$LESSPHP_APP" ]]; then
-		compressed=" -c "
-	fi
-
-	compileLess $compressed $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/assets/css/bootstrap.min.css
-	compileLess             $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/assets/css/bootstrap.css
-
-	compileLess $compressed $INSTALL_DIR/public/vendor/twitter/bootstrap/less/responsive.less $INSTALL_DIR/public/assets/css/bootstrap-responsive.min.css
-	compileLess             $INSTALL_DIR/public/vendor/twitter/bootstrap/less/responsive.less $INSTALL_DIR/public/assets/css/bootstrap-responsive.css
-
-	installBootstrapTemplate
-}
-
-function compileLess() {
-	compiled=false
-	i=0
-	message "Compiling less file from $1 to $2..."
-	while true; do
-		$LESS_APP $1 $2 $3 2>&1 | tee -a $LOG_FILE &> /dev/null
-		if [ $? -eq 0 ]; then
-			break
-		fi
-
-		if [[ $i -gt 3 ]]; then
-			message "Error trying compile, please check log at $LOG_FILE."
-			break
-		fi
-
-		i=$[$i+1]
-	done
-}
-
-function installBootstrapTemplate() {
-	message "Installing bootstrap template..."
-	rm $INSTALL_DIR/app/views/hello.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-	mkdir $INSTALL_DIR/app/views/layouts 2>&1 | tee -a $LOG_FILE &> /dev/null
-	mkdir $INSTALL_DIR/app/views/views 2>&1 | tee -a $LOG_FILE &> /dev/null
-
-	cp $L4I_REPOSITORY_GIT/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  2>&1 | tee -a $LOG_FILE &> /dev/null
-	cp $L4I_REPOSITORY_GIT/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-
-	perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-	perl -pi -e "s/%l4i_branch%/$L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-	perl -pi -e "s/%l4i_version%/$L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-}
+#function installBootstrapLess() {
+#	message "Installing Twitter Bootstrap (less version)..."
+#	message "Cloning Bootstrap git repository..."
+#
+#	mkdir -p $INSTALL_DIR/public/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	git clone https://github.com/twitter/bootstrap.git $INSTALL_DIR/public/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	mkdir -p $INSTALL_DIR/public/assets/js  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	mkdir -p $INSTALL_DIR/public/assets/css  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	mkdir -p $INSTALL_DIR/public/assets/img  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/js/* $INSTALL_DIR/public/assets/js  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/img/* $INSTALL_DIR/public/assets/img  2>&1 | tee -a $LOG_FILE &> /dev/null
+#
+#	message "Compiling bootstrap..."
+#
+#	if [[ "$LESS_COMPILER_NAME" == "$LESSC_APP" ]]; then
+#		compress=" --compress "
+#	fi
+#	if [[ "$LESS_COMPILER_NAME" == "$LESSPHP_APP" ]]; then
+#		compressed=" -c "
+#	fi
+#
+#	compileLess $compressed $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/assets/css/bootstrap.min.css
+#	compileLess             $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/assets/css/bootstrap.css
+#
+#	compileLess $compressed $INSTALL_DIR/public/vendor/twitter/bootstrap/less/responsive.less $INSTALL_DIR/public/assets/css/bootstrap-responsive.min.css
+#	compileLess             $INSTALL_DIR/public/vendor/twitter/bootstrap/less/responsive.less $INSTALL_DIR/public/assets/css/bootstrap-responsive.css
+#
+#	installBootstrapTemplate
+#}
+#
+#function compileLess() {
+#	compiled=false
+#	i=0
+#	message "Compiling less file from $1 to $2..."
+#	while true; do
+#		$LESS_APP $1 $2 $3 2>&1 | tee -a $LOG_FILE &> /dev/null
+#		if [ $? -eq 0 ]; then
+#			break
+#		fi
+#
+#		if [[ $i -gt 3 ]]; then
+#			message "Error trying compile, please check log at $LOG_FILE."
+#			break
+#		fi
+#
+#		i=$[$i+1]
+#	done
+#}
+#
+#function installBootstrapTemplate() {
+#	message "Installing bootstrap template..."
+#	rm $INSTALL_DIR/app/views/hello.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+#	mkdir $INSTALL_DIR/app/views/layouts 2>&1 | tee -a $LOG_FILE &> /dev/null
+#	mkdir $INSTALL_DIR/app/views/views 2>&1 | tee -a $LOG_FILE &> /dev/null
+#
+#	cp $LARAVELINSTALL_REPOSITORY_GIT/templates/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	cp $LARAVELINSTALL_REPOSITORY_GIT/templates/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+#
+#	perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+#	perl -pi -e "s/%laravel-installer_branch%/$LARAVELINSTALL_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+#	perl -pi -e "s/%laravel-installer_version%/$LARAVELINSTALL_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+#}
 
 function findLessCompiler() {
 	LESS_COMPILER_NAME=$LESSC_APP
@@ -397,17 +392,36 @@ function checkLessCompiler() {
 	fi
 }
 
-function installNodeAndLess() {
-	program=`type -p npm`
-	if [[ "$program" == "" ]]; then
-		inquireYN "Looks like Node.js is not installed you really wish to install it?" "y"
+function checkNode() {
+	NODE_APP=`type -p npm`
+	if [[ "$NODE_APP" == "" ]]; then
+		inquireYN "Looks like Node.js is not installed, do you wish to install it?" "y"
 		if [[ "$answer" == "y" ]]; then
 			installNode
-			program=`type -p npm`
+			NODE_APP=`type -p npm`
 		fi
-	fi
+	fi	
+}
 
-	if [[ "$program" == "" ]]; then
+function checkBower() {
+	BOWER_APP=`type -p bower`
+	if [[ "$BOWER_APP" == "" ]]; then
+		inquireYN "Looks like Bower is not installed, do you wish to install it?" "y"
+		if [[ "$answer" == "y" ]]; then
+			installBower
+			BOWER_APP=`type -p bower`
+		fi
+	fi	
+}
+
+function installBower() {
+	message "Installing Bower..."
+	$SUDO_APP npm install -g bower  2>&1 | tee -a $LOG_FILE &> /dev/null
+	checkErrors "Error installing bower."
+}
+
+function installNodeAndLess() {
+	if [[ "$NODE_APP" == "" ]]; then
 		message "npm is not available to install less."
 	else 
 		installLess
@@ -415,37 +429,27 @@ function installNodeAndLess() {
 }
 
 function installNode() {
-	installPackage make
-	installPackage python
+	installSoftware make
+	installSoftware python
 
-	if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
-		installPackage build-essential
-	fi
-	if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
-		message "Installing development tools..."
-		$PACKAGER_APP groupinstall -y "Development Tools"  2>&1 | tee -a $LOG_FILE &> /dev/null
-	fi
+	message "Installing Node.js $NODEJS_VERSION..."
 
-	wget --no-check-certificate -O $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz http://nodejs.org/dist/$NODEJS_VERSION/node-$NODEJS_VERSION.tar.gz 2>&1 | tee -a $LOG_FILE &> /dev/null
+	NODE_NAME=node-$NODEJS_VERSION-linux-x`getconf LONG_BIT`
+	wget --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz http://nodejs.org/dist/$NODEJS_VERSION/$NODE_NAME.tar.gz 2>&1 | tee -a $LOG_FILE &> /dev/null
 	checkErrors "Error downloading Node.js."
+
 	if [[ "$ERROR" == "" ]]; then
-		mkdir -p $L4I_REPOSITORY_DIR/node  2>&1 | tee -a $LOG_FILE &> /dev/null
-		tar xvfz $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz -C $L4I_REPOSITORY_DIR/node  2>&1 | tee -a $LOG_FILE &> /dev/null
+		mkdir $LARAVELINSTALL_REPOSITORY_DIR/node
+
+		tar xvfz $LARAVELINSTALL_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz -C $LARAVELINSTALL_REPOSITORY_DIR/node  2>&1 | tee -a $LOG_FILE &> /dev/null
+
 		checkErrors "Error unpacking Node.js."
 
-		cd $L4I_REPOSITORY_DIR/node/node-$NODEJS_VERSION
-
-		./configure 2>&1 | tee -a $LOG_FILE &> /dev/null
-		checkErrors "Error configuring Node.js."
-
-		message "Compiling Node.js. This may take several minutes."
-		message "You can follow this instalation by opening a new terminal and executing 'tail -f $LOG_FILE'."
-
-		make 2>&1 | tee -a $LOG_FILE &> /dev/null
-		checkErrors "Error making Node.js."
-
-		make install 2>&1 | tee -a $LOG_FILE &> /dev/null
-		checkErrors "Error installing Node.js."
+		if [[ "$ERROR" == "" ]]; then
+			$SUDO_APP cp -a $LARAVELINSTALL_REPOSITORY_DIR/node/$NODE_NAME/bin/* /usr/bin
+			$SUDO_APP cp -a $LARAVELINSTALL_REPOSITORY_DIR/node/$NODE_NAME/lib/* /usr/lib
+			$SUDO_APP cp -a $LARAVELINSTALL_REPOSITORY_DIR/node/$NODE_NAME/share/* /usr/share
+		fi
 	else
 		message "Node.js installation aborted."
 	fi
@@ -474,7 +478,7 @@ function installLessPHP() {
 			message "Installing lessphp..."
 			$SUDO_APP mkdir -p $LESSPHP_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
 			$SUDO_APP chmod 777 $LESSPHP_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
-			$SUDO_APP cp $L4I_REPOSITORY_GIT/lessphp.composer.json $LESSPHP_DIR/composer.json
+			$SUDO_APP cp $LARAVELINSTALL_REPOSITORY_GIT/templates/lessphp.composer.json $LESSPHP_DIR/composer.json
 			composerUpdate $LESSPHP_DIR
 			checkErrors "Error installing lessphp."
 			$SUDO_APP chmod +x $LESSPHP_DIR/vendor/leafo/lessphp/plessc 2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -486,20 +490,20 @@ function installLessPHP() {
 
 function installBootstrapCSS() {
 	message "Installing Twitter Bootstrap (CSS version)..."
-	wget --no-check-certificate -O $L4I_REPOSITORY_DIR/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip 2>&1 | tee -a $LOG_FILE &> /dev/null
-	rm -rf $L4I_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
-	unzip $L4I_REPOSITORY_DIR/twitter.bootstrap.zip -d $L4I_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
-	rm $L4I_REPOSITORY_DIR/twitter.bootstrap.zip
-	cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/css $INSTALL_DIR/public
-	cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/js $INSTALL_DIR/public
-	cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/img $INSTALL_DIR/public
+	wget --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip 2>&1 | tee -a $LOG_FILE &> /dev/null
+	rm -rf $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
+	unzip $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap.zip -d $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
+	rm $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap.zip
+	cp -a $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap/bootstrap/css $INSTALL_DIR/public
+	cp -a $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap/bootstrap/js $INSTALL_DIR/public
+	cp -a $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap/bootstrap/img $INSTALL_DIR/public
 
 	installBootstrapTemplate
 }
 
 function installUnzip() {
 	message "Installing unzip..."
-	installPackage unzip
+	installSoftware unzip
 }
 
 function getIPAddress() {
@@ -514,132 +518,61 @@ function getIPAddress() {
 }
 
 function createVirtualHost() {
-	if [[ "$WEBSERVER" == "apache2" ]] || [[ "$WEBSERVER" == "httpd" ]]; then
-		message "Creating $WEBSERVER VirtualHost..."
-
-		conf=$INSTALL_DIR/$VHOST_CONF_FILE
-		log "vhost conf = $conf"
-
-		$SUDO_APP cp $L4I_REPOSITORY_GIT/apache.directory.template $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
-
-		$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
-		$SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR_ESCAPED/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
-
-		# if [[ "$VHOST_ENABLE_COMMAND" != "" ]]; then
-		# 	$SUDO_APP $VHOST_ENABLE_COMMAND $SITE_NAME 2>&1 | tee -a $LOG_FILE &> /dev/null
-		# fi
-
-		echo -e "\nInclude $conf" | $SUDO_APP tee -a $APACHE_CONF 2>&1 | tee -a $LOG_FILE &> /dev/null
-
-		$SUDO_APP $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
-
-		cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  2>&1 | tee -a $LOG_FILE &> /dev/null
-		cp $L4I_REPOSITORY_GIT/htaccess.template $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
-
-		$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
-
-		message "Your Laravel 4 installation should be available now at http://$IPADDRESS/$SITE_NAME"
-	fi
-}
-
-function installAdditionalPackages() {
-	inquireYN "Do you want to select Composer packages now? (you'll be able to do this at any time)" "y"
+	inquireYN "Do you wish to create a(n) $WEBSERVER Virtual Host for $SITE_NAME?" "y"
 
 	if [[ "$answer" == "y" ]]; then
-		message "Configuring additional packages..."
+		if [[ "$WEBSERVER" == "apache2" ]] || [[ "$WEBSERVER" == "httpd" ]]; then
+			message "Creating $WEBSERVER VirtualHost..."
 
-		loadPackagesArray
+			conf=$INSTALL_DIR/$VHOST_CONF_FILE
+			log "vhost conf = $conf"
 
-		total=${#EP_NAME[*]}
+			$SUDO_APP cp $LARAVELINSTALL_REPOSITORY_GIT/templates/apache.directory.template $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-		for (( i=0; i<=$(( $total -1 )); i++ ))
-		do
-			name="${EP_NAME[$i]} (${EP_VERSION[$i]})"
-			version="${EP_VERSION[$i]}"
-			alias_name="${EP_ALIAS_NAME[$i]}"
-			alias_facade="${EP_ALIAS_FACADE[$i]}"
-			provider="${EP_PROVIDER[$i]}"
+			$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
+			$SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR_ESCAPED/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-			if [[ "$name" != "$lastName" ]]; then
-				inquireYN "Do you wish to install package $name?" "n"
-			else
-				answer=$lastAnswer			
-			fi
+			# if [[ "$VHOST_ENABLE_COMMAND" != "" ]]; then
+			# 	$SUDO_APP $VHOST_ENABLE_COMMAND $SITE_NAME 2>&1 | tee -a $LOG_FILE &> /dev/null
+			# fi
 
-			lastAnswer=$answer
-			lastName=$name
+			echo -e "\nInclude $conf" | $SUDO_APP tee -a $APACHE_CONF 2>&1 | tee -a $LOG_FILE &> /dev/null
 
-			if [[ "$answer" == "y" ]]; then
-				installComposerPackage $name $version $alias_name $alias_facade $provider
-			fi        
-		done    
+			$SUDO_APP $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
+
+			cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  2>&1 | tee -a $LOG_FILE &> /dev/null
+			cp $LARAVELINSTALL_REPOSITORY_GIT/templates/htaccess.template $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
+
+			$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
+
+			message "Your Laravel installation should be available now at http://$IPADDRESS/$SITE_NAME"
+		fi		
 	fi
 }
 
-function loadPackagesArray() {
+function downloadLaravelRepositories() {                 
+	wget -N --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/repositories.csv https://raw.github.com/antonioribeiro/laravel-installer/$LARAVELINSTALL_BRANCH/repositories.csv  &> $LOG_FILE
+}
 
-	if [[ "$1" == "" ]];  then
-		fileName=$L4I_REPOSITORY_GIT/packages.csv
-	else
-		fileName=$1
-	fi
-
-	if [[ "$2" != "" ]];  then
-		cat $fileName | grep -i $2 > $fileName.tmp
-		fileName=$fileName.tmp
-	fi
+function loadLaravelRepositoriesArray() {
 
 	while IFS=, read -r col1 col2 col3 col4 col5; do
 		col1=$(trim "$col1")
 		col2=$(trim "$col2")
 		col3=$(trim "$col3")
-		col4=$(trim "$col4") ; col4=$(echo $col4 | sed 's/\\/\\\\\\\\/g')
-		col5=$(trim "$col5") ; col5=$(echo $col5 | sed 's/\\/\\\\\\\\/g')
-
-		substring=`echo $col1 | cut -b1-3`
-		if [[ "$col1" != "NAME" ]] && [[ "$substring" != "---" ]]; then
-			EP_NAME[${#EP_NAME[*]}]=$col1
-			EP_VERSION[${#EP_VERSION[*]}]=$col2
-			EP_ALIAS_NAME[${#EP_ALIAS_NAME[*]}]=$col3
-			EP_ALIAS_FACADE[${#EP_ALIAS_FACADE[*]}]=$col4
-			EP_PROVIDER[${#EP_PROVIDER[*]}]=$col5
-		fi
-	done < $fileName
-
-}
-
-function downloadStarters() {                 
-	wget -N --no-check-certificate -O $L4I_REPOSITORY_DIR/starters.csv https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/starters.csv  &> $LOG_FILE
-}
-
-function loadStartersArray() {
-
-	while IFS=, read -r col1 col2 col3 col4 col5; do
-		col1=$(trim "$col1")
-		col2=$(trim "$col2")
-		col3=$(trim "$col3")
+		col4=$(trim "$col4")
+		col5=$(trim "$col5")
 
 		substring=`echo $col1 | cut -b1-3`
 		if [[ "$col1" != "NAME" ]] && [[ "$substring" != "---" ]]; then
 			ST_NAME[${#ST_NAME[*]}]=$col1
 			ST_REPO[${#ST_REPO[*]}]=$col2
 			ST_BRANCH[${#ST_BRANCH[*]}]=$col3
+			ST_COMPOSER[${#ST_COMPOSER[*]}]=$col4
+			ST_STORAGE[${#ST_STORAGE[*]}]=$col5
 		fi
-	done < $L4I_REPOSITORY_DIR/starters.csv
+	done < $LARAVELINSTALL_REPOSITORY_DIR/repositories.csv
 
-}
-
-function installComposerPackage() {
-	$PHP_CLI_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2
-	log "$PHP_CLI_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2"
-
-	if [[ "$3$4" != "" ]]; then
-		addAppAlias "$3" "$4"
-	fi
-
-	if [[ "$5" != "" ]]; then
-		addAppProvider "$5"
-	fi
 }
 
 function checkPHP() {
@@ -669,7 +602,7 @@ function checkPHP() {
 		message "PHP cgi not found."
 	fi
 	if [[ "$phpcli" == "" ]] || [[ "$phpcgi" == "" ]]; then
-		abortIt "You'll need PHP to run Laravel 4, please install it."
+		abortIt "You'll need PHP to run Laravel  please install it."
 	fi
 
 	echo "<?php echo PHP_VERSION;" > /tmp/phpver.php
@@ -688,7 +621,7 @@ function checkPHP() {
 	fi
 }
 
-function checkPackageManager() {
+function checkSoftwareManager() {
 	PACKAGE_MANAGER=`type -p $PACKAGE_MANAGER`
 }
 
@@ -749,7 +682,7 @@ function checkWebserver() {
 	fi
 
 	if [[ "$WEBSERVER" == "" ]]; then
-		abortIt "You need a webserver to run Laravel 4, please install one and restart."
+		abortIt "You need a webserver to run Laravel  please install one and restart."
 	fi
 
 	locateWebserverConf
@@ -798,7 +731,7 @@ function installPHPUnit() {
 		message "Installing PHPUnit..."
 		$SUDO_APP mkdir -p $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
 		$SUDO_APP chmod 777 $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
-		$SUDO_APP cp $L4I_REPOSITORY_GIT/phpunit.composer.json $PHPUNIT_DIR/composer.json
+		$SUDO_APP cp $LARAVELINSTALL_REPOSITORY_GIT/templates/phpunit.composer.json $PHPUNIT_DIR/composer.json
 		$SUDO_APP perl -pi -e "s/%phpunit_dir%/$PHPUNIT_DIR_ESCAPED/g" $PHPUNIT_DIR/composer.json  2>&1 | tee -a $LOG_FILE &> /dev/null
 		composerUpdate $PHPUNIT_DIR
 		checkErrorsAndAbort "Error installing PHPUnit."
@@ -826,15 +759,16 @@ function installComposer() {
 
 function checkComposer() {
 	checkComposerInstalled
-	if [[ "$RETURN_VALUE" != "TRUE" ]]; then
+
+	if [[ "$COMPOSER_INSTALLED" != "TRUE" ]]; then
 		installComposer
 		checkComposerInstalled
-		if [[ "$RETURN_VALUE" != "TRUE" ]]; then
+		if [[ "$COMPOSER_INSTALLED" != "TRUE" ]]; then
 			message "composer is not installed and I was not able to install it"
 		fi
 	fi
 
-	if [[ "$RETURN_VALUE" == "TRUE" ]]; then
+	if [[ "$COMPOSER_INSTALLED" == "TRUE" ]]; then
 		message "Found Composer at $COMPOSER_PATH."
 	fi
 }
@@ -852,78 +786,76 @@ function checkComposerInstalled() {
 	done
 	
 	if [[ -z "$COMPOSER_PATH" ]]; then
-		RETURN_VALUE=FALSE
+		COMPOSER_INSTALLED=FALSE
 	else 
-		RETURN_VALUE=TRUE
+		COMPOSER_INSTALLED=TRUE
 	fi
 }
 
-function downloadLaravel4Skeleton() {
-	message "Downloading Laravel 4 skeleton from $LARAVEL_APP_REPOSITORY..."
+function downloadLaravelSkeleton() {
+	message "Downloading Laravel skeleton from $LARAVEL_APP_REPOSITORY..."
+
+	echo "git clone -b $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR"  2>&1 | tee -a $LOG_FILE &> /dev/null
 
 	git clone -b $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-	checkErrorsAndAbort "An error ocurred while trying to clone Laravel 4 git repository."
+	checkErrorsAndAbort "An error ocurred while trying to clone Laravel git repository."
 
-	### Installing using zip file, git is better but I'll keep this for possible future use
-	# 
-	# wget -N --output-document=/tmp/laravel-develop.zip https://github.com/laravel/laravel/archive/develop.zip
-	# unzip /tmp/laravel-develop.zip -d $INSTALL_DIR
-	# mv $INSTALL_DIR/laravel-develop/* $INSTALL_DIR
-	# mv $INSTALL_DIR/laravel-develop/.git* $INSTALL_DIR
-	# rm -rf $INSTALL_DIR/laravel-develop/
-	
-	### niallobrien's larave4-template
-	#git clone https://github.com/niallobrien/laravel4-template.git $INSTALL_DIR
-	#fixing typo
-	#perl -pi -e "s/\`/\'/g" $INSTALL_DIR/app/config/app.php
+	if [[ "$LARAVEL_APP_COMPOSER" == "YES" ]]; then
+		composerUpdate
+	fi	
+
+	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type d -exec $SUDO_APP chmod 777 {} \;
+	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type f -exec $SUDO_APP chmod 666 {} \;
 }
 
 function installApp() {
-	installPackage $1 $2
+	installSoftware $1 $2
 }
 
 function checkMCrypt() {
 	if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
-		checkL4InstalledPackage "php5-mcrypt"
+		checkLARAVELINSTALLnstalledSoftware "php5-mcrypt"
 	else 
-		checkL4InstalledPackage "php-mcrypt"
+		checkLARAVELINSTALLnstalledSoftware "php-mcrypt"
 	fi
+
+	installed=`$PHP_CLI_APP --info | grep support | grep enabled | grep mcrypt`
 
 	if [[ "$installed" = "" ]]; then 
 		if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
-			installPackage php5-mcrypt
+			installSoftware php5-mcrypt
 		else
 			## Some CentOS will need this EPEL repository to install php-mcrypt
 			if [[ $DISTRIBUTION > "CentOS release 1.0" ]] && [[ $DISTRIBUTION < "CentOS release 6.4" ]]; then
 				message "Installing EPEL repository for CentOS..."
-				wget --no-check-certificate -O $L4I_REPOSITORY_DIR/epel-release-6-8.noarch.rpm http://epel.gtdinternet.com/6/i386/epel-release-6-8.noarch.rpm 2>&1 | tee -a $LOG_FILE &> /dev/null
-				$SUDO_APP yum -y install $L4I_REPOSITORY_DIR/epel-release-6-8.noarch.rpm 2>&1 | tee -a $LOG_FILE &> /dev/null
+				wget --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/epel-release-6-8.noarch.rpm http://epel.gtdinternet.com/6/i386/epel-release-6-8.noarch.rpm 2>&1 | tee -a $LOG_FILE &> /dev/null
+				$SUDO_APP yum -y install $LARAVELINSTALL_REPOSITORY_DIR/epel-release-6-8.noarch.rpm 2>&1 | tee -a $LOG_FILE &> /dev/null
 				checkErrorsAndAbort "Error trying to install EPEL repository for CentOS"
 			fi
-			installPackage php-mcrypt
+			installSoftware php-mcrypt
 			checkErrorsAndAbort "Error installing php-mcrypt."
-			addL4InstalledApp "php-mcrypt"
+			addLARAVELINSTALLnstalledApp "php-mcrypt"
 		fi
 	else
 		message "php5-mcrypt is installed"
 	fi
 }
 
-function addL4InstalledApp() {
-	echo "$1" | $SUDO_APP tee -a $L4I_INSTALLED_APPS 2>&1 | tee -a $LOG_FILE &> /dev/null
+function addLARAVELINSTALLnstalledApp() {
+	echo "$1" | $SUDO_APP tee -a $LARAVELINSTALL_INSTALLED_APPS 2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
-function checkL4InstalledApp() {
+function checkLARAVELINSTALLnstalledApp() {
 	installed=
-	if [[ -f $L4I_INSTALLED_APPS ]]; then
-		installed=`cat $L4I_INSTALLED_APPS | grep $1`
+	if [[ -f $LARAVELINSTALL_INSTALLED_APPS ]]; then
+		installed=`cat $LARAVELINSTALL_INSTALLED_APPS | grep $1`
 	fi
 }
 
-function checkL4InstalledPackage() {
+function checkLARAVELINSTALLnstalledSoftware() {
 	installed=
-	if [[ "$PACKAGE_MANAGER" != "" ]] && [[ -f $L4I_INSTALLED_APPS ]]; then
+	if [[ "$PACKAGE_MANAGER" != "" ]] && [[ -f $LARAVELINSTALL_INSTALLED_APPS ]]; then
 		installed=`$PACKAGE_MANAGER $PACKAGE_LIST_OPTION | grep $1 `
 	fi
 }
@@ -1011,10 +943,10 @@ function checkParameters() {
 
 	if [[ "$LARAVEL_APP_REPOSITORY" == "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
 		message
-		message "Select your Laravel 4 App Repository"
+		message "Select your Laravel App Repository"
 		message
 
-		listStarters
+		listLaravelRepositories
 		message "$(( $total )) I want a different repository"
 
 		total=${#ST_NAME[*]}
@@ -1022,7 +954,7 @@ function checkParameters() {
 		message 
 		answer=
 		while [[ "$answer" == "" ]]; do
-			inquireText "Wich Laravel 4 App Repository do you want to use?" 0
+			inquireText "Wich Laravel App Repository do you want to use?" 2
 			if [ `isnumber $answer` == "NO" ]; then
 				answer=
 				message "You must type a number."
@@ -1040,10 +972,12 @@ function checkParameters() {
 			message "Selected app repository: ${ST_NAME[$answer]}"
 			LARAVEL_APP_REPOSITORY="${ST_REPO[$answer]}"
 			LARAVEL_APP_BRANCH="${ST_BRANCH[$answer]}"
+			LARAVEL_APP_COMPOSER="${ST_COMPOSER[$answer]}"
+			LARAVEL_APP_STORAGE="${ST_STORAGE[$answer]}"
 		fi
 	fi
 
-	VHOST_CONF_FILE=$SITE_NAME.$L4I_WEBSERVER_SUFFIX
+	VHOST_CONF_FILE=$SITE_NAME.$LARAVELINSTALL_WEBSERVER_SUFFIX
 }
 
 function readThirdPartyRepository() {
@@ -1058,9 +992,9 @@ function readThirdPartyRepository() {
 	fi
 }
 
-function listStarters() {
-	downloadStarters
-	loadStartersArray
+function listLaravelRepositories() {
+	downloadLaravelRepositories
+	loadLaravelRepositoriesArray
 
 	total=${#ST_NAME[*]}
 
@@ -1097,7 +1031,7 @@ function showUsage() {
 	message
 	message
 	message "installFour script"
-	message "  Installs a Laravel 4 development environment"
+	message "  Installs a Laravel development environment"
 	message
 	message "     Usage:  bash installFour <directory> <site name>"
 	message
@@ -1132,8 +1066,8 @@ function setGlobalPermissions() {
 	$SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/  2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
-function installPackage() {
-	updatePackagerSources
+function installSoftware() {
+	updateSoftwareSources
 	message "Installing $1..."
 	$SUDO_APP $PACKAGER_INSTALL_COMMAND $1 $2 2>&1 | tee -a $LOG_FILE &> /dev/null
 	checkErrorsAndAbort "An error ocurred while installing $1."
@@ -1277,8 +1211,8 @@ function inquireText()  {
 }
 
 function createLogDirectory() {
-	mkdir -p $L4I_REPOSITORY_DIR >/dev/null 2>&1
-	checkErrorsAndAbort "You might not have permissions to create files in $L4I_REPOSITORY_DIR, please check log: $LOG_FILE."
+	mkdir -p $LARAVELINSTALL_REPOSITORY_DIR >/dev/null 2>&1
+	checkErrorsAndAbort "You might not have permissions to create files in $LARAVELINSTALL_REPOSITORY_DIR, please check log: $LOG_FILE."
 }
 
 function showLogFile() {
@@ -1286,7 +1220,7 @@ function showLogFile() {
 }
 
 function installOurArtisan() {
-	$SUDO_APP cp $L4I_REPOSITORY_GIT/installFour.sh $BIN_DIR/artisan  2>&1 | tee -a $LOG_FILE &> /dev/null
+	$SUDO_APP cp $LARAVELINSTALL_REPOSITORY_GIT/installFour.sh $BIN_DIR/artisan  2>&1 | tee -a $LOG_FILE &> /dev/null
 	$SUDO_APP chmod +x $BIN_DIR/artisan 2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
@@ -1301,14 +1235,14 @@ function abortIt() {
 function showHeader() {
 	clear
 	## will not use message because it logs and log file might not be available at the moment
-	echo "l4i - The Laravel 4 Installer Script"
+	echo "laravel-installer - The Laravel Installer Script"
 	echo ""
 }
 
-function cleanL4IRepository() {
-	if [ -d $L4I_REPOSITORY_DIR ]; then
-		rm -rf $L4I_REPOSITORY_DIR >/dev/null 2>&1 
-		checkErrorsAndAbort "You're not allowed to write in $L4I_REPOSITORY_DIR."
+function cleanLARAVELINSTALLRepository() {
+	if [ -d $LARAVELINSTALL_REPOSITORY_DIR ]; then
+		rm -rf $LARAVELINSTALL_REPOSITORY_DIR >/dev/null 2>&1 
+		checkErrorsAndAbort "You're not allowed to write in $LARAVELINSTALL_REPOSITORY_DIR."
 	fi
 }
 
@@ -1404,20 +1338,13 @@ function execute() {
 	log ":execute: $1"
 }
 
-function updatePackagerSources() {
+function updateSoftwareSources() {
 	if [[ "$packagerUpdated" == "" ]]; then
 		packagerUpdated=YES
 		if [[ "$PACKAGER_UPDATE_COMMAND" != "" ]]; then
 			message "Running $PACKAGER_UPDATE_COMMAND..."
 			$SUDO_APP $PACKAGER_UPDATE_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
 		fi
-	fi
-}
-
-function updatePackagerApp() {
-	if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
-		message "Cheking and upgrading pacman..."
-		$SUDO_APP $PACKAGER_INSTALL_COMMAND pacman 2>&1 | tee -a $LOG_FILE &> /dev/null
 	fi
 }
 
@@ -1456,7 +1383,7 @@ function checkApp() {
 	program=`type -p $1`
 
 	if [[ "$program" == "" ]]; then
-		message -n "Trying to install $1 (with command $installer)..."
+		message -n "Trying to install $1 (using $installer)..."
 		$installer $1 2>&1 | tee -a $LOG_FILE &> /dev/null
 		if ! type -p $1 2>&1 | tee -a $LOG_FILE &> /dev/null; then
 			message ""
@@ -1470,9 +1397,16 @@ function checkApp() {
 	fi
 }
 
-function installPackager() {
+function installSoftwareInstaller() {
 	if [[ "$OPERATING_SYSTEM" == "MacOS" ]]; then
 		checkHomebrew
+	fi
+
+	## update arch packager
+
+	if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
+		message "Cheking and upgrading pacman..."
+		$SUDO_APP $PACKAGER_INSTALL_COMMAND pacman 2>&1 | tee -a $LOG_FILE &> /dev/null
 	fi
 }
 
@@ -1582,7 +1516,7 @@ function vercomp () {
 function updateAll() {
 	findLaravelArtisan
 	if [ "$ARTISAN_APP" == "" ]; then
-		abortIt "You must be in a Laravel 4 directory to run this command."
+		abortIt "You must be in a Laravel directory to run this command."
 	fi
 	dir=`dirname $ARTISAN_APP`
 
@@ -1632,7 +1566,7 @@ function isnumber() { printf '%f' "$1" &>/dev/null && echo "YES" || echo "NO"; }
 
 function addComposerPackage() {
 	downloadPackageList 
-	loadPackagesArray $L4I_REPOSITORY_DIR/packages.csv $2
+	loadPackagesArray $LARAVELINSTALL_REPOSITORY_DIR/packages.csv $2
 
 	total=${#EP_NAME[*]}
 
@@ -1690,8 +1624,7 @@ function addComposerPackage() {
 }
 
 function downloadPackageList() {                 
-	wget -N --no-check-certificate -O $L4I_REPOSITORY_DIR/packages.csv https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/packages.csv  &> $LOG_FILE
+	wget -N --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/packages.csv https://raw.github.com/antonioribeiro/laravel-installer/$LARAVELINSTALL_BRANCH/packages.csv  &> $LOG_FILE
 }
 
 main $@
-

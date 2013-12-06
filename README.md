@@ -1,13 +1,9 @@
 laravel-installer 2.0.0
-===
+=======
 
-A Laravel 4 Install Script for Linux
+A Laravel 3 and 4 Install Script for Linux
 
-This Linux Bash Script will install from scratch a development environment (webserver, php, dbms, phpunit, node.js...), a Laravel 4 instance, a bunch of great Composer packages and configure it all so you don't have to.
-
-### Motivation
-
-When I first said I was building this script someone asked me "does Laravel 4 need an installation script?", actually it doesn't, it's easy to get into it and it's better if you can install it manually, but if you're doing it many times, creating small projects from scratch with it, this script can save you a lot of time. Also, if you are a newbie, it takes some time and work until you get a real working version of Laravel 4, because you have to understand and install Composer, install PHPUnit, install some basic packages, create a VirtualHost on your webserver, point it correctly to your app directory and set the right permissions on storage folder. I saw myself in this place when I first tried to go to L4, when it wasn't even in beta and it was not pretty since I'm still trying to become a PHP coder.
+This Linux Bash Script will install Laravel and, if needed, all dependencies (webserver, php5 and extensions, phpunit...)
 
 ### Supported Operating Systems
 
@@ -19,40 +15,21 @@ When I first said I was building this script someone asked me "does Laravel 4 ne
 
 ### Requirements
 
-You just need a Linux box with nothing else installed and script will install everything for you or you can use a working PHP development environment and it will install only Laravel 4 and what is missing for it to work.
+You just need a Linux box with nothing else installed and script will install everything for you or you can use a working PHP development environment and it will install only Laravel and what is missing for it to work.
 
 Web Server: a the moment it only knows how to install and configure apache2, if you need any other webserver (nginx, lighthttpd...), you'll need to do the virtual host creation part manually.
 
 Your user need to have writing permissions to the installation directory, this script will not use sudo to create you directories and download files, but will use it to install needed software.
 
-If this script needs to install software, you will need sudo or root permissions.
+If this script needs to install software (apache, php5, you will need sudo or root permissions.
 
-### Laravel 4 Application Bases
+### Laravel Versions
 
-You might be interested in installing another base app for your Laravel 4 site, this script will ask you about it during the process and will install one of those:
+This script will install one of those versions:
 
-* [Laravel 4 default App Repository](https://github.com/laravel/laravel) - (`https://github.com/laravel/laravel.git`, develop branch)
-* [FluxBB 2](https://github.com/fluxbb/fluxbb2) - (`https://github.com/fluxbb/fluxbb2.git`, master branch)
-* [L4withSentry](https://github.com/rydurham/L4withSentry) - (`https://github.com/rydurham/L4withSentry.git`, master branch)
-
-A screenshot of it asking for a repository:
-
-![l4i screenshot](http://puu.sh/1XzWy)
-
-### Warnings
-
-This is a bash Debian (Debian and Ubuntu) based installation, for now, so if you are on MacOS, Fedora, CentOS, etc. it may not work.
-
-This script will not create an entry in your hosts file and you will not have acess to your site using a hostname
-
-After installing this script you will have access to your site using the following pattern:
-````
- http://ip-address/sitename/
-````
-
-There is also a rewrite condition in .htaccess to clean your url, to make it clear and look like `http://ip-address/sitename/user/1`.
-
-If you need something different from this, you'll have to tweak your .htaccess and/or your webserver virtual hosts configuration.
+- Laravel 3.0 (currently 3.2.14)
+- Laravel 4.0
+- Laravel 4.1
 
 ### Screenshots
 
@@ -62,7 +39,7 @@ Only 50 seconds to install Laravel 4
 
 ### Installed software
 
-In the process of installing the entire environment or just Laravel 4, this script will also try to install, if needed, the following applications in your system:
+In the process of installing the entire environment or just Laravel, this script will also try to install, if needed, the following applications in your system:
 
 * Apache2
 * PHP 5
@@ -73,38 +50,15 @@ In the process of installing the entire environment or just Laravel 4, this scri
 * unzip
 * php5-mcrypt
 * PHPUnit (composer install)
-* Twitter Bootstrap (CSS or less)
-* less (http://lesscss.org/ and https://github.com/cloudhead/less.js)
-* Node.js and npm
-* lessphp (a less compiler in php)
-* All packages needed to compile applications
-
-### Composer packages available to install
-
-* raveren/kint (https://github.com/raveren/kint)
-* mockery/mockery (http://github.com/padraic/mockery)
-* phpunit/phpunit (http://www.phpunit.de/)
-* iron-io/iron_mq (http://github.com/iron-io/iron_mq_php)
-* aws/aws-sdk-php (https://packagist.org/packages/aws/aws-sdk-php)
-* pda/pheanstalk (https://packagist.org/packages/pda/pheanstalk)
-* way/guard-laravel (https://github.com/JeffreyWay/Laravel-Guard)
-* way/generators (https://github.com/JeffreyWay/Laravel-4-Generators)
-* machuga/authority (https://github.com/machuga/authority)
-* jasonlewis/basset (https://github.com/jasonlewis/basset)
-* bigelephant/string (https://github.com/bigelephant/string)
-* cartalyst/sentry (https://github.com/cartalyst/sentry)
-* jasonlewis/expressive-date (https://github.com/jasonlewis/expressive-date)
-* anahkiasen/underscore-php (https://github.com/Anahkiasen/underscore-php)
-* laravelbook/laravel4-powerpack (https://github.com/laravelbook/laravel4-powerpack)
-* laravelbook/ardent (https://github.com/laravelbook/ardent)
-* Zizaco/confide (https://github.com/Zizaco/confide)
-* Zizaco/lessy (https://github.com/Zizaco/lessy)
+* less (http://lesscss.org/ and https://github.com/cloudhead/less.js) - optional
+* Node.js and npm - optional
+* Bower - optional
 
 ### Commands
 
 This script will create the following commands in your system:
 
-#### composer
+#### Composer
 This is an executable version of composer.phar 
 
 #### artisan 
@@ -156,7 +110,7 @@ taylor@l4server:/var/www/blog> artisan installpackage machuga
 
 There is no need to clone this git repository, you just have to download the script:
 ```
-wget -N --no-check-certificate -O installFour.sh https://raw.github.com/antonioribeiro/l4i/master/installFour.sh
+wget -N --no-check-certificate -O installFour.sh https://raw.github.com/antonioribeiro/laravel-installer/master/installFour.sh
 ```
 
 And run it:
@@ -177,35 +131,20 @@ bash installFour.sh /home/taylor/www blog NO
 bash installFour.sh /var/www/blog myBlog YES
 ```
 
-### Installation Process
-
-* Create temporary install directory
-* Create log directory
-* Check if user is root or has sudo powers
-* Get operating system version and distribution
-* Update packages list (apt-get update, yum sync...)
-* Install webserver (apache2), if not available
-* Check PHP version (min=5.3.7), if none available, install
-* Configure PHP
-* Ask for installation parameters (directory and site name) if not sent via command line
-* Check or install wget
-* Check or install curl
-* Check or install unzip
-* Check or install git
-* Check or install phpunit
-* Check or install MCrypt
-* Check or install Composer
-* Git clone l4i repository to temporary directory
-* Select Laravel 4 app repository
-* Git clone Laravel 4 app repository
-* Select and install additional composer packages
-* Install a new artisan command
-* Check or install a less compiler (Node.js and/or lessphp)
-* Install Twitter Bootstrap (less or CSS version)
-* Create VirtualHost (currently apache2 only) and restart webserver
-* Configure a main template, a home view using main template and a route to home, so we can see Laravel 4 and Blade running
-
 # Changelog
+
+2013/12/06 13:59 (GMT-3) - Version 2.0.0
+
+* Added Laravel 4.1 to install options
+* Added Laravel 3 to install options
+* Default is now Laravel to 4.1
+* Dramatically improved speed on Node.js installation
+* Correctly checking if MCrypt is installed
+* Removed All meta repositories
+* Removed Twitter Bootstrap installation, can be easily done via Bower
+* Setting permissions (777 and 666) to app/storage or storage (for L3)
+* Completely removed composer packages installation, you can do it by user `composer search` and `composer require`
+* Added option to install Bower
 
 2013/02/05 00:25 (GMT-3) - Version 1.7.0
 
@@ -271,7 +210,7 @@ bash installFour.sh /var/www/blog myBlog YES
 
 * Optionally installs PHP and a webserver (apache), if it cannot find them
 * Added support for some Redhat based distributions (Redhat, Fedora and CentOS)
-* All script installation files were moved to /tmp/l4i/
+* All script installation files were moved to /tmp/laravel-installer/
 * Added a list of supported operating systems and a question if the user OS is not in this list
 * CentoOS: added EPEL (http://fedoraproject.org/wiki/EPEL) repository to install php-mcrypt
 
