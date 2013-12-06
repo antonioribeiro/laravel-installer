@@ -396,7 +396,7 @@ function checkLessCompiler() {
 function checkNode() {
 	NODE_APP=`type -p npm`
 	if [[ "$NODE_APP" == "" ]]; then
-		inquireYN "Looks like Node.js is not installed, do you wish to install it? (this might take a very long time)" "y"
+		inquireYN "Looks like Node.js is not installed, do you wish to install it?" "y"
 		if [[ "$answer" == "y" ]]; then
 			installNode
 			NODE_APP=`type -p npm`
@@ -433,12 +433,24 @@ function installNode() {
 	installSoftware make
 	installSoftware python
 
-	wget --no-check-certificate -O $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz http://nodejs.org/dist/$NODEJS_VERSION/node-$NODEJS_VERSION-linux-x`getconf LONG_BIT`.tar.gz 2>&1 | tee -a $LOG_FILE &> /dev/null
+	message "Installing Node.js $NODEJS_VERSION..."
+
+	NODE_NAME=node-$NODEJS_VERSION-linux-x`getconf LONG_BIT`
+	wget --no-check-certificate -O $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz http://nodejs.org/dist/$NODEJS_VERSION/$NODE_NAME.tar.gz 2>&1 | tee -a $LOG_FILE &> /dev/null
 	checkErrors "Error downloading Node.js."
 
 	if [[ "$ERROR" == "" ]]; then
-		tar xvfz $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz -C /usr/bin  2>&1 | tee -a $LOG_FILE &> /dev/null
+		mkdir $L4I_REPOSITORY_DIR/node
+
+		tar xvfz $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz -C $L4I_REPOSITORY_DIR/node  2>&1 | tee -a $LOG_FILE &> /dev/null
+
 		checkErrors "Error unpacking Node.js."
+
+		if [[ "$ERROR" == "" ]]; then
+			$SUDO_APP cp -a $L4I_REPOSITORY_DIR/node/$NODE_NAME/bin/* /usr/bin
+			$SUDO_APP cp -a $L4I_REPOSITORY_DIR/node/$NODE_NAME/lib/* /usr/lib
+			$SUDO_APP cp -a $L4I_REPOSITORY_DIR/node/$NODE_NAME/share/* /usr/share
+		fi
 	else
 		message "Node.js installation aborted."
 	fi
@@ -507,31 +519,35 @@ function getIPAddress() {
 }
 
 function createVirtualHost() {
-	if [[ "$WEBSERVER" == "apache2" ]] || [[ "$WEBSERVER" == "httpd" ]]; then
-		message "Creating $WEBSERVER VirtualHost..."
+	inquireYN "Do you wish to create a(n) $WEBSERVER Virtual Host for $SITE_NAME?" "y"
 
-		conf=$INSTALL_DIR/$VHOST_CONF_FILE
-		log "vhost conf = $conf"
+	if [[ "$answer" == "y" ]]; then
+		if [[ "$WEBSERVER" == "apache2" ]] || [[ "$WEBSERVER" == "httpd" ]]; then
+			message "Creating $WEBSERVER VirtualHost..."
 
-		$SUDO_APP cp $L4I_REPOSITORY_GIT/templates/apache.directory.template $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
+			conf=$INSTALL_DIR/$VHOST_CONF_FILE
+			log "vhost conf = $conf"
 
-		$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
-		$SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR_ESCAPED/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
+			$SUDO_APP cp $L4I_REPOSITORY_GIT/templates/apache.directory.template $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-		# if [[ "$VHOST_ENABLE_COMMAND" != "" ]]; then
-		# 	$SUDO_APP $VHOST_ENABLE_COMMAND $SITE_NAME 2>&1 | tee -a $LOG_FILE &> /dev/null
-		# fi
+			$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
+			$SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR_ESCAPED/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-		echo -e "\nInclude $conf" | $SUDO_APP tee -a $APACHE_CONF 2>&1 | tee -a $LOG_FILE &> /dev/null
+			# if [[ "$VHOST_ENABLE_COMMAND" != "" ]]; then
+			# 	$SUDO_APP $VHOST_ENABLE_COMMAND $SITE_NAME 2>&1 | tee -a $LOG_FILE &> /dev/null
+			# fi
 
-		$SUDO_APP $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
+			echo -e "\nInclude $conf" | $SUDO_APP tee -a $APACHE_CONF 2>&1 | tee -a $LOG_FILE &> /dev/null
 
-		cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  2>&1 | tee -a $LOG_FILE &> /dev/null
-		cp $L4I_REPOSITORY_GIT/templates/htaccess.template $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
+			$SUDO_APP $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
 
-		$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
+			cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  2>&1 | tee -a $LOG_FILE &> /dev/null
+			cp $L4I_REPOSITORY_GIT/templates/htaccess.template $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-		message "Your Laravel 4 installation should be available now at http://$IPADDRESS/$SITE_NAME"
+			$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
+
+			message "Your Laravel 4 installation should be available now at http://$IPADDRESS/$SITE_NAME"
+		fi		
 	fi
 }
 
