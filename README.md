@@ -27,12 +27,13 @@ Your user need to have writing permissions to the installation directory, this s
 
 If this script needs to install software, you will need sudo or root permissions.
 
-### Laravel 4 Versions
+### Laravel Versions
 
-This script will install one of those Laravel versions:
+This script will install one of those versions:
 
-- 4.0
-- 4.1
+- Laravel 3.0 (currently 3.2.14)
+- Laravel 4.0
+- Laravel 4.1
 
 ### Warnings
 

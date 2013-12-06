@@ -125,7 +125,6 @@ function createSite() {
 	checkMCrypt
 	downloadLaravel4Skeleton
 	installOurArtisan
-	composerUpdate
 	checkNode
 	checkBower
 	checkLessCompiler
@@ -561,12 +560,14 @@ function loadLaravelRepositoriesArray() {
 		col1=$(trim "$col1")
 		col2=$(trim "$col2")
 		col3=$(trim "$col3")
+		col4=$(trim "$col4")
 
 		substring=`echo $col1 | cut -b1-3`
 		if [[ "$col1" != "NAME" ]] && [[ "$substring" != "---" ]]; then
 			ST_NAME[${#ST_NAME[*]}]=$col1
 			ST_REPO[${#ST_REPO[*]}]=$col2
 			ST_BRANCH[${#ST_BRANCH[*]}]=$col3
+			ST_COMPOSER[${#ST_COMPOSER[*]}]=$col4
 		fi
 	done < $L4I_REPOSITORY_DIR/repositories.csv
 
@@ -798,6 +799,10 @@ function downloadLaravel4Skeleton() {
 
 	checkErrorsAndAbort "An error ocurred while trying to clone Laravel 4 git repository."
 
+	if [[ "$LARAVEL_APP_COMPOSER" == "YES" ]]; then
+		composerUpdate
+	fi	
+
 	### Installing using zip file, git is better but I'll keep this for possible future use
 	# 
 	# wget -N --output-document=/tmp/laravel-develop.zip https://github.com/laravel/laravel/archive/develop.zip
@@ -975,6 +980,7 @@ function checkParameters() {
 			message "Selected app repository: ${ST_NAME[$answer]}"
 			LARAVEL_APP_REPOSITORY="${ST_REPO[$answer]}"
 			LARAVEL_APP_BRANCH="${ST_BRANCH[$answer]}"
+			LARAVEL_APP_COMPOSER="${ST_COMPOSER[$answer]}"
 		fi
 	fi
 
