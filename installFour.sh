@@ -954,7 +954,7 @@ function checkParameters() {
 		message 
 		answer=
 		while [[ "$answer" == "" ]]; do
-			inquireText "Wich Laravel 4 App Repository do you want to use?" 0
+			inquireText "Wich Laravel 4 App Repository do you want to use?" 1
 			if [ `isnumber $answer` == "NO" ]; then
 				answer=
 				message "You must type a number."
