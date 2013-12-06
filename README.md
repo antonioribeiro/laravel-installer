@@ -5,6 +5,27 @@ A Laravel 3 and 4 Install Script for Linux
 
 This Linux Bash Script will install Laravel and, if needed, all dependencies (webserver, php5 and extensions, phpunit...)
 
+### Installation and Usage
+
+There is no need to clone this git repository, you just have to download the script:
+```
+wget -N --no-check-certificate -O installFour.sh https://raw.github.com/antonioribeiro/laravel-installer/master/installFour.sh
+```
+
+And run it:
+```
+bash installFour.sh
+```
+
+Other examples of usage
+
+```
+bash installFour.sh
+bash installFour.sh /var/www/blog blog YES
+bash installFour.sh /home/taylor/www blog NO
+bash installFour.sh /var/www/blog myBlog YES
+```
+
 ### Supported Operating Systems
 
 * Debian (tested on 6 and 7)
@@ -93,31 +114,6 @@ taylor@l4server:/> artisan destroy blog -y
 * Running "artisan update" from inside a Laravel directory (or subdirectory) it will try to "composer update" and "composer dump-autoload --optimize" site and phpunit:
 ```
 taylor@l4server:/var/www/blog> artisan update
-```
-
-### Installation and Examples
-
-There is no need to clone this git repository, you just have to download the script:
-```
-wget -N --no-check-certificate -O installFour.sh https://raw.github.com/antonioribeiro/laravel-installer/master/installFour.sh
-```
-
-And run it:
-```
-bash installFour.sh
-```
-
-You can also pass some parameters to it:
-```
-bash installFour.sh <install directory> <site name> <Install twitter bootstrap? YES or NO>
-```
-
-Examples of usage:
-```
-bash installFour.sh
-bash installFour.sh /var/www/blog blog YES
-bash installFour.sh /home/taylor/www blog NO
-bash installFour.sh /var/www/blog myBlog YES
 ```
 
 # Changelog
