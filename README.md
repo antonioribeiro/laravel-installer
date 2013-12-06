@@ -1,4 +1,4 @@
-l4i
+laravel-installer 2.0.0
 ===
 
 A Laravel 4 Install Script for Linux
@@ -56,17 +56,9 @@ If you need something different from this, you'll have to tweak your .htaccess a
 
 ### Screenshots
 
-Version 1.5.0
+Only 50 seconds to install Laravel 4
 
-Page after installing Laravel 4 with this script
-![l4i screenshot](http://puu.sh/1PI8I)
-
-This is a screenshot of a full install session, not only Laravel 4, but also apache, php, Node.js and less:
-![l4i screenshot](http://puu.sh/1Sez1)
-
-### Screencasts
-
-From version 1.2.0: http://www.screenr.com/HNO7
+![laravel-installer screenshot](http://puu.sh/5E8cL.png)
 
 ### Installed software
 
