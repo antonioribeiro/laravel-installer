@@ -1,7 +1,7 @@
 #!/bin/bash
 
-L4I_VERSION=1.6.8
-L4I_BRANCH=master
+L4I_VERSION=2.0.0
+L4I_BRANCH=v2.0.0
 LARAVEL_APP_DEFAULT_REPOSITORY="https://github.com/laravel/laravel.git"
 LARAVEL_APP_DEFAULT_BRANCH="develop"
 INSTALL_DIR=$1
@@ -102,12 +102,11 @@ function createSite() {
 	showLogFile 
 	checkSudo
  
-	installPackager
-	updatePackagerApp
+	installSoftwareInstaller
 
 	checkWebserver
 	checkPHP
-	checkPackageManager
+	checkSoftwareManager
 	configurePHP
 
 	checkParameters
@@ -125,7 +124,6 @@ function createSite() {
 	checkPHPUnit
 	checkMCrypt
 	downloadLaravel4Skeleton
-	installAdditionalPackages
 	installOurArtisan
 	composerUpdate
 	checkLessCompiler
@@ -147,10 +145,6 @@ function ourArtisan()  {
 
 	if [ "$1" == "update" ] || [ "$1" == "UPDATE" ] || [ "$1" == "Update" ]; then
 		updateAll $@
-	fi
-
-	if [ "$1" == "installpackage" ]; then
-		addComposerPackage $@
 	fi
 
  	runLaravelArtisan $@
@@ -363,8 +357,8 @@ function installBootstrapTemplate() {
 	mkdir $INSTALL_DIR/app/views/layouts 2>&1 | tee -a $LOG_FILE &> /dev/null
 	mkdir $INSTALL_DIR/app/views/views 2>&1 | tee -a $LOG_FILE &> /dev/null
 
-	cp $L4I_REPOSITORY_GIT/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  2>&1 | tee -a $LOG_FILE &> /dev/null
-	cp $L4I_REPOSITORY_GIT/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+	cp $L4I_REPOSITORY_GIT/templates/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  2>&1 | tee -a $LOG_FILE &> /dev/null
+	cp $L4I_REPOSITORY_GIT/templates/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
 
 	perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php 2>&1 | tee -a $LOG_FILE &> /dev/null
 	perl -pi -e "s/%l4i_branch%/$L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -415,11 +409,11 @@ function installNodeAndLess() {
 }
 
 function installNode() {
-	installPackage make
-	installPackage python
+	installSoftware make
+	installSoftware python
 
 	if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
-		installPackage build-essential
+		installSoftware build-essential
 	fi
 	if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
 		message "Installing development tools..."
@@ -474,7 +468,7 @@ function installLessPHP() {
 			message "Installing lessphp..."
 			$SUDO_APP mkdir -p $LESSPHP_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
 			$SUDO_APP chmod 777 $LESSPHP_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
-			$SUDO_APP cp $L4I_REPOSITORY_GIT/lessphp.composer.json $LESSPHP_DIR/composer.json
+			$SUDO_APP cp $L4I_REPOSITORY_GIT/templates/lessphp.composer.json $LESSPHP_DIR/composer.json
 			composerUpdate $LESSPHP_DIR
 			checkErrors "Error installing lessphp."
 			$SUDO_APP chmod +x $LESSPHP_DIR/vendor/leafo/lessphp/plessc 2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -499,7 +493,7 @@ function installBootstrapCSS() {
 
 function installUnzip() {
 	message "Installing unzip..."
-	installPackage unzip
+	installSoftware unzip
 }
 
 function getIPAddress() {
@@ -520,7 +514,7 @@ function createVirtualHost() {
 		conf=$INSTALL_DIR/$VHOST_CONF_FILE
 		log "vhost conf = $conf"
 
-		$SUDO_APP cp $L4I_REPOSITORY_GIT/apache.directory.template $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
+		$SUDO_APP cp $L4I_REPOSITORY_GIT/templates/apache.directory.template $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 
 		$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 		$SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR_ESCAPED/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -534,7 +528,7 @@ function createVirtualHost() {
 		$SUDO_APP $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
 
 		cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  2>&1 | tee -a $LOG_FILE &> /dev/null
-		cp $L4I_REPOSITORY_GIT/htaccess.template $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
+		cp $L4I_REPOSITORY_GIT/templates/htaccess.template $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
 
 		$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
 
@@ -542,74 +536,8 @@ function createVirtualHost() {
 	fi
 }
 
-function installAdditionalPackages() {
-	inquireYN "Do you want to select Composer packages now? (you'll be able to do this at any time)" "y"
-
-	if [[ "$answer" == "y" ]]; then
-		message "Configuring additional packages..."
-
-		loadPackagesArray
-
-		total=${#EP_NAME[*]}
-
-		for (( i=0; i<=$(( $total -1 )); i++ ))
-		do
-			name="${EP_NAME[$i]} (${EP_VERSION[$i]})"
-			version="${EP_VERSION[$i]}"
-			alias_name="${EP_ALIAS_NAME[$i]}"
-			alias_facade="${EP_ALIAS_FACADE[$i]}"
-			provider="${EP_PROVIDER[$i]}"
-
-			if [[ "$name" != "$lastName" ]]; then
-				inquireYN "Do you wish to install package $name?" "n"
-			else
-				answer=$lastAnswer			
-			fi
-
-			lastAnswer=$answer
-			lastName=$name
-
-			if [[ "$answer" == "y" ]]; then
-				installComposerPackage $name $version $alias_name $alias_facade $provider
-			fi        
-		done    
-	fi
-}
-
-function loadPackagesArray() {
-
-	if [[ "$1" == "" ]];  then
-		fileName=$L4I_REPOSITORY_GIT/packages.csv
-	else
-		fileName=$1
-	fi
-
-	if [[ "$2" != "" ]];  then
-		cat $fileName | grep -i $2 > $fileName.tmp
-		fileName=$fileName.tmp
-	fi
-
-	while IFS=, read -r col1 col2 col3 col4 col5; do
-		col1=$(trim "$col1")
-		col2=$(trim "$col2")
-		col3=$(trim "$col3")
-		col4=$(trim "$col4") ; col4=$(echo $col4 | sed 's/\\/\\\\\\\\/g')
-		col5=$(trim "$col5") ; col5=$(echo $col5 | sed 's/\\/\\\\\\\\/g')
-
-		substring=`echo $col1 | cut -b1-3`
-		if [[ "$col1" != "NAME" ]] && [[ "$substring" != "---" ]]; then
-			EP_NAME[${#EP_NAME[*]}]=$col1
-			EP_VERSION[${#EP_VERSION[*]}]=$col2
-			EP_ALIAS_NAME[${#EP_ALIAS_NAME[*]}]=$col3
-			EP_ALIAS_FACADE[${#EP_ALIAS_FACADE[*]}]=$col4
-			EP_PROVIDER[${#EP_PROVIDER[*]}]=$col5
-		fi
-	done < $fileName
-
-}
-
 function downloadStarters() {                 
-	wget -N --no-check-certificate -O $L4I_REPOSITORY_DIR/starters.csv https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/starters.csv  &> $LOG_FILE
+	wget -N --no-check-certificate -O $L4I_REPOSITORY_DIR/repositories.csv https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/repositories.csv  &> $LOG_FILE
 }
 
 function loadStartersArray() {
@@ -627,19 +555,6 @@ function loadStartersArray() {
 		fi
 	done < $L4I_REPOSITORY_DIR/starters.csv
 
-}
-
-function installComposerPackage() {
-	$PHP_CLI_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2
-	log "$PHP_CLI_APP $L4I_REPOSITORY_GIT/json.edit.php $INSTALL_DIR $1 $2"
-
-	if [[ "$3$4" != "" ]]; then
-		addAppAlias "$3" "$4"
-	fi
-
-	if [[ "$5" != "" ]]; then
-		addAppProvider "$5"
-	fi
 }
 
 function checkPHP() {
@@ -688,7 +603,7 @@ function checkPHP() {
 	fi
 }
 
-function checkPackageManager() {
+function checkSoftwareManager() {
 	PACKAGE_MANAGER=`type -p $PACKAGE_MANAGER`
 }
 
@@ -798,7 +713,7 @@ function installPHPUnit() {
 		message "Installing PHPUnit..."
 		$SUDO_APP mkdir -p $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
 		$SUDO_APP chmod 777 $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
-		$SUDO_APP cp $L4I_REPOSITORY_GIT/phpunit.composer.json $PHPUNIT_DIR/composer.json
+		$SUDO_APP cp $L4I_REPOSITORY_GIT/templates/phpunit.composer.json $PHPUNIT_DIR/composer.json
 		$SUDO_APP perl -pi -e "s/%phpunit_dir%/$PHPUNIT_DIR_ESCAPED/g" $PHPUNIT_DIR/composer.json  2>&1 | tee -a $LOG_FILE &> /dev/null
 		composerUpdate $PHPUNIT_DIR
 		checkErrorsAndAbort "Error installing PHPUnit."
@@ -880,19 +795,19 @@ function downloadLaravel4Skeleton() {
 }
 
 function installApp() {
-	installPackage $1 $2
+	installSoftware $1 $2
 }
 
 function checkMCrypt() {
 	if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
-		checkL4InstalledPackage "php5-mcrypt"
+		checkL4InstalledSoftware "php5-mcrypt"
 	else 
-		checkL4InstalledPackage "php-mcrypt"
+		checkL4InstalledSoftware "php-mcrypt"
 	fi
 
 	if [[ "$installed" = "" ]]; then 
 		if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
-			installPackage php5-mcrypt
+			installSoftware php5-mcrypt
 		else
 			## Some CentOS will need this EPEL repository to install php-mcrypt
 			if [[ $DISTRIBUTION > "CentOS release 1.0" ]] && [[ $DISTRIBUTION < "CentOS release 6.4" ]]; then
@@ -901,7 +816,7 @@ function checkMCrypt() {
 				$SUDO_APP yum -y install $L4I_REPOSITORY_DIR/epel-release-6-8.noarch.rpm 2>&1 | tee -a $LOG_FILE &> /dev/null
 				checkErrorsAndAbort "Error trying to install EPEL repository for CentOS"
 			fi
-			installPackage php-mcrypt
+			installSoftware php-mcrypt
 			checkErrorsAndAbort "Error installing php-mcrypt."
 			addL4InstalledApp "php-mcrypt"
 		fi
@@ -921,7 +836,7 @@ function checkL4InstalledApp() {
 	fi
 }
 
-function checkL4InstalledPackage() {
+function checkL4InstalledSoftware() {
 	installed=
 	if [[ "$PACKAGE_MANAGER" != "" ]] && [[ -f $L4I_INSTALLED_APPS ]]; then
 		installed=`$PACKAGE_MANAGER $PACKAGE_LIST_OPTION | grep $1 `
@@ -1132,8 +1047,8 @@ function setGlobalPermissions() {
 	$SUDO_APP chmod -R 777 $INSTALL_DIR/app/storage/  2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
-function installPackage() {
-	updatePackagerSources
+function installSoftware() {
+	updateSoftwareSources
 	message "Installing $1..."
 	$SUDO_APP $PACKAGER_INSTALL_COMMAND $1 $2 2>&1 | tee -a $LOG_FILE &> /dev/null
 	checkErrorsAndAbort "An error ocurred while installing $1."
@@ -1404,20 +1319,13 @@ function execute() {
 	log ":execute: $1"
 }
 
-function updatePackagerSources() {
+function updateSoftwareSources() {
 	if [[ "$packagerUpdated" == "" ]]; then
 		packagerUpdated=YES
 		if [[ "$PACKAGER_UPDATE_COMMAND" != "" ]]; then
 			message "Running $PACKAGER_UPDATE_COMMAND..."
 			$SUDO_APP $PACKAGER_UPDATE_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
 		fi
-	fi
-}
-
-function updatePackagerApp() {
-	if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
-		message "Cheking and upgrading pacman..."
-		$SUDO_APP $PACKAGER_INSTALL_COMMAND pacman 2>&1 | tee -a $LOG_FILE &> /dev/null
 	fi
 }
 
@@ -1470,9 +1378,16 @@ function checkApp() {
 	fi
 }
 
-function installPackager() {
+function installSoftwareInstaller() {
 	if [[ "$OPERATING_SYSTEM" == "MacOS" ]]; then
 		checkHomebrew
+	fi
+
+	## update arch packager
+
+	if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
+		message "Cheking and upgrading pacman..."
+		$SUDO_APP $PACKAGER_INSTALL_COMMAND pacman 2>&1 | tee -a $LOG_FILE &> /dev/null
 	fi
 }
 
