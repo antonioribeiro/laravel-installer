@@ -41,7 +41,7 @@ LESSPHP_DIR=/etc/lessphp
 LESSPHP_DIR_ESCAPED=`echo $LESSPHP_DIR | sed s,/,\\\\\\\\\\/,g`
 LESS_APP=`type -p $LESS_COMPILER_APP`
 
-NODEJS_VERSION="v0.8.18"
+NODEJS_VERSION="v0.10.22"
 
 PHP_SUHOSIN_CONF=/etc/php5/cli/conf.d/suhosin.ini
 PHP_MINIMUN_VERSION=5.3.7
@@ -126,6 +126,8 @@ function createSite() {
 	downloadLaravel4Skeleton
 	installOurArtisan
 	composerUpdate
+	checkNode
+	checkBower
 	checkLessCompiler
 	installTwitterBootstrap
 	createVirtualHost $INSTALL_DIR
@@ -391,17 +393,36 @@ function checkLessCompiler() {
 	fi
 }
 
-function installNodeAndLess() {
-	program=`type -p npm`
-	if [[ "$program" == "" ]]; then
-		inquireYN "Looks like Node.js is not installed you really wish to install it?" "y"
+function checkNode() {
+	NODE_APP=`type -p npm`
+	if [[ "$NODE_APP" == "" ]]; then
+		inquireYN "Looks like Node.js is not installed, do you wish to install it? (this might take a very long time)" "y"
 		if [[ "$answer" == "y" ]]; then
 			installNode
-			program=`type -p npm`
+			NODE_APP=`type -p npm`
 		fi
-	fi
+	fi	
+}
 
-	if [[ "$program" == "" ]]; then
+function checkBower() {
+	BOWER_APP=`type -p bower`
+	if [[ "$BOWER_APP" == "" ]]; then
+		inquireYN "Looks like Bower is not installed, do you wish to install it?" "y"
+		if [[ "$answer" == "y" ]]; then
+			installBower
+			BOWER_APP=`type -p bower`
+		fi
+	fi	
+}
+
+function installBower() {
+	message "Installing Bower..."
+	npm install -g bower  2>&1 | tee -a $LOG_FILE &> /dev/null
+	checkErrors "Error installing bower."
+}
+
+function installNodeAndLess() {
+	if [[ "$NODE_APP" == "" ]]; then
 		message "npm is not available to install less."
 	else 
 		installLess
@@ -412,34 +433,12 @@ function installNode() {
 	installSoftware make
 	installSoftware python
 
-	if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
-		installSoftware build-essential
-	fi
-	if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
-		message "Installing development tools..."
-		$PACKAGER_APP groupinstall -y "Development Tools"  2>&1 | tee -a $LOG_FILE &> /dev/null
-	fi
-
-	wget --no-check-certificate -O $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz http://nodejs.org/dist/$NODEJS_VERSION/node-$NODEJS_VERSION.tar.gz 2>&1 | tee -a $LOG_FILE &> /dev/null
+	wget --no-check-certificate -O $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz http://nodejs.org/dist/$NODEJS_VERSION/node-$NODEJS_VERSION-linux-x`getconf LONG_BIT`.tar.gz 2>&1 | tee -a $LOG_FILE &> /dev/null
 	checkErrors "Error downloading Node.js."
+
 	if [[ "$ERROR" == "" ]]; then
-		mkdir -p $L4I_REPOSITORY_DIR/node  2>&1 | tee -a $LOG_FILE &> /dev/null
-		tar xvfz $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz -C $L4I_REPOSITORY_DIR/node  2>&1 | tee -a $LOG_FILE &> /dev/null
+		tar xvfz $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz -C /usr/bin  2>&1 | tee -a $LOG_FILE &> /dev/null
 		checkErrors "Error unpacking Node.js."
-
-		cd $L4I_REPOSITORY_DIR/node/node-$NODEJS_VERSION
-
-		./configure 2>&1 | tee -a $LOG_FILE &> /dev/null
-		checkErrors "Error configuring Node.js."
-
-		message "Compiling Node.js. This may take several minutes."
-		message "You can follow this instalation by opening a new terminal and executing 'tail -f $LOG_FILE'."
-
-		make 2>&1 | tee -a $LOG_FILE &> /dev/null
-		checkErrors "Error making Node.js."
-
-		make install 2>&1 | tee -a $LOG_FILE &> /dev/null
-		checkErrors "Error installing Node.js."
 	else
 		message "Node.js installation aborted."
 	fi
