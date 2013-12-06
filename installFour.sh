@@ -417,7 +417,7 @@ function checkBower() {
 
 function installBower() {
 	message "Installing Bower..."
-	npm install -g bower  2>&1 | tee -a $LOG_FILE &> /dev/null
+	$SUDO_APP npm install -g bower  2>&1 | tee -a $LOG_FILE &> /dev/null
 	checkErrors "Error installing bower."
 }
 
@@ -819,6 +819,8 @@ function checkMCrypt() {
 	else 
 		checkL4InstalledSoftware "php-mcrypt"
 	fi
+
+	installed=`$PHP_CLI_APP --info | grep support | grep enabled | grep mcrypt`
 
 	if [[ "$installed" = "" ]]; then 
 		if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
@@ -1624,4 +1626,3 @@ function downloadPackageList() {
 }
 
 main $@
-
