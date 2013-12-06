@@ -129,7 +129,7 @@ function createSite() {
 	checkNode
 	checkBower
 	checkLessCompiler
-	installTwitterBootstrap
+	#installTwitterBootstrap
 	createVirtualHost
 	setGlobalPermissions
 
@@ -281,91 +281,91 @@ function downloadL4IRepository {
 	checkErrorsAndAbort "An error ocurred while trying to clone L4I git repository."
 }
 
-function installTwitterBootstrap() {
-	if [[ "$LARAVEL_APP_REPOSITORY" != "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
-		message "You are using a non default version of Laravel 4 app, Twitter Bootstrap may break your installation."
-		question="Do you still wish to install Twitter Bootstrap?"
-	else
-		question="Install Twitter Bootstrap?"
-	fi
+#function installTwitterBootstrap() {
+#	if [[ "$LARAVEL_APP_REPOSITORY" != "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
+#		message "You are using a non default version of Laravel 4 app, Twitter Bootstrap may break your installation."
+#		question="Do you still wish to install Twitter Bootstrap?"
+#	else
+#		question="Install Twitter Bootstrap?"
+#	fi
+#
+#	inquireYN "$question" "y"
+#	if [[ "$answer" == "y" ]]; then
+#		if [[ "$LESS_COMPILER_NAME" == "" ]]; then
+#			installBootstrapCSS
+#		else
+#			inquireYN "Do you wish to install the LESS version of Twitter Bootstrap?" "y"
+#			if [[ "$answer" == "y" ]]; then
+#				installBootstrapLess
+#			else 
+#				installBootstrapCSS
+#			fi
+#		fi
+#	fi
+#}
 
-	inquireYN "$question" "y"
-	if [[ "$answer" == "y" ]]; then
-		if [[ "$LESS_COMPILER_NAME" == "" ]]; then
-			installBootstrapCSS
-		else
-			inquireYN "Do you wish to install the LESS version of Twitter Bootstrap?" "y"
-			if [[ "$answer" == "y" ]]; then
-				installBootstrapLess
-			else 
-				installBootstrapCSS
-			fi
-		fi
-	fi
-}
-
-function installBootstrapLess() {
-	message "Installing Twitter Bootstrap (less version)..."
-	message "Cloning Bootstrap git repository..."
-
-	mkdir -p $INSTALL_DIR/public/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
-	git clone https://github.com/twitter/bootstrap.git $INSTALL_DIR/public/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
-	mkdir -p $INSTALL_DIR/public/assets/js  2>&1 | tee -a $LOG_FILE &> /dev/null
-	mkdir -p $INSTALL_DIR/public/assets/css  2>&1 | tee -a $LOG_FILE &> /dev/null
-	mkdir -p $INSTALL_DIR/public/assets/img  2>&1 | tee -a $LOG_FILE &> /dev/null
-	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/js/* $INSTALL_DIR/public/assets/js  2>&1 | tee -a $LOG_FILE &> /dev/null
-	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/img/* $INSTALL_DIR/public/assets/img  2>&1 | tee -a $LOG_FILE &> /dev/null
-
-	message "Compiling bootstrap..."
-
-	if [[ "$LESS_COMPILER_NAME" == "$LESSC_APP" ]]; then
-		compress=" --compress "
-	fi
-	if [[ "$LESS_COMPILER_NAME" == "$LESSPHP_APP" ]]; then
-		compressed=" -c "
-	fi
-
-	compileLess $compressed $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/assets/css/bootstrap.min.css
-	compileLess             $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/assets/css/bootstrap.css
-
-	compileLess $compressed $INSTALL_DIR/public/vendor/twitter/bootstrap/less/responsive.less $INSTALL_DIR/public/assets/css/bootstrap-responsive.min.css
-	compileLess             $INSTALL_DIR/public/vendor/twitter/bootstrap/less/responsive.less $INSTALL_DIR/public/assets/css/bootstrap-responsive.css
-
-	installBootstrapTemplate
-}
-
-function compileLess() {
-	compiled=false
-	i=0
-	message "Compiling less file from $1 to $2..."
-	while true; do
-		$LESS_APP $1 $2 $3 2>&1 | tee -a $LOG_FILE &> /dev/null
-		if [ $? -eq 0 ]; then
-			break
-		fi
-
-		if [[ $i -gt 3 ]]; then
-			message "Error trying compile, please check log at $LOG_FILE."
-			break
-		fi
-
-		i=$[$i+1]
-	done
-}
-
-function installBootstrapTemplate() {
-	message "Installing bootstrap template..."
-	rm $INSTALL_DIR/app/views/hello.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-	mkdir $INSTALL_DIR/app/views/layouts 2>&1 | tee -a $LOG_FILE &> /dev/null
-	mkdir $INSTALL_DIR/app/views/views 2>&1 | tee -a $LOG_FILE &> /dev/null
-
-	cp $L4I_REPOSITORY_GIT/templates/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  2>&1 | tee -a $LOG_FILE &> /dev/null
-	cp $L4I_REPOSITORY_GIT/templates/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-
-	perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-	perl -pi -e "s/%l4i_branch%/$L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-	perl -pi -e "s/%l4i_version%/$L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-}
+#function installBootstrapLess() {
+#	message "Installing Twitter Bootstrap (less version)..."
+#	message "Cloning Bootstrap git repository..."
+#
+#	mkdir -p $INSTALL_DIR/public/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	git clone https://github.com/twitter/bootstrap.git $INSTALL_DIR/public/vendor/twitter/bootstrap  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	mkdir -p $INSTALL_DIR/public/assets/js  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	mkdir -p $INSTALL_DIR/public/assets/css  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	mkdir -p $INSTALL_DIR/public/assets/img  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/js/* $INSTALL_DIR/public/assets/js  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	cp $INSTALL_DIR/public/vendor/twitter/bootstrap/img/* $INSTALL_DIR/public/assets/img  2>&1 | tee -a $LOG_FILE &> /dev/null
+#
+#	message "Compiling bootstrap..."
+#
+#	if [[ "$LESS_COMPILER_NAME" == "$LESSC_APP" ]]; then
+#		compress=" --compress "
+#	fi
+#	if [[ "$LESS_COMPILER_NAME" == "$LESSPHP_APP" ]]; then
+#		compressed=" -c "
+#	fi
+#
+#	compileLess $compressed $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/assets/css/bootstrap.min.css
+#	compileLess             $INSTALL_DIR/public/vendor/twitter/bootstrap/less/bootstrap.less $INSTALL_DIR/public/assets/css/bootstrap.css
+#
+#	compileLess $compressed $INSTALL_DIR/public/vendor/twitter/bootstrap/less/responsive.less $INSTALL_DIR/public/assets/css/bootstrap-responsive.min.css
+#	compileLess             $INSTALL_DIR/public/vendor/twitter/bootstrap/less/responsive.less $INSTALL_DIR/public/assets/css/bootstrap-responsive.css
+#
+#	installBootstrapTemplate
+#}
+#
+#function compileLess() {
+#	compiled=false
+#	i=0
+#	message "Compiling less file from $1 to $2..."
+#	while true; do
+#		$LESS_APP $1 $2 $3 2>&1 | tee -a $LOG_FILE &> /dev/null
+#		if [ $? -eq 0 ]; then
+#			break
+#		fi
+#
+#		if [[ $i -gt 3 ]]; then
+#			message "Error trying compile, please check log at $LOG_FILE."
+#			break
+#		fi
+#
+#		i=$[$i+1]
+#	done
+#}
+#
+#function installBootstrapTemplate() {
+#	message "Installing bootstrap template..."
+#	rm $INSTALL_DIR/app/views/hello.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+#	mkdir $INSTALL_DIR/app/views/layouts 2>&1 | tee -a $LOG_FILE &> /dev/null
+#	mkdir $INSTALL_DIR/app/views/views 2>&1 | tee -a $LOG_FILE &> /dev/null
+#
+#	cp $L4I_REPOSITORY_GIT/templates/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	cp $L4I_REPOSITORY_GIT/templates/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+#
+#	perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+#	perl -pi -e "s/%l4i_branch%/$L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+#	perl -pi -e "s/%l4i_version%/$L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+#}
 
 function findLessCompiler() {
 	LESS_COMPILER_NAME=$LESSC_APP
@@ -975,13 +975,8 @@ function checkParameters() {
 			message "Selected app repository: ${ST_NAME[$answer]}"
 			LARAVEL_APP_REPOSITORY="${ST_REPO[$answer]}"
 			LARAVEL_APP_BRANCH="${ST_BRANCH[$answer]}"
-
-			echo "repo $LARAVEL_APP_REPOSITORY"
-			echo "branch $LARAVEL_APP_BRANCH"
 		fi
 	fi
-
-	exit 0
 
 	VHOST_CONF_FILE=$SITE_NAME.$L4I_WEBSERVER_SUFFIX
 }
