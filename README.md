@@ -36,10 +36,10 @@ This script will install one of those versions:
 Version 1.5.0
 
 Page after installing Laravel 4 with this script
-![l4i screenshot](http://puu.sh/1PI8I)
+![laravel-installer screenshot](http://puu.sh/1PI8I)
 
 This is a screenshot of a full install session, not only Laravel 4, but also apache, php, Node.js and less:
-![l4i screenshot](http://puu.sh/1Sez1)
+![laravel-installer screenshot](http://puu.sh/1Sez1)
 
 ### Screencasts
 
@@ -118,7 +118,7 @@ taylor@l4server:/var/www/blog> artisan installpackage machuga
 
 There is no need to clone this git repository, you just have to download the script:
 ```
-wget -N --no-check-certificate -O installFour.sh https://raw.github.com/antonioribeiro/l4i/master/installFour.sh
+wget -N --no-check-certificate -O installFour.sh https://raw.github.com/antonioribeiro/laravel-installer/master/installFour.sh
 ```
 
 And run it:
@@ -143,16 +143,16 @@ bash installFour.sh /var/www/blog myBlog YES
 
 2013/12/06 13:59 (GMT-3) - Version 2.0.0
 
-* Completely removed composer packages installation, you can do it by user `composer search` and `composer require`
-* Added option to install Bower
-* Dramatically improved speed on Node.js installation
-* Correctly checking if MCrypt is installed
 * Added Laravel 4.1 to install options
 * Added Laravel 3 to install options
 * Default is now Laravel to 4.1
-* Set permissions to app/storage or storage (for L3)
+* Dramatically improved speed on Node.js installation
+* Correctly checking if MCrypt is installed
 * Removed All meta repositories
 * Removed Twitter Bootstrap installation, can be easily done via Bower
+* Setting permissions (777 and 666) to app/storage or storage (for L3)
+* Completely removed composer packages installation, you can do it by user `composer search` and `composer require`
+* Added option to install Bower
 
 2013/02/05 00:25 (GMT-3) - Version 1.7.0
 
@@ -218,7 +218,7 @@ bash installFour.sh /var/www/blog myBlog YES
 
 * Optionally installs PHP and a webserver (apache), if it cannot find them
 * Added support for some Redhat based distributions (Redhat, Fedora and CentOS)
-* All script installation files were moved to /tmp/l4i/
+* All script installation files were moved to /tmp/laravel-installer/
 * Added a list of supported operating systems and a question if the user OS is not in this list
 * CentoOS: added EPEL (http://fedoraproject.org/wiki/EPEL) repository to install php-mcrypt
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-L4I_VERSION=2.0.0
-L4I_BRANCH=master
+LARAVELINSTALL_VERSION=2.0.0
+LARAVELINSTALL_BRANCH=master
 LARAVEL_APP_DEFAULT_REPOSITORY="https://github.com/laravel/laravel.git"
 LARAVEL_APP_DEFAULT_BRANCH="develop"
 INSTALL_DIR=$1
@@ -10,11 +10,11 @@ SITE_NAME=$2
 ############################################  
 ## This is your playground
 
-L4I_REPOSITORY="-b $L4I_BRANCH https://github.com/antonioribeiro/l4i.git"
-L4I_REPOSITORY_DIR=/tmp/l4i
-L4I_REPOSITORY_GIT="$L4I_REPOSITORY_DIR/git"
-L4I_INSTALLED_APPS="/etc/l4i.installed.txt"
-L4I_WEBSERVER_SUFFIX=l4i.conf
+LARAVELINSTALL_REPOSITORY="-b $LARAVELINSTALL_BRANCH https://github.com/antonioribeiro/laravel-installer.git"
+LARAVELINSTALL_REPOSITORY_DIR=/tmp/laravel-installer
+LARAVELINSTALL_REPOSITORY_GIT="$LARAVELINSTALL_REPOSITORY_DIR/git"
+LARAVELINSTALL_INSTALLED_APPS="/etc/laravel-installer.installed.txt"
+LARAVELINSTALL_WEBSERVER_SUFFIX=laravel-installer.conf
 
 LARAVEL_APP_BRANCH=$LARAVEL_APP_DEFAULT_BRANCH
 LARAVEL_APP_REPOSITORY=$LARAVEL_APP_DEFAULT_REPOSITORY
@@ -50,7 +50,7 @@ PHP_CLI_APP=php
 PHP_CGI_APP=php-cgi
 APACHE_CONF=
 INSTALL_DIR_ESCAPED="***will be set on checkParameters***"
-LOG_FILE=$L4I_REPOSITORY_DIR/l4i.install.log
+LOG_FILE=$LARAVELINSTALL_REPOSITORY_DIR/laravel-installer.install.log
 
 PACKAGE_MANAGER="dpkg"
 PACKAGE_LIST_OPTION="-l"
@@ -92,7 +92,7 @@ function main() {
 }
 
 function initializeApplication() {
-	cleanL4IRepository
+	cleanLARAVELINSTALLRepository
 	createLogDirectory
 	checkOS
 }
@@ -118,12 +118,12 @@ function createSite() {
 	checkApp $UNZIP_APP installUnzip
 	checkApp $GIT_APP
 
-	downloadL4IRepository
+	downloadLARAVELINSTALLRepository
 
 	checkComposer
 	checkPHPUnit
 	checkMCrypt
-	downloadLaravel4Skeleton
+	downloadLaravelSkeleton
 	installOurArtisan
 	checkNode
 	checkBower
@@ -157,7 +157,7 @@ function downloadAndRunInstallFour() {
  	##
 	makeTemp
 
-	wget -N --no-check-certificate -O $SCRIPT https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/installFour.sh &> $LOG_FILE
+	wget -N --no-check-certificate -O $SCRIPT https://raw.github.com/antonioribeiro/laravel-installer/$LARAVELINSTALL_BRANCH/installFour.sh &> $LOG_FILE
 	checkErrorsAndAbort "An error while downloading i4l script, please check the log file at $LOG_FILE"
 	bash $SCRIPT $@
 
@@ -175,7 +175,7 @@ function runLaravelArtisan() {
 }
 
 function destroySite() {
-	cleanL4IRepository
+	cleanLARAVELINSTALLRepository
 	createLogDirectory
 	locateWebserverConf
 
@@ -197,7 +197,7 @@ function destroySite() {
 		siteFilter=" | grep \"$site\" "
 	fi
 
-	command="cat $APACHE_CONF $siteFilter | grep -P \"^Include \/.*$L4I_WEBSERVER_SUFFIX$\" | cut -d\" \" -f2"
+	command="cat $APACHE_CONF $siteFilter | grep -P \"^Include \/.*$LARAVELINSTALL_WEBSERVER_SUFFIX$\" | cut -d\" \" -f2"
 
 	array=(`eval $command`)
 	count=${#array[*]}
@@ -274,10 +274,10 @@ function zapSite {
 	restartWebserver
 }
 
-function downloadL4IRepository {
-	message "Downloading l4i git repository..."
-	git clone $L4I_REPOSITORY $L4I_REPOSITORY_GIT 2>&1 | tee -a $LOG_FILE &> /dev/null
-	checkErrorsAndAbort "An error ocurred while trying to clone L4I git repository."
+function downloadLARAVELINSTALLRepository {
+	message "Downloading laravel-installer git repository..."
+	git clone $LARAVELINSTALL_REPOSITORY $LARAVELINSTALL_REPOSITORY_GIT 2>&1 | tee -a $LOG_FILE &> /dev/null
+	checkErrorsAndAbort "An error ocurred while trying to clone LARAVELINSTALL git repository."
 }
 
 #function installTwitterBootstrap() {
@@ -358,12 +358,12 @@ function downloadL4IRepository {
 #	mkdir $INSTALL_DIR/app/views/layouts 2>&1 | tee -a $LOG_FILE &> /dev/null
 #	mkdir $INSTALL_DIR/app/views/views 2>&1 | tee -a $LOG_FILE &> /dev/null
 #
-#	cp $L4I_REPOSITORY_GIT/templates/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  2>&1 | tee -a $LOG_FILE &> /dev/null
-#	cp $L4I_REPOSITORY_GIT/templates/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+#	cp $LARAVELINSTALL_REPOSITORY_GIT/templates/layout.main.blade.php $INSTALL_DIR/app/views/layouts/main.blade.php  2>&1 | tee -a $LOG_FILE &> /dev/null
+#	cp $LARAVELINSTALL_REPOSITORY_GIT/templates/view.home.blade.php $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
 #
 #	perl -pi -e "s/hello/views.home/g" $INSTALL_DIR/app/routes.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-#	perl -pi -e "s/%l4i_branch%/$L4I_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
-#	perl -pi -e "s/%l4i_version%/$L4I_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+#	perl -pi -e "s/%laravel-installer_branch%/$LARAVELINSTALL_BRANCH/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
+#	perl -pi -e "s/%laravel-installer_version%/$LARAVELINSTALL_VERSION/g" $INSTALL_DIR/app/views/views/home.blade.php 2>&1 | tee -a $LOG_FILE &> /dev/null
 #}
 
 function findLessCompiler() {
@@ -435,20 +435,20 @@ function installNode() {
 	message "Installing Node.js $NODEJS_VERSION..."
 
 	NODE_NAME=node-$NODEJS_VERSION-linux-x`getconf LONG_BIT`
-	wget --no-check-certificate -O $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz http://nodejs.org/dist/$NODEJS_VERSION/$NODE_NAME.tar.gz 2>&1 | tee -a $LOG_FILE &> /dev/null
+	wget --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz http://nodejs.org/dist/$NODEJS_VERSION/$NODE_NAME.tar.gz 2>&1 | tee -a $LOG_FILE &> /dev/null
 	checkErrors "Error downloading Node.js."
 
 	if [[ "$ERROR" == "" ]]; then
-		mkdir $L4I_REPOSITORY_DIR/node
+		mkdir $LARAVELINSTALL_REPOSITORY_DIR/node
 
-		tar xvfz $L4I_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz -C $L4I_REPOSITORY_DIR/node  2>&1 | tee -a $LOG_FILE &> /dev/null
+		tar xvfz $LARAVELINSTALL_REPOSITORY_DIR/node-$NODEJS_VERSION.tar.gz -C $LARAVELINSTALL_REPOSITORY_DIR/node  2>&1 | tee -a $LOG_FILE &> /dev/null
 
 		checkErrors "Error unpacking Node.js."
 
 		if [[ "$ERROR" == "" ]]; then
-			$SUDO_APP cp -a $L4I_REPOSITORY_DIR/node/$NODE_NAME/bin/* /usr/bin
-			$SUDO_APP cp -a $L4I_REPOSITORY_DIR/node/$NODE_NAME/lib/* /usr/lib
-			$SUDO_APP cp -a $L4I_REPOSITORY_DIR/node/$NODE_NAME/share/* /usr/share
+			$SUDO_APP cp -a $LARAVELINSTALL_REPOSITORY_DIR/node/$NODE_NAME/bin/* /usr/bin
+			$SUDO_APP cp -a $LARAVELINSTALL_REPOSITORY_DIR/node/$NODE_NAME/lib/* /usr/lib
+			$SUDO_APP cp -a $LARAVELINSTALL_REPOSITORY_DIR/node/$NODE_NAME/share/* /usr/share
 		fi
 	else
 		message "Node.js installation aborted."
@@ -478,7 +478,7 @@ function installLessPHP() {
 			message "Installing lessphp..."
 			$SUDO_APP mkdir -p $LESSPHP_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
 			$SUDO_APP chmod 777 $LESSPHP_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
-			$SUDO_APP cp $L4I_REPOSITORY_GIT/templates/lessphp.composer.json $LESSPHP_DIR/composer.json
+			$SUDO_APP cp $LARAVELINSTALL_REPOSITORY_GIT/templates/lessphp.composer.json $LESSPHP_DIR/composer.json
 			composerUpdate $LESSPHP_DIR
 			checkErrors "Error installing lessphp."
 			$SUDO_APP chmod +x $LESSPHP_DIR/vendor/leafo/lessphp/plessc 2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -490,13 +490,13 @@ function installLessPHP() {
 
 function installBootstrapCSS() {
 	message "Installing Twitter Bootstrap (CSS version)..."
-	wget --no-check-certificate -O $L4I_REPOSITORY_DIR/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip 2>&1 | tee -a $LOG_FILE &> /dev/null
-	rm -rf $L4I_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
-	unzip $L4I_REPOSITORY_DIR/twitter.bootstrap.zip -d $L4I_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
-	rm $L4I_REPOSITORY_DIR/twitter.bootstrap.zip
-	cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/css $INSTALL_DIR/public
-	cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/js $INSTALL_DIR/public
-	cp -a $L4I_REPOSITORY_DIR/twitter.bootstrap/bootstrap/img $INSTALL_DIR/public
+	wget --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip 2>&1 | tee -a $LOG_FILE &> /dev/null
+	rm -rf $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
+	unzip $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap.zip -d $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap 2>&1 | tee -a $LOG_FILE &> /dev/null
+	rm $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap.zip
+	cp -a $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap/bootstrap/css $INSTALL_DIR/public
+	cp -a $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap/bootstrap/js $INSTALL_DIR/public
+	cp -a $LARAVELINSTALL_REPOSITORY_DIR/twitter.bootstrap/bootstrap/img $INSTALL_DIR/public
 
 	installBootstrapTemplate
 }
@@ -527,7 +527,7 @@ function createVirtualHost() {
 			conf=$INSTALL_DIR/$VHOST_CONF_FILE
 			log "vhost conf = $conf"
 
-			$SUDO_APP cp $L4I_REPOSITORY_GIT/templates/apache.directory.template $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
+			$SUDO_APP cp $LARAVELINSTALL_REPOSITORY_GIT/templates/apache.directory.template $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 
 			$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
 			$SUDO_APP perl -pi -e "s/%installDir%/$INSTALL_DIR_ESCAPED/g" $conf  2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -541,7 +541,7 @@ function createVirtualHost() {
 			$SUDO_APP $WS_RESTART_COMMAND 2>&1 | tee -a $LOG_FILE &> /dev/null
 
 			cp $INSTALL_DIR/public/.htaccess $INSTALL_DIR/public/.htaccess.ORIGINAL  2>&1 | tee -a $LOG_FILE &> /dev/null
-			cp $L4I_REPOSITORY_GIT/templates/htaccess.template $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
+			cp $LARAVELINSTALL_REPOSITORY_GIT/templates/htaccess.template $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
 
 			$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
 
@@ -551,7 +551,7 @@ function createVirtualHost() {
 }
 
 function downloadLaravelRepositories() {                 
-	wget -N --no-check-certificate -O $L4I_REPOSITORY_DIR/repositories.csv https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/repositories.csv  &> $LOG_FILE
+	wget -N --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/repositories.csv https://raw.github.com/antonioribeiro/laravel-installer/$LARAVELINSTALL_BRANCH/repositories.csv  &> $LOG_FILE
 }
 
 function loadLaravelRepositoriesArray() {
@@ -571,7 +571,7 @@ function loadLaravelRepositoriesArray() {
 			ST_COMPOSER[${#ST_COMPOSER[*]}]=$col4
 			ST_STORAGE[${#ST_STORAGE[*]}]=$col5
 		fi
-	done < $L4I_REPOSITORY_DIR/repositories.csv
+	done < $LARAVELINSTALL_REPOSITORY_DIR/repositories.csv
 
 }
 
@@ -731,7 +731,7 @@ function installPHPUnit() {
 		message "Installing PHPUnit..."
 		$SUDO_APP mkdir -p $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null
 		$SUDO_APP chmod 777 $PHPUNIT_DIR 2>&1 | tee -a $LOG_FILE &> /dev/null 
-		$SUDO_APP cp $L4I_REPOSITORY_GIT/templates/phpunit.composer.json $PHPUNIT_DIR/composer.json
+		$SUDO_APP cp $LARAVELINSTALL_REPOSITORY_GIT/templates/phpunit.composer.json $PHPUNIT_DIR/composer.json
 		$SUDO_APP perl -pi -e "s/%phpunit_dir%/$PHPUNIT_DIR_ESCAPED/g" $PHPUNIT_DIR/composer.json  2>&1 | tee -a $LOG_FILE &> /dev/null
 		composerUpdate $PHPUNIT_DIR
 		checkErrorsAndAbort "Error installing PHPUnit."
@@ -792,7 +792,7 @@ function checkComposerInstalled() {
 	fi
 }
 
-function downloadLaravel4Skeleton() {
+function downloadLaravelSkeleton() {
 	message "Downloading Laravel skeleton from $LARAVEL_APP_REPOSITORY..."
 
 	echo "git clone -b $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR"  2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -807,19 +807,6 @@ function downloadLaravel4Skeleton() {
 
 	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type d -exec $SUDO_APP chmod 777 {} \;
 	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type f -exec $SUDO_APP chmod 666 {} \;
-
-	### Installing using zip file, git is better but I'll keep this for possible future use
-	# 
-	# wget -N --output-document=/tmp/laravel-develop.zip https://github.com/laravel/laravel/archive/develop.zip
-	# unzip /tmp/laravel-develop.zip -d $INSTALL_DIR
-	# mv $INSTALL_DIR/laravel-develop/* $INSTALL_DIR
-	# mv $INSTALL_DIR/laravel-develop/.git* $INSTALL_DIR
-	# rm -rf $INSTALL_DIR/laravel-develop/
-	
-	### niallobrien's larave4-template
-	#git clone https://github.com/niallobrien/laravel4-template.git $INSTALL_DIR
-	#fixing typo
-	#perl -pi -e "s/\`/\'/g" $INSTALL_DIR/app/config/app.php
 }
 
 function installApp() {
@@ -828,9 +815,9 @@ function installApp() {
 
 function checkMCrypt() {
 	if [[ "$OPERATING_SYSTEM" == "Debian" ]]; then
-		checkL4InstalledSoftware "php5-mcrypt"
+		checkLARAVELINSTALLnstalledSoftware "php5-mcrypt"
 	else 
-		checkL4InstalledSoftware "php-mcrypt"
+		checkLARAVELINSTALLnstalledSoftware "php-mcrypt"
 	fi
 
 	installed=`$PHP_CLI_APP --info | grep support | grep enabled | grep mcrypt`
@@ -842,33 +829,33 @@ function checkMCrypt() {
 			## Some CentOS will need this EPEL repository to install php-mcrypt
 			if [[ $DISTRIBUTION > "CentOS release 1.0" ]] && [[ $DISTRIBUTION < "CentOS release 6.4" ]]; then
 				message "Installing EPEL repository for CentOS..."
-				wget --no-check-certificate -O $L4I_REPOSITORY_DIR/epel-release-6-8.noarch.rpm http://epel.gtdinternet.com/6/i386/epel-release-6-8.noarch.rpm 2>&1 | tee -a $LOG_FILE &> /dev/null
-				$SUDO_APP yum -y install $L4I_REPOSITORY_DIR/epel-release-6-8.noarch.rpm 2>&1 | tee -a $LOG_FILE &> /dev/null
+				wget --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/epel-release-6-8.noarch.rpm http://epel.gtdinternet.com/6/i386/epel-release-6-8.noarch.rpm 2>&1 | tee -a $LOG_FILE &> /dev/null
+				$SUDO_APP yum -y install $LARAVELINSTALL_REPOSITORY_DIR/epel-release-6-8.noarch.rpm 2>&1 | tee -a $LOG_FILE &> /dev/null
 				checkErrorsAndAbort "Error trying to install EPEL repository for CentOS"
 			fi
 			installSoftware php-mcrypt
 			checkErrorsAndAbort "Error installing php-mcrypt."
-			addL4InstalledApp "php-mcrypt"
+			addLARAVELINSTALLnstalledApp "php-mcrypt"
 		fi
 	else
 		message "php5-mcrypt is installed"
 	fi
 }
 
-function addL4InstalledApp() {
-	echo "$1" | $SUDO_APP tee -a $L4I_INSTALLED_APPS 2>&1 | tee -a $LOG_FILE &> /dev/null
+function addLARAVELINSTALLnstalledApp() {
+	echo "$1" | $SUDO_APP tee -a $LARAVELINSTALL_INSTALLED_APPS 2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
-function checkL4InstalledApp() {
+function checkLARAVELINSTALLnstalledApp() {
 	installed=
-	if [[ -f $L4I_INSTALLED_APPS ]]; then
-		installed=`cat $L4I_INSTALLED_APPS | grep $1`
+	if [[ -f $LARAVELINSTALL_INSTALLED_APPS ]]; then
+		installed=`cat $LARAVELINSTALL_INSTALLED_APPS | grep $1`
 	fi
 }
 
-function checkL4InstalledSoftware() {
+function checkLARAVELINSTALLnstalledSoftware() {
 	installed=
-	if [[ "$PACKAGE_MANAGER" != "" ]] && [[ -f $L4I_INSTALLED_APPS ]]; then
+	if [[ "$PACKAGE_MANAGER" != "" ]] && [[ -f $LARAVELINSTALL_INSTALLED_APPS ]]; then
 		installed=`$PACKAGE_MANAGER $PACKAGE_LIST_OPTION | grep $1 `
 	fi
 }
@@ -990,7 +977,7 @@ function checkParameters() {
 		fi
 	fi
 
-	VHOST_CONF_FILE=$SITE_NAME.$L4I_WEBSERVER_SUFFIX
+	VHOST_CONF_FILE=$SITE_NAME.$LARAVELINSTALL_WEBSERVER_SUFFIX
 }
 
 function readThirdPartyRepository() {
@@ -1224,8 +1211,8 @@ function inquireText()  {
 }
 
 function createLogDirectory() {
-	mkdir -p $L4I_REPOSITORY_DIR >/dev/null 2>&1
-	checkErrorsAndAbort "You might not have permissions to create files in $L4I_REPOSITORY_DIR, please check log: $LOG_FILE."
+	mkdir -p $LARAVELINSTALL_REPOSITORY_DIR >/dev/null 2>&1
+	checkErrorsAndAbort "You might not have permissions to create files in $LARAVELINSTALL_REPOSITORY_DIR, please check log: $LOG_FILE."
 }
 
 function showLogFile() {
@@ -1233,7 +1220,7 @@ function showLogFile() {
 }
 
 function installOurArtisan() {
-	$SUDO_APP cp $L4I_REPOSITORY_GIT/installFour.sh $BIN_DIR/artisan  2>&1 | tee -a $LOG_FILE &> /dev/null
+	$SUDO_APP cp $LARAVELINSTALL_REPOSITORY_GIT/installFour.sh $BIN_DIR/artisan  2>&1 | tee -a $LOG_FILE &> /dev/null
 	$SUDO_APP chmod +x $BIN_DIR/artisan 2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
@@ -1248,14 +1235,14 @@ function abortIt() {
 function showHeader() {
 	clear
 	## will not use message because it logs and log file might not be available at the moment
-	echo "l4i - The Laravel Installer Script"
+	echo "laravel-installer - The Laravel Installer Script"
 	echo ""
 }
 
-function cleanL4IRepository() {
-	if [ -d $L4I_REPOSITORY_DIR ]; then
-		rm -rf $L4I_REPOSITORY_DIR >/dev/null 2>&1 
-		checkErrorsAndAbort "You're not allowed to write in $L4I_REPOSITORY_DIR."
+function cleanLARAVELINSTALLRepository() {
+	if [ -d $LARAVELINSTALL_REPOSITORY_DIR ]; then
+		rm -rf $LARAVELINSTALL_REPOSITORY_DIR >/dev/null 2>&1 
+		checkErrorsAndAbort "You're not allowed to write in $LARAVELINSTALL_REPOSITORY_DIR."
 	fi
 }
 
@@ -1579,7 +1566,7 @@ function isnumber() { printf '%f' "$1" &>/dev/null && echo "YES" || echo "NO"; }
 
 function addComposerPackage() {
 	downloadPackageList 
-	loadPackagesArray $L4I_REPOSITORY_DIR/packages.csv $2
+	loadPackagesArray $LARAVELINSTALL_REPOSITORY_DIR/packages.csv $2
 
 	total=${#EP_NAME[*]}
 
@@ -1637,7 +1624,7 @@ function addComposerPackage() {
 }
 
 function downloadPackageList() {                 
-	wget -N --no-check-certificate -O $L4I_REPOSITORY_DIR/packages.csv https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/packages.csv  &> $LOG_FILE
+	wget -N --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/packages.csv https://raw.github.com/antonioribeiro/laravel-installer/$LARAVELINSTALL_BRANCH/packages.csv  &> $LOG_FILE
 }
 
 main $@
