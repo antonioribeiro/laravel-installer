@@ -117,6 +117,10 @@ taylor@l4server:/var/www/blog> artisan update
 
 # Changelog
 
+2013/12/06 18:01 (GMT-3) - Version 2.0.1
+
+* Script renamed to laravel.sh
+
 2013/12/06 13:59 (GMT-3) - Version 2.0.0
 
 * Added Laravel 4.1 to install options

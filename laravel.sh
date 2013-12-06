@@ -1,7 +1,7 @@
 #!/bin/bash
 
-LARAVELINSTALL_VERSION=2.0.1
-LARAVELINSTALL_BRANCH=2.0.1
+LARAVELINSTALL_VERSION=v2.0.1
+LARAVELINSTALL_BRANCH=v2.0.1
 LARAVEL_APP_DEFAULT_REPOSITORY="https://github.com/laravel/laravel.git"
 LARAVEL_APP_DEFAULT_BRANCH="develop"
 INSTALL_DIR=$1
@@ -551,6 +551,7 @@ function createVirtualHost() {
 }
 
 function downloadLaravelRepositories() {                 
+    echo "wget -N --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/repositories.csv https://raw.github.com/antonioribeiro/laravel-installer/$LARAVELINSTALL_BRANCH/repositories.csv"
 	wget -N --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/repositories.csv https://raw.github.com/antonioribeiro/laravel-installer/$LARAVELINSTALL_BRANCH/repositories.csv  &> $LOG_FILE
 }
 
