@@ -18,7 +18,6 @@ bash installFour.sh
 ```
 
 Other examples of usage
-
 ```
 bash installFour.sh
 bash installFour.sh /var/www/blog blog YES
