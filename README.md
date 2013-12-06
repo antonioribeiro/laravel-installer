@@ -170,6 +170,7 @@ bash installFour.sh /var/www/blog myBlog YES
 * Added Laravel 4.1 to install options
 * Moved default Laravel to 4.1
 * Removed All meta repositories
+* Removed Twitter Bootstrap installation, can be easily done via Bower
 
 2013/02/05 00:25 (GMT-3) - Version 1.7.0
 
