@@ -1,7 +1,7 @@
 #!/bin/bash
 
-LARAVELINSTALL_VERSION=2.0.0
-LARAVELINSTALL_BRANCH=master
+LARAVELINSTALL_VERSION=2.0.1
+LARAVELINSTALL_BRANCH=2.0.1
 LARAVEL_APP_DEFAULT_REPOSITORY="https://github.com/laravel/laravel.git"
 LARAVEL_APP_DEFAULT_BRANCH="develop"
 INSTALL_DIR=$1
@@ -137,7 +137,7 @@ function createSite() {
 
 function ourArtisan()  {
 	if [ "$1" == "new" ] || [ "$1" == "NEW" ] || [ "$1" == "New" ]; then
-		downloadAndRunInstallFour $2 $3 $4 $5 $6 $7 $8 $9
+		downloadAndRunInstaller $2 $3 $4 $5 $6 $7 $8 $9
 	fi
 
 	if [ "$1" == "destroy" ] || [ "$1" == "DESTROY" ] || [ "$1" == "Destroy" ]; then
@@ -151,13 +151,13 @@ function ourArtisan()  {
  	runLaravelArtisan $@
 }
 
-function downloadAndRunInstallFour() {
+function downloadAndRunInstaller() {
 	##
- 	## Download and run an updated version of installFour every time we use it
+ 	## Download and run an updated version of laravel.sh every time we use it
  	##
 	makeTemp
 
-	wget -N --no-check-certificate -O $SCRIPT https://raw.github.com/antonioribeiro/laravel-installer/$LARAVELINSTALL_BRANCH/installFour.sh &> $LOG_FILE
+	wget -N --no-check-certificate -O $SCRIPT https://raw.github.com/antonioribeiro/laravel-installer/$LARAVELINSTALL_BRANCH/laravel.sh &> $LOG_FILE
 	checkErrorsAndAbort "An error while downloading i4l script, please check the log file at $LOG_FILE"
 	bash $SCRIPT $@
 
@@ -1030,13 +1030,13 @@ function checkSudo() {
 function showUsage() {
 	message
 	message
-	message "installFour script"
+	message "laravel script"
 	message "  Installs a Laravel development environment"
 	message
-	message "     Usage:  bash installFour <directory> <site name>"
+	message "     Usage:  bash laravel <directory> <site name>"
 	message
-	message "  Examples:  bash installFour /var/www/blog blog"
-	message "             bash installFour /home/taylor/www blog"
+	message "  Examples:  bash laravel /var/www/blog blog"
+	message "             bash laravel /home/taylor/www blog"
 	message
 	message
 }
@@ -1220,7 +1220,7 @@ function showLogFile() {
 }
 
 function installOurArtisan() {
-	$SUDO_APP cp $LARAVELINSTALL_REPOSITORY_GIT/installFour.sh $BIN_DIR/artisan  2>&1 | tee -a $LOG_FILE &> /dev/null
+	$SUDO_APP cp $LARAVELINSTALL_REPOSITORY_GIT/laravel.sh $BIN_DIR/artisan  2>&1 | tee -a $LOG_FILE &> /dev/null
 	$SUDO_APP chmod +x $BIN_DIR/artisan 2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
@@ -1470,9 +1470,9 @@ function makeTemp() {
 	fi
 
 	if [ "$SCRIPT" == "" ]; then
-		rm -f /tmp/installFour.sh &> /dev/null
-		sudo rm -f /tmp/installFour.sh &> /dev/null
-		SCRIPT=/tmp/installFour.sh
+		rm -f /tmp/laravel.sh &> /dev/null
+		sudo rm -f /tmp/laravel.sh &> /dev/null
+		SCRIPT=/tmp/laravel.sh
 	fi
 
 	LOG=$SCRIPT.log

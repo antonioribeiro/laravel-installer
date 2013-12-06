@@ -9,20 +9,20 @@ This Linux Bash Script will install Laravel and, if needed, all dependencies (we
 
 There is no need to clone this git repository, you just have to download the script:
 ```
-wget -N --no-check-certificate -O installFour.sh https://raw.github.com/antonioribeiro/laravel-installer/master/installFour.sh
+wget -N --no-check-certificate -O laravel.sh https://raw.github.com/antonioribeiro/laravel-installer/master/laravel.sh
 ```
 
 And run it:
 ```
-bash installFour.sh
+bash laravel.sh
 ```
 
 Other examples of usage
 ```
-bash installFour.sh
-bash installFour.sh /var/www/blog blog YES
-bash installFour.sh /home/taylor/www blog NO
-bash installFour.sh /var/www/blog myBlog YES
+bash laravel.sh
+bash laravel.sh /var/www/blog blog YES
+bash laravel.sh /home/taylor/www blog NO
+bash laravel.sh /var/www/blog myBlog YES
 ```
 
 ### Supported Operating Systems
@@ -89,12 +89,12 @@ You can call this artisan from any place in your system and has some options:
 taylor@l4server:/var/www/blog> artisan
 ```
 
-* Running from outside a Laravel directory it will fire installFour script to let you create a new Laravel service environment:
+* Running from outside a Laravel directory it will fire laravel script to let you create a new Laravel service environment:
 ```
 taylor@l4server:/> artisan
 ```
 
-* Runnning it from any place using the argument "new" it will fire installFour installer script as well
+* Runnning it from any place using the argument "new" it will fire laravel installer script as well
 ```
 taylor@l4server:/> artisan new
 ```
@@ -157,8 +157,8 @@ taylor@l4server:/var/www/blog> artisan update
 
 2013/01/27 14:28 (GMT-3) - Version 1.6.0
 
-* Our artisan command is now inside installFour.sh
-* Added command "artisan destroy [site name] [-y]" to remove sites created with installFour
+* Our artisan command is now inside laravel.sh
+* Added command "artisan destroy [site name] [-y]" to remove sites created with laravel
 
 2013/01/26 16:52 (GMT-3) - Version 1.5.4
 
@@ -201,7 +201,7 @@ taylor@l4server:/var/www/blog> artisan update
 2013/01/22 00:58 (GMT-3) - Version 1.2.0
 
 * artisan command now also has the ability to create new services, just execute "artisan new"
-* installFour script now also asks for its parameters interactivelly
+* laravel script now also asks for its parameters interactivelly
 
 2013/01/21 19:27 (GMT-3) - Version 1.1.0
 
