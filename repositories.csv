@@ -1,5 +1,11 @@
-NAME,                             REPOSITORY,                                                BRANCH,      COMPOSER,
----------------------------------------------------------------------------------------------------------------------
-Laravel 3.0,                      https://github.com/laravel/laravel.git,                    3.0,         YES,
-Laravel 4.0,                      https://github.com/laravel/laravel.git,                    master,      YES,
-Laravel 4.1,                      https://github.com/laravel/laravel.git,                    develop,     YES,
+NAME,                             REPOSITORY,                                                BRANCH,      COMPOSER,    STORAGE,
+---------------------------------------------------------------------------------------------------------------------------------
+Laravel 3.0,                      https://github.com/laravel/laravel.git,                    3.0,         YES,         storage  
+Laravel 4.0,                      https://github.com/laravel/laravel.git,                    master,      YES,         app/storage
+Laravel 4.1,                      https://github.com/laravel/laravel.git,                    develop,     YES,         app/storage
+
+
+sudo find /var/www/vevey -type d -exec sudo chmod 770 {} \;
+sudo find /var/www/vevey -type f -exec sudo chmod 660 {} \;
+sudo chown -R antoniocarlos:nogroup /var/www/vevey
+

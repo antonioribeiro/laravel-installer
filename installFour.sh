@@ -282,7 +282,7 @@ function downloadL4IRepository {
 
 #function installTwitterBootstrap() {
 #	if [[ "$LARAVEL_APP_REPOSITORY" != "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
-#		message "You are using a non default version of Laravel 4 app, Twitter Bootstrap may break your installation."
+#		message "You are using a non default version of Laravel app, Twitter Bootstrap may break your installation."
 #		question="Do you still wish to install Twitter Bootstrap?"
 #	else
 #		question="Install Twitter Bootstrap?"
@@ -545,7 +545,7 @@ function createVirtualHost() {
 
 			$SUDO_APP perl -pi -e "s/%siteName%/$SITE_NAME/g" $INSTALL_DIR/public/.htaccess  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-			message "Your Laravel 4 installation should be available now at http://$IPADDRESS/$SITE_NAME"
+			message "Your Laravel installation should be available now at http://$IPADDRESS/$SITE_NAME"
 		fi		
 	fi
 }
@@ -561,6 +561,7 @@ function loadLaravelRepositoriesArray() {
 		col2=$(trim "$col2")
 		col3=$(trim "$col3")
 		col4=$(trim "$col4")
+		col5=$(trim "$col5")
 
 		substring=`echo $col1 | cut -b1-3`
 		if [[ "$col1" != "NAME" ]] && [[ "$substring" != "---" ]]; then
@@ -568,6 +569,7 @@ function loadLaravelRepositoriesArray() {
 			ST_REPO[${#ST_REPO[*]}]=$col2
 			ST_BRANCH[${#ST_BRANCH[*]}]=$col3
 			ST_COMPOSER[${#ST_COMPOSER[*]}]=$col4
+			ST_STORAGE[${#ST_STORAGE[*]}]=$col5
 		fi
 	done < $L4I_REPOSITORY_DIR/repositories.csv
 
@@ -600,7 +602,7 @@ function checkPHP() {
 		message "PHP cgi not found."
 	fi
 	if [[ "$phpcli" == "" ]] || [[ "$phpcgi" == "" ]]; then
-		abortIt "You'll need PHP to run Laravel 4, please install it."
+		abortIt "You'll need PHP to run Laravel  please install it."
 	fi
 
 	echo "<?php echo PHP_VERSION;" > /tmp/phpver.php
@@ -680,7 +682,7 @@ function checkWebserver() {
 	fi
 
 	if [[ "$WEBSERVER" == "" ]]; then
-		abortIt "You need a webserver to run Laravel 4, please install one and restart."
+		abortIt "You need a webserver to run Laravel  please install one and restart."
 	fi
 
 	locateWebserverConf
@@ -791,17 +793,20 @@ function checkComposerInstalled() {
 }
 
 function downloadLaravel4Skeleton() {
-	message "Downloading Laravel 4 skeleton from $LARAVEL_APP_REPOSITORY..."
+	message "Downloading Laravel skeleton from $LARAVEL_APP_REPOSITORY..."
 
 	echo "git clone -b $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR"  2>&1 | tee -a $LOG_FILE &> /dev/null
 
 	git clone -b $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR  2>&1 | tee -a $LOG_FILE &> /dev/null
 
-	checkErrorsAndAbort "An error ocurred while trying to clone Laravel 4 git repository."
+	checkErrorsAndAbort "An error ocurred while trying to clone Laravel git repository."
 
 	if [[ "$LARAVEL_APP_COMPOSER" == "YES" ]]; then
 		composerUpdate
 	fi	
+
+	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type d -exec $SUDO_APP chmod 770 {} \;
+	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type f -exec $SUDO_APP chmod 660 {} \;
 
 	### Installing using zip file, git is better but I'll keep this for possible future use
 	# 
@@ -951,7 +956,7 @@ function checkParameters() {
 
 	if [[ "$LARAVEL_APP_REPOSITORY" == "$LARAVEL_APP_DEFAULT_REPOSITORY" ]]; then
 		message
-		message "Select your Laravel 4 App Repository"
+		message "Select your Laravel App Repository"
 		message
 
 		listLaravelRepositories
@@ -962,7 +967,7 @@ function checkParameters() {
 		message 
 		answer=
 		while [[ "$answer" == "" ]]; do
-			inquireText "Wich Laravel 4 App Repository do you want to use?" 1
+			inquireText "Wich Laravel App Repository do you want to use?" 2
 			if [ `isnumber $answer` == "NO" ]; then
 				answer=
 				message "You must type a number."
@@ -981,6 +986,7 @@ function checkParameters() {
 			LARAVEL_APP_REPOSITORY="${ST_REPO[$answer]}"
 			LARAVEL_APP_BRANCH="${ST_BRANCH[$answer]}"
 			LARAVEL_APP_COMPOSER="${ST_COMPOSER[$answer]}"
+			LARAVEL_APP_STORAGE="${ST_STORAGE[$answer]}"
 		fi
 	fi
 
@@ -1038,7 +1044,7 @@ function showUsage() {
 	message
 	message
 	message "installFour script"
-	message "  Installs a Laravel 4 development environment"
+	message "  Installs a Laravel development environment"
 	message
 	message "     Usage:  bash installFour <directory> <site name>"
 	message
@@ -1242,7 +1248,7 @@ function abortIt() {
 function showHeader() {
 	clear
 	## will not use message because it logs and log file might not be available at the moment
-	echo "l4i - The Laravel 4 Installer Script"
+	echo "l4i - The Laravel Installer Script"
 	echo ""
 }
 
@@ -1523,7 +1529,7 @@ function vercomp () {
 function updateAll() {
 	findLaravelArtisan
 	if [ "$ARTISAN_APP" == "" ]; then
-		abortIt "You must be in a Laravel 4 directory to run this command."
+		abortIt "You must be in a Laravel directory to run this command."
 	fi
 	dir=`dirname $ARTISAN_APP`
 
