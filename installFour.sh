@@ -120,7 +120,7 @@ function createSite() {
 
 	downloadL4IRepository
 
-	checkComposer $INSTALL_DIR
+	checkComposer
 	checkPHPUnit
 	checkMCrypt
 	downloadLaravel4Skeleton
@@ -130,7 +130,7 @@ function createSite() {
 	checkBower
 	checkLessCompiler
 	installTwitterBootstrap
-	createVirtualHost $INSTALL_DIR
+	createVirtualHost
 	setGlobalPermissions
 
 	restartWebserver
@@ -756,15 +756,16 @@ function installComposer() {
 
 function checkComposer() {
 	checkComposerInstalled
-	if [[ "$RETURN_VALUE" != "TRUE" ]]; then
+
+	if [[ "$COMPOSER_INSTALLED" != "TRUE" ]]; then
 		installComposer
 		checkComposerInstalled
-		if [[ "$RETURN_VALUE" != "TRUE" ]]; then
+		if [[ "$COMPOSER_INSTALLED" != "TRUE" ]]; then
 			message "composer is not installed and I was not able to install it"
 		fi
 	fi
 
-	if [[ "$RETURN_VALUE" == "TRUE" ]]; then
+	if [[ "$COMPOSER_INSTALLED" == "TRUE" ]]; then
 		message "Found Composer at $COMPOSER_PATH."
 	fi
 }
@@ -782,14 +783,16 @@ function checkComposerInstalled() {
 	done
 	
 	if [[ -z "$COMPOSER_PATH" ]]; then
-		RETURN_VALUE=FALSE
+		COMPOSER_INSTALLED=FALSE
 	else 
-		RETURN_VALUE=TRUE
+		COMPOSER_INSTALLED=TRUE
 	fi
 }
 
 function downloadLaravel4Skeleton() {
 	message "Downloading Laravel 4 skeleton from $LARAVEL_APP_REPOSITORY..."
+
+	echo "git clone -b $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR"  2>&1 | tee -a $LOG_FILE &> /dev/null
 
 	git clone -b $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR  2>&1 | tee -a $LOG_FILE &> /dev/null
 
@@ -972,8 +975,13 @@ function checkParameters() {
 			message "Selected app repository: ${ST_NAME[$answer]}"
 			LARAVEL_APP_REPOSITORY="${ST_REPO[$answer]}"
 			LARAVEL_APP_BRANCH="${ST_BRANCH[$answer]}"
+
+			echo "repo $LARAVEL_APP_REPOSITORY"
+			echo "branch $LARAVEL_APP_BRANCH"
 		fi
 	fi
+
+	exit 0
 
 	VHOST_CONF_FILE=$SITE_NAME.$L4I_WEBSERVER_SUFFIX
 }
