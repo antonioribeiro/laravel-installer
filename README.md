@@ -27,17 +27,12 @@ Your user need to have writing permissions to the installation directory, this s
 
 If this script needs to install software, you will need sudo or root permissions.
 
-### Laravel 4 Application Bases
+### Laravel 4 Versions
 
-You might be interested in installing another base app for your Laravel 4 site, this script will ask you about it during the process and will install one of those:
+This script will install one of those Laravel versions:
 
-* [Laravel 4 default App Repository](https://github.com/laravel/laravel) - (`https://github.com/laravel/laravel.git`, develop branch)
-* [FluxBB 2](https://github.com/fluxbb/fluxbb2) - (`https://github.com/fluxbb/fluxbb2.git`, master branch)
-* [L4withSentry](https://github.com/rydurham/L4withSentry) - (`https://github.com/rydurham/L4withSentry.git`, master branch)
-
-A screenshot of it asking for a repository:
-
-![l4i screenshot](http://puu.sh/1XzWy)
+- 4.0
+- 4.1
 
 ### Warnings
 
@@ -84,35 +79,14 @@ In the process of installing the entire environment or just Laravel 4, this scri
 * Twitter Bootstrap (CSS or less)
 * less (http://lesscss.org/ and https://github.com/cloudhead/less.js)
 * Node.js and npm
+* Bower
 * lessphp (a less compiler in php)
-* All packages needed to compile applications
-
-### Composer packages available to install
-
-* raveren/kint (https://github.com/raveren/kint)
-* mockery/mockery (http://github.com/padraic/mockery)
-* phpunit/phpunit (http://www.phpunit.de/)
-* iron-io/iron_mq (http://github.com/iron-io/iron_mq_php)
-* aws/aws-sdk-php (https://packagist.org/packages/aws/aws-sdk-php)
-* pda/pheanstalk (https://packagist.org/packages/pda/pheanstalk)
-* way/guard-laravel (https://github.com/JeffreyWay/Laravel-Guard)
-* way/generators (https://github.com/JeffreyWay/Laravel-4-Generators)
-* machuga/authority (https://github.com/machuga/authority)
-* jasonlewis/basset (https://github.com/jasonlewis/basset)
-* bigelephant/string (https://github.com/bigelephant/string)
-* cartalyst/sentry (https://github.com/cartalyst/sentry)
-* jasonlewis/expressive-date (https://github.com/jasonlewis/expressive-date)
-* anahkiasen/underscore-php (https://github.com/Anahkiasen/underscore-php)
-* laravelbook/laravel4-powerpack (https://github.com/laravelbook/laravel4-powerpack)
-* laravelbook/ardent (https://github.com/laravelbook/ardent)
-* Zizaco/confide (https://github.com/Zizaco/confide)
-* Zizaco/lessy (https://github.com/Zizaco/lessy)
 
 ### Commands
 
 This script will create the following commands in your system:
 
-#### composer
+#### Composer
 This is an executable version of composer.phar 
 
 #### artisan 
@@ -185,35 +159,16 @@ bash installFour.sh /home/taylor/www blog NO
 bash installFour.sh /var/www/blog myBlog YES
 ```
 
-### Installation Process
-
-* Create temporary install directory
-* Create log directory
-* Check if user is root or has sudo powers
-* Get operating system version and distribution
-* Update packages list (apt-get update, yum sync...)
-* Install webserver (apache2), if not available
-* Check PHP version (min=5.3.7), if none available, install
-* Configure PHP
-* Ask for installation parameters (directory and site name) if not sent via command line
-* Check or install wget
-* Check or install curl
-* Check or install unzip
-* Check or install git
-* Check or install phpunit
-* Check or install MCrypt
-* Check or install Composer
-* Git clone l4i repository to temporary directory
-* Select Laravel 4 app repository
-* Git clone Laravel 4 app repository
-* Select and install additional composer packages
-* Install a new artisan command
-* Check or install a less compiler (Node.js and/or lessphp)
-* Install Twitter Bootstrap (less or CSS version)
-* Create VirtualHost (currently apache2 only) and restart webserver
-* Configure a main template, a home view using main template and a route to home, so we can see Laravel 4 and Blade running
-
 # Changelog
+
+2013/12/06 13:59 (GMT-3) - Version 2.0.0
+
+* Completely removed composer packages installation, you can do it by user `composer search` and `composer require`
+* Added option to install Bower
+* Dramatically improved speed on Node.js installation
+* Correctly checking if MCrypt is installed
+* Added Laravel 4.1 to install options
+* Removed All meta repositories
 
 2013/02/05 00:25 (GMT-3) - Version 1.7.0
 
