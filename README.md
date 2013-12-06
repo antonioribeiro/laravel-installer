@@ -95,17 +95,6 @@ taylor@l4server:/> artisan destroy blog -y
 taylor@l4server:/var/www/blog> artisan update
 ```
 
-* Running "artisan installpackage" from inside a Laravel directory (or subdirectory) it will try let the user select a package from a list to install.
-```
-taylor@l4server:/var/www/blog> artisan installpackage
-```
-```
-taylor@l4server:/var/www/blog> artisan installpackage form
-```
-```
-taylor@l4server:/var/www/blog> artisan installpackage machuga
-```
-
 ### Installation and Examples
 
 There is no need to clone this git repository, you just have to download the script:
