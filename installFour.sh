@@ -805,8 +805,8 @@ function downloadLaravel4Skeleton() {
 		composerUpdate
 	fi	
 
-	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type d -exec $SUDO_APP chmod 770 {} \;
-	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type f -exec $SUDO_APP chmod 660 {} \;
+	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type d -exec $SUDO_APP chmod 777 {} \;
+	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type f -exec $SUDO_APP chmod 666 {} \;
 
 	### Installing using zip file, git is better but I'll keep this for possible future use
 	# 
