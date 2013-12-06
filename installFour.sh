@@ -1384,7 +1384,7 @@ function checkApp() {
 	program=`type -p $1`
 
 	if [[ "$program" == "" ]]; then
-		message -n "Trying to install $1 (with command $installer)..."
+		message -n "Trying to install $1 (using $installer)..."
 		$installer $1 2>&1 | tee -a $LOG_FILE &> /dev/null
 		if ! type -p $1 2>&1 | tee -a $LOG_FILE &> /dev/null; then
 			message ""
