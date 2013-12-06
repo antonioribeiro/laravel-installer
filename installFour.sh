@@ -536,11 +536,11 @@ function createVirtualHost() {
 	fi
 }
 
-function downloadStarters() {                 
+function downloadLaravelRepositories() {                 
 	wget -N --no-check-certificate -O $L4I_REPOSITORY_DIR/repositories.csv https://raw.github.com/antonioribeiro/l4i/$L4I_BRANCH/repositories.csv  &> $LOG_FILE
 }
 
-function loadStartersArray() {
+function loadLaravelRepositoriesArray() {
 
 	while IFS=, read -r col1 col2 col3 col4 col5; do
 		col1=$(trim "$col1")
@@ -553,7 +553,7 @@ function loadStartersArray() {
 			ST_REPO[${#ST_REPO[*]}]=$col2
 			ST_BRANCH[${#ST_BRANCH[*]}]=$col3
 		fi
-	done < $L4I_REPOSITORY_DIR/starters.csv
+	done < $L4I_REPOSITORY_DIR/repositories.csv
 
 }
 
@@ -929,7 +929,7 @@ function checkParameters() {
 		message "Select your Laravel 4 App Repository"
 		message
 
-		listStarters
+		listLaravelRepositories
 		message "$(( $total )) I want a different repository"
 
 		total=${#ST_NAME[*]}
@@ -973,9 +973,9 @@ function readThirdPartyRepository() {
 	fi
 }
 
-function listStarters() {
-	downloadStarters
-	loadStartersArray
+function listLaravelRepositories() {
+	downloadLaravelRepositories
+	loadLaravelRepositoriesArray
 
 	total=${#ST_NAME[*]}
 
