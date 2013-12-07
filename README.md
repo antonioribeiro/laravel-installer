@@ -10,13 +10,13 @@ This Linux Bash Script will install Laravel and, if needed, all dependencies (we
 There is no need to clone this git repository, you just have to download the script:
 ```
 wget -N --no-check-certificate \
-  -O laravel.sh \
+  -O /tmp/laravel.sh \
   https://raw.github.com/antonioribeiro/laravel-installer/master/laravel.sh
 ```
 
 And run it:
 ```
-bash laravel.sh
+bash /tmp/laravel.sh
 ```
 
 Other examples of usage
