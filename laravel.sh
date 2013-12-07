@@ -551,7 +551,6 @@ function createVirtualHost() {
 }
 
 function downloadLaravelRepositories() {                 
-    echo "wget -N --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/repositories.csv https://raw.github.com/antonioribeiro/laravel-installer/$LARAVELINSTALL_BRANCH/repositories.csv"
 	wget -N --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/repositories.csv https://raw.github.com/antonioribeiro/laravel-installer/$LARAVELINSTALL_BRANCH/repositories.csv  &> $LOG_FILE
 }
 
