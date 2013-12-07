@@ -27,6 +27,14 @@ bash laravel.sh /home/taylor/www blog NO
 bash laravel.sh /var/www/blog myBlog YES
 ```
 
+### Laravel Versions
+
+This script will install one of those Laravel versions:
+
+- Laravel 3.0 (currently 3.2.14)
+- Laravel 4.0
+- Laravel 4.1
+
 ### Supported Operating Systems
 
 * Debian (tested on 6 and 7)
@@ -44,14 +52,6 @@ Web Server: a the moment it only knows how to install and configure apache2, if 
 Your user need to have writing permissions to the installation directory, this script will not use sudo to create you directories and download files, but will use it to install needed software.
 
 If this script needs to install software (apache, php5, you will need sudo or root permissions.
-
-### Laravel Versions
-
-This script will install one of those versions:
-
-- Laravel 3.0 (currently 3.2.14)
-- Laravel 4.0
-- Laravel 4.1
 
 ### Screenshots
 
