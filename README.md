@@ -17,7 +17,7 @@ wget --no-check-certificate -O -  \
 
 And run it:
 ```
-bash /tmp/laravel.sh
+time bash /tmp/laravel.sh
 ```
 
 Other examples of usage
