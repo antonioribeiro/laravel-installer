@@ -1,9 +1,9 @@
-laravel-installer 2.1.0
+Laravel Installer Script 2.1.0
 =======
 
 A Laravel 3 and 4 Install Script for Linux
 
-This Linux Bash Script will install Laravel and, if needed, all dependencies (webserver, php5 and extensions, phpunit...)
+This Linux Bash Script will install Laravel and, if needed, all dependencies (webserver, php5 and extensions like mcrypt, phpunit and more)
 
 ### Installation and Usage
 
@@ -123,7 +123,8 @@ taylor@l4server:/var/www/blog> artisan update
 
 2013/12/29 16:45 (GMT-3) - Version 2.1.0
 
-* Now using Laravel PHAR installer for 4.1+ Laravel versions
+* Now using Laravel Craft PHAR installer for 4.1+ Laravel versions
+* Installs Laravel Craft PHAR in the system, so you can just run `laravel` to create new applications
 
 2013/12/06 18:01 (GMT-3) - Version 2.0.1
 
