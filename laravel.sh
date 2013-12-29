@@ -1,7 +1,7 @@
 #!/bin/bash
 
 LARAVELINSTALL_VERSION=v2.1.0
-LARAVELINSTALL_BRANCH=v2.1.0
+LARAVELINSTALL_BRANCH=master
 LARAVEL_APP_DEFAULT_REPOSITORY="https://github.com/laravel/laravel.git"
 LARAVEL_APP_DEFAULT_BRANCH="develop"
 INSTALL_DIR=$1
@@ -9,6 +9,15 @@ SITE_NAME=$2
 
 ############################################  
 ## This is your playground
+
+BASH_DIR=`type -p bash`
+BIN_DIR=`dirname $BASH_DIR`
+GIT_APP=git
+CURL_APP=curl
+WGET_APP=wget
+UNZIP_APP=unzip
+SUDO_APP=sudo
+THIS=`basename $0`
 
 LARAVELINSTALL_REPOSITORY="-b $LARAVELINSTALL_BRANCH https://github.com/antonioribeiro/laravel-installer.git"
 LARAVELINSTALL_REPOSITORY_DIR=/tmp/laravel-installer
@@ -19,15 +28,7 @@ LARAVELINSTALL_WEBSERVER_SUFFIX=laravel-installer.conf
 LARAVEL_APP_BRANCH=$LARAVEL_APP_DEFAULT_BRANCH
 LARAVEL_APP_REPOSITORY=$LARAVEL_APP_DEFAULT_REPOSITORY
 LARAVEL_PHAR=laravel
-
-BASH_DIR=`type -p bash`
-BIN_DIR=`dirname $BASH_DIR`
-GIT_APP=git
-CURL_APP=curl
-WGET_APP=wget
-UNZIP_APP=unzip
-SUDO_APP=sudo
-THIS=`basename $0`
+LARAVEL_PHAR_APP=$BIN_DIR/$LARAVEL_PHAR
 
 COMPOSER_APP=composer
 
@@ -113,10 +114,7 @@ function createSite() {
 
 	checkParameters
 
-	echo $LARAVEL_APP_VERSION;
-	exit 0;
-
-	getIPAddress
+	guessIPAddress
 
 	checkApp $WGET_APP
 	checkApp $CURL_APP
@@ -515,15 +513,22 @@ function installUnzip() {
 	installSoftware unzip
 }
 
+function guessIPAddress() {
+	getIPAddress eth0
+	if [[ "$IPADDRESS" == "" ]]; then
+		getIPAddress eth1
+		if [[ "$IPADDRESS" == "" ]]; then
+			getIPAddress
+			if [[ "$IPADDRESS" == "" ]]; then
+				inquireText "Please type the IP address of your box:"
+				IPADDRESS=$answer
+			fi
+		fi
+	fi
+}
+
 function getIPAddress() {
-	IPADDRESS=`$SUDO_APP ifconfig | sed -n 's/.*inet addr:\([0-9.]\+\)\s.*/\1/p' | grep -v 127 | head -n 1`
-	if [[ "$IPADDRESS" == "" ]]; then
-		IPADDRESS=`$SUDO_APP ifconfig | sed -n 's/.*inet \([0-9.]\+\)\s.*/\1/p' | grep -v 127 | head -n 1`
-	fi
-	if [[ "$IPADDRESS" == "" ]]; then
-		inquireText "Please type the IP address of your box:"
-		IPADDRESS=$answer
-	fi
+	IPADDRESS=`$SUDO_APP ifconfig $1 | sed -n 's/.*inet addr:\([0-9.]\+\)\s.*/\1/p' | grep -v 127 | head -n 1`
 }
 
 function createVirtualHost() {
@@ -655,11 +660,10 @@ function installLaravelPHAR() {
 	message "Installing Laravel PHAR..."
 	cd $INSTALL_DIR
 
-	LARAVEL_APP=$BIN_DIR/$LARAVEL_PHAR
-	$SUDO_APP wget --no-check-certificate -O $LARAVEL_APP http://laravel.com/laravel.phar 2>&1 | tee -a $LOG_FILE &> /dev/null
+	$SUDO_APP wget --no-check-certificate -O $LARAVEL_PHAR_APP http://laravel.com/laravel.phar 2>&1 | tee -a $LOG_FILE &> /dev/null
 	checkErrorsAndAbort "Laravel PHAR installation failed."
 
-	$SUDO_APP chmod +x $LARAVEL_APP  2>&1 | tee -a $LOG_FILE &> /dev/null
+	$SUDO_APP chmod +x $LARAVEL_PHAR_APP  2>&1 | tee -a $LOG_FILE &> /dev/null
 }
 
 function locateWebserver() {
@@ -817,7 +821,7 @@ function checkComposerInstalled() {
 	fi
 }
 
-function download3and4LaravelSkeleton() {
+function downloadLaravel40OrLessThan() {
 	message "Downloading Laravel skeleton from $LARAVEL_APP_REPOSITORY..."
 
 	echo "git clone -b $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR"  2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -834,12 +838,6 @@ function download3and4LaravelSkeleton() {
 	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type f -exec $SUDO_APP chmod 666 {} \;
 }
 
-
-function createApplication() {
-	if [[ "$LARAVEL_APP_COMPOSER" == "YES" ]]; then
-		composerUpdate
-	fi	
-}
 
 function installApp() {
 	installSoftware $1 $2
@@ -960,6 +958,8 @@ function checkParameters() {
 	else 
 		makeInstallDirectory
 	fi
+
+	BASE_NAME=$(basename $INSTALL_DIR)
 
 	if [ ! $SITE_NAME ]; then
 		SITE_NAME=$(basename $INSTALL_DIR)
@@ -1658,6 +1658,30 @@ function addComposerPackage() {
 
 function downloadPackageList() {                 
 	wget -N --no-check-certificate -O $LARAVELINSTALL_REPOSITORY_DIR/packages.csv https://raw.github.com/antonioribeiro/laravel-installer/$LARAVELINSTALL_BRANCH/packages.csv  &> $LOG_FILE
+}
+
+function downloadLaravel41OrGreaterThan() {
+	message "Creating Laravel application..."
+
+	mkdir -p $INSTALL_DIR
+	cd $INSTALL_DIR
+	cd ..
+	rmdir $BASE_NAME
+
+	$LARAVEL_PHAR_APP new $BASE_NAME
+
+	checkErrorsAndAbort "An error ocurred while trying install your app."
+
+	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type d -exec $SUDO_APP chmod 777 {} \;
+	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type f -exec $SUDO_APP chmod 666 {} \;
+}
+
+function createApplication() {
+	if [[ "$LARAVEL_APP_VERSION" < "4.1" ]]; then
+		downloadLaravel40OrLessThan
+	else
+		downloadLaravel41OrGreaterThan
+	fi	
 }
 
 main $@

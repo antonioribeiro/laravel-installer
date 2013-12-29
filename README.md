@@ -1,4 +1,4 @@
-laravel-installer 2.0.1
+laravel-installer 2.1.0
 =======
 
 A Laravel 3 and 4 Install Script for Linux
@@ -118,6 +118,10 @@ taylor@l4server:/var/www/blog> artisan update
 ```
 
 # Changelog
+
+2013/12/29 16:45 (GMT-3) - Version 2.1.0
+
+* Now using Laravel PHAR installer for 4.1+ Laravel versions
 
 2013/12/06 18:01 (GMT-3) - Version 2.0.1
 
