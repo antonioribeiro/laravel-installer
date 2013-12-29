@@ -1,7 +1,7 @@
 #!/bin/bash
 
-LARAVELINSTALL_VERSION=v2.0.1
-LARAVELINSTALL_BRANCH=v2.0.1
+LARAVELINSTALL_VERSION=v2.1.0
+LARAVELINSTALL_BRANCH=v2.1.0
 LARAVEL_APP_DEFAULT_REPOSITORY="https://github.com/laravel/laravel.git"
 LARAVEL_APP_DEFAULT_BRANCH="develop"
 INSTALL_DIR=$1
@@ -18,6 +18,8 @@ LARAVELINSTALL_WEBSERVER_SUFFIX=laravel-installer.conf
 
 LARAVEL_APP_BRANCH=$LARAVEL_APP_DEFAULT_BRANCH
 LARAVEL_APP_REPOSITORY=$LARAVEL_APP_DEFAULT_REPOSITORY
+LARAVEL_PHAR=laravel
+
 BASH_DIR=`type -p bash`
 BIN_DIR=`dirname $BASH_DIR`
 GIT_APP=git
@@ -111,6 +113,9 @@ function createSite() {
 
 	checkParameters
 
+	echo $LARAVEL_APP_VERSION;
+	exit 0;
+
 	getIPAddress
 
 	checkApp $WGET_APP
@@ -118,12 +123,16 @@ function createSite() {
 	checkApp $UNZIP_APP installUnzip
 	checkApp $GIT_APP
 
+	checkLaravelPHAR
+
 	downloadLARAVELINSTALLRepository
 
 	checkComposer
 	checkPHPUnit
 	checkMCrypt
-	downloadLaravelSkeleton
+
+	createApplication
+
 	installOurArtisan
 	checkNode
 	checkBower
@@ -556,20 +565,23 @@ function downloadLaravelRepositories() {
 
 function loadLaravelRepositoriesArray() {
 
-	while IFS=, read -r col1 col2 col3 col4 col5; do
+	echo "REPO DIR =================== $LARAVELINSTALL_REPOSITORY_DIR"
+	while IFS=, read -r col1 col2 col3 col4 col5 col6; do
 		col1=$(trim "$col1")
 		col2=$(trim "$col2")
 		col3=$(trim "$col3")
 		col4=$(trim "$col4")
 		col5=$(trim "$col5")
+		col6=$(trim "$col6")
 
 		substring=`echo $col1 | cut -b1-3`
 		if [[ "$col1" != "NAME" ]] && [[ "$substring" != "---" ]]; then
 			ST_NAME[${#ST_NAME[*]}]=$col1
-			ST_REPO[${#ST_REPO[*]}]=$col2
-			ST_BRANCH[${#ST_BRANCH[*]}]=$col3
-			ST_COMPOSER[${#ST_COMPOSER[*]}]=$col4
-			ST_STORAGE[${#ST_STORAGE[*]}]=$col5
+			ST_VERSION[${#ST_REPO[*]}]=$col2
+			ST_REPO[${#ST_REPO[*]}]=$col3
+			ST_BRANCH[${#ST_BRANCH[*]}]=$col4
+			ST_COMPOSER[${#ST_COMPOSER[*]}]=$col5
+			ST_STORAGE[${#ST_STORAGE[*]}]=$col6
 		fi
 	done < $LARAVELINSTALL_REPOSITORY_DIR/repositories.csv
 
@@ -632,10 +644,23 @@ function checkPHPUnit() {
 	fi
 }
 
-# function installPHP() {
-#     # message "Installing PHP..."
-#     # sudo apt-get --yes intall php5
-# }
+function checkLaravelPHAR() {
+	laravelphar=`type -p $LARAVEL_PHAR`
+	if [[ "$laravelphar" == "" ]]; then
+		installLaravelPHAR
+	fi
+}
+
+function installLaravelPHAR() {
+	message "Installing Laravel PHAR..."
+	cd $INSTALL_DIR
+
+	LARAVEL_APP=$BIN_DIR/$LARAVEL_PHAR
+	$SUDO_APP wget --no-check-certificate -O $LARAVEL_APP http://laravel.com/laravel.phar 2>&1 | tee -a $LOG_FILE &> /dev/null
+	checkErrorsAndAbort "Laravel PHAR installation failed."
+
+	$SUDO_APP chmod +x $LARAVEL_APP  2>&1 | tee -a $LOG_FILE &> /dev/null
+}
 
 function locateWebserver() {
 	locateWebserverProc
@@ -792,7 +817,7 @@ function checkComposerInstalled() {
 	fi
 }
 
-function downloadLaravelSkeleton() {
+function download3and4LaravelSkeleton() {
 	message "Downloading Laravel skeleton from $LARAVEL_APP_REPOSITORY..."
 
 	echo "git clone -b $LARAVEL_APP_BRANCH $LARAVEL_APP_REPOSITORY $INSTALL_DIR"  2>&1 | tee -a $LOG_FILE &> /dev/null
@@ -807,6 +832,13 @@ function downloadLaravelSkeleton() {
 
 	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type d -exec $SUDO_APP chmod 777 {} \;
 	$SUDO_APP find $INSTALL_DIR/$LARAVEL_APP_STORAGE -type f -exec $SUDO_APP chmod 666 {} \;
+}
+
+
+function createApplication() {
+	if [[ "$LARAVEL_APP_COMPOSER" == "YES" ]]; then
+		composerUpdate
+	fi	
 }
 
 function installApp() {
@@ -971,6 +1003,7 @@ function checkParameters() {
 		else 
 			message "Selected app repository: ${ST_NAME[$answer]}"
 			LARAVEL_APP_REPOSITORY="${ST_REPO[$answer]}"
+			LARAVEL_APP_VERSION="${ST_VERSION[$answer]}"
 			LARAVEL_APP_BRANCH="${ST_BRANCH[$answer]}"
 			LARAVEL_APP_COMPOSER="${ST_COMPOSER[$answer]}"
 			LARAVEL_APP_STORAGE="${ST_STORAGE[$answer]}"
