@@ -54,11 +54,12 @@ Your user need to have writing permissions to the installation directory, this s
 
 If this script needs to install software (apache, php5, you will need sudo or root permissions.
 
-### Screenshots
+### Screencasts
 
-Only 50 seconds to install Laravel 4
+Only 20 seconds to boot an application in Laravel 4
 
-![laravel-installer screenshot](http://puu.sh/5E8cL.png)
+![Demo Screencast](http://www.screenr.com/bTIH)
+
 
 ### Installed software
 
