@@ -1,5 +1,5 @@
-NAME,                             REPOSITORY,                                                BRANCH,      COMPOSER,    STORAGE,
+NAME,             VERSION,        REPOSITORY,                                                BRANCH,      COMPOSER,    STORAGE,
 ---------------------------------------------------------------------------------------------------------------------------------
-Laravel 3.0,                      https://github.com/laravel/laravel.git,                    3.0,         YES,         storage  
-Laravel 4.0,                      https://github.com/laravel/laravel.git,                    master,      YES,         app/storage
-Laravel 4.1,                      https://github.com/laravel/laravel.git,                    develop,     YES,         app/storage
+Laravel 3.0,      3.0,            https://github.com/laravel/laravel.git,                    3.0,         YES,         storage  
+Laravel 4.0,      4.0,            https://github.com/laravel/laravel.git,                    master,      YES,         app/storage
+Laravel 4.1,      4.1,            https://github.com/laravel/laravel.git,                    develop,     YES,         app/storage
