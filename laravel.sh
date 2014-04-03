@@ -17,6 +17,7 @@ CURL_APP=curl
 WGET_APP=wget
 UNZIP_APP=unzip
 SUDO_APP=sudo
+
 THIS=`basename $0`
 
 LARAVELINSTALL_REPOSITORY="-b $LARAVELINSTALL_BRANCH https://github.com/antonioribeiro/laravel-installer.git"
@@ -1348,12 +1349,16 @@ function installPHP() {
 		installApp php5-cgi 
 		installApp php5-cli
 		installApp php-xml-parser
+		installApp php5-curl
+		installApp libcurl3-dev
 	fi
 	if [[ "$OPERATING_SYSTEM" == "Redhat" ]]; then
 		installApp php
 		installApp php-common 
-		installApp php-cli 
+		installApp php-cli
 		installApp php-xml
+		installApp php-curl
+		installApp libcurl3-devel
 	fi
 	if [[ "$OPERATING_SYSTEM" == "arch" ]]; then
 		installApp php
